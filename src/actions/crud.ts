@@ -521,6 +521,26 @@ export async function createMockup(
     }
 }
 
+export async function updateMockup(
+    id: string,
+    data: { prompt?: string; imageUrl?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const mockup = await prisma.mockup.update({
+            where: { id },
+            data,
+        });
+
+        revalidatePath(`/projects/${mockup.projectId}/mockups`);
+        return { success: true, mockup };
+    } catch (error) {
+        return { error: "Failed to update mockup" };
+    }
+}
+
 export async function deleteMockup(id: string) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };

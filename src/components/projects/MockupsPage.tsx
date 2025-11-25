@@ -7,6 +7,7 @@ import { Plus, Trash2, Image as ImageIcon, Wand2, Download, ExternalLink } from 
 import { createMockup, deleteMockup } from "@/actions/crud";
 import { generateMockups } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
+import { MockupDetailModal } from "./MockupDetailModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
@@ -15,6 +16,8 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [prompt, setPrompt] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedMockup, setSelectedMockup] = useState<any | null>(null);
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     // Dummy image generation
     const handleGenerate = async () => {
@@ -101,7 +104,14 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {mockups.map((mockup) => (
-                                <GlassCard key={mockup.id} className="group relative overflow-hidden">
+                                <GlassCard
+                                    key={mockup.id}
+                                    className="group relative overflow-hidden cursor-pointer"
+                                    onClick={() => {
+                                        setSelectedMockup(mockup);
+                                        setIsDetailModalOpen(true);
+                                    }}
+                                >
                                     <div className="aspect-video bg-black/40 relative">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
                                         <img
@@ -199,6 +209,15 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 projectId={params.id}
                 type="mockups"
                 onGenerate={handleAIGenerate}
+            />
+            <MockupDetailModal
+                isOpen={isDetailModalOpen}
+                onClose={() => {
+                    setIsDetailModalOpen(false);
+                    setSelectedMockup(null);
+                }}
+                mockup={selectedMockup}
+                projectId={params.id}
             />
         </ProjectLayout>
     );
