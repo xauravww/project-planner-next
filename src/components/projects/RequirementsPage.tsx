@@ -8,6 +8,7 @@ import { Plus, Pencil, Trash2, Wand2 } from "lucide-react";
 import { generateRequirements } from "@/actions/project";
 import { createRequirement, updateRequirement, deleteRequirement } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
+import { ImproveButton } from "@/components/ui/ImproveButton";
 
 export default function RequirementsPageClient({
     project,
@@ -112,20 +113,36 @@ export default function RequirementsPageClient({
                             </h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
-                                    <label className="text-sm font-medium text-gray-300 mb-2 block">Title</label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Title</label>
+                                        <ImproveButton
+                                            currentText={formData.title}
+                                            fieldType="requirement title"
+                                            onImprove={(improved) => setFormData({ ...formData, title: improved })}
+                                        />
+                                    </div>
                                     <Input
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        placeholder="e.g., User Authentication System"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium text-gray-300 mb-2 block">Content</label>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <label className="text-sm font-medium text-gray-300">Description</label>
+                                        <ImproveButton
+                                            currentText={formData.content}
+                                            fieldType="requirement description"
+                                            onImprove={(improved) => setFormData({ ...formData, content: improved })}
+                                        />
+                                    </div>
                                     <textarea
                                         value={formData.content}
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                                         rows={4}
+                                        placeholder="Describe the requirement in detail..."
                                         required
                                     />
                                 </div>
@@ -195,20 +212,22 @@ export default function RequirementsPageClient({
                                         <div className="flex items-center gap-2 mb-2">
                                             <h3 className="text-base font-semibold text-white">{req.title}</h3>
                                             <span
-                                                className={`text-xs px-2 py-0.5 rounded-full ${req.type === "functional" ? "bg-blue-500/20 text-blue-300 border border-blue-500/30" : "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                                                className={`text-xs px-2 py-1 rounded-full font-medium ${req.type === "functional"
+                                                        ? "bg-blue-500/20 text-blue-300"
+                                                        : "bg-purple-500/20 text-purple-300"
                                                     }`}
                                             >
-                                                {req.type}
+                                                {req.type === "functional" ? "Functional" : "Non-Functional"}
                                             </span>
                                             <span
-                                                className={`text-xs px-2 py-0.5 rounded-full ${req.priority === "must-have"
-                                                    ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                                    : req.priority === "should-have"
-                                                        ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                                                        : "bg-green-500/20 text-green-300 border border-green-500/30"
+                                                className={`text-xs px-2 py-1 rounded-full font-medium ${req.priority === "must-have"
+                                                        ? "bg-red-500/20 text-red-300"
+                                                        : req.priority === "should-have"
+                                                            ? "bg-yellow-500/20 text-yellow-300"
+                                                            : "bg-green-500/20 text-green-300"
                                                     }`}
                                             >
-                                                {req.priority}
+                                                {req.priority === "must-have" ? "Must Have" : req.priority === "should-have" ? "Should Have" : "Nice to Have"}
                                             </span>
                                         </div>
                                         <p className="text-sm text-gray-300">{req.content}</p>

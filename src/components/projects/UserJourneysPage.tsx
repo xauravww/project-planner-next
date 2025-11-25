@@ -10,6 +10,7 @@ import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { MessageContent } from "@/components/chat/MessageContent";
+import { ImproveButton } from "@/components/ui/ImproveButton";
 
 export default function UserJourneysPage({ params, journeys, projectName }: { params: { id: string }; journeys: any[]; projectName: string }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -145,22 +146,37 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
                             </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Title</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-sm text-gray-400">Title</label>
+                                        <ImproveButton
+                                            currentText={formData.title}
+                                            fieldType="user journey title"
+                                            onImprove={(improved) => setFormData({ ...formData, title: improved })}
+                                        />
+                                    </div>
                                     <input
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                        placeholder="e.g. Sign Up Flow"
+                                        placeholder="e.g., User Onboarding Flow"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Steps (Markdown)</label>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label className="text-sm text-gray-400">Steps</label>
+                                        <ImproveButton
+                                            currentText={formData.steps}
+                                            fieldType="user journey steps"
+                                            onImprove={(improved) => setFormData({ ...formData, steps: improved })}
+                                        />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mb-2">Describe the user journey step-by-step</p>
                                     <textarea
                                         value={formData.steps}
                                         onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
                                         className="w-full h-64 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm"
-                                        placeholder="1. User lands on homepage&#10;2. Clicks 'Sign Up' button&#10;3. Enters email and password..."
+                                        placeholder={`Example:\n1. User lands on homepage\n2. Clicks 'Get Started' button\n3. Completes profile setup\n4. Receives welcome email\n5. Begins using the platform`}
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3 mt-6">

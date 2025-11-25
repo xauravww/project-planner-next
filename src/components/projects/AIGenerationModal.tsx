@@ -5,13 +5,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { Label } from "@/components/ui/Label";
-import { Loader2, Wand2 } from "lucide-react";
-import { generateGenerationQuestions } from "@/actions/project";
+import { Wand2, Info } from "lucide-react";
+import { generateGenerationQuestions, saveProjectContext } from "@/actions/project";
+import { LoadingMessages } from "./LoadingMessages";
 
 interface Question {
     id: string;
     text: string;
     options: string[];
+}
+
+interface ExistingContext {
+    question: string;
+    answers: string[];
+    module: string;
 }
 
 interface AIGenerationModalProps {
@@ -33,6 +40,7 @@ export function AIGenerationModal({
     const [step, setStep] = useState<"loading" | "questions" | "generating">("loading");
     const [questions, setQuestions] = useState<Question[]>([]);
     const [answers, setAnswers] = useState<Record<string, string[]>>({});
+    const [existingContext, setExistingContext] = useState<ExistingContext[]>([]);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -51,6 +59,7 @@ export function AIGenerationModal({
             }
             if (result.questions) {
                 setQuestions(result.questions);
+                setExistingContext(result.existingContext || []);
                 setStep("questions");
                 // Initialize answers
                 const initialAnswers: Record<string, string[]> = {};
@@ -91,6 +100,19 @@ export function AIGenerationModal({
                 }))
                 .filter(a => a.selected.length > 0);
 
+            // Save answers to context
+            for (const q of questions) {
+                if (answers[q.id] && answers[q.id].length > 0) {
+                    await saveProjectContext(
+                        projectId,
+                        q.id,
+                        q.text,
+                        answers[q.id],
+                        type
+                    );
+                }
+            }
+
             await onGenerate(formattedAnswers);
             onClose();
         } catch (err) {
@@ -101,7 +123,7 @@ export function AIGenerationModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[600px] bg-zinc-900 border-white/10 text-white">
+            <DialogContent className="sm:max-w-[700px] bg-zinc-900 border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <Wand2 className="w-5 h-5 text-blue-400" />
@@ -109,19 +131,13 @@ export function AIGenerationModal({
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="py-4">
+                <div className="flex-1 overflow-y-auto py-4">
                     {step === "loading" && (
-                        <div className="flex flex-col items-center justify-center py-8">
-                            <Loader2 className="w-8 h-8 text-blue-400 animate-spin mb-4" />
-                            <p className="text-gray-400">Analyzing project context...</p>
-                        </div>
+                        <LoadingMessages module={type} />
                     )}
 
                     {step === "generating" && (
-                        <div className="flex flex-col items-center justify-center py-8">
-                            <Loader2 className="w-8 h-8 text-blue-400 animate-spin mb-4" />
-                            <p className="text-gray-400">Generating content based on your preferences...</p>
-                        </div>
+                        <LoadingMessages module={type} />
                     )}
 
                     {error && (
@@ -138,11 +154,35 @@ export function AIGenerationModal({
                     )}
 
                     {step === "questions" && !error && (
-                        <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-2">
+                        <div className="space-y-6">
                             <p className="text-gray-400 text-sm">
                                 Help the AI generate better results by answering a few questions.
                                 You can select multiple options for each question.
                             </p>
+
+                            {existingContext.length > 0 && (
+                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                                    <div className="flex items-start gap-2 mb-2">
+                                        <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                        <div>
+                                            <p className="text-sm font-medium text-blue-300">Using your previous preferences</p>
+                                            <p className="text-xs text-blue-400/70 mt-1">
+                                                We've remembered your choices from other modules
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 space-y-2 text-xs text-gray-300">
+                                        {existingContext.slice(0, 3).map((ctx, i) => (
+                                            <div key={i} className="pl-4 border-l-2 border-blue-500/30">
+                                                <p className="font-medium">{ctx.question}</p>
+                                                <p className="text-gray-400">
+                                                    {ctx.answers.join(", ")} <span className="text-gray-500">({ctx.module})</span>
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
 
                             {questions.map((q) => (
                                 <div key={q.id} className="space-y-3">
@@ -180,7 +220,7 @@ export function AIGenerationModal({
                     )}
                 </div>
 
-                <DialogFooter>
+                <DialogFooter className="border-t border-white/10 pt-4">
                     <Button variant="ghost" onClick={onClose} disabled={step !== "questions"}>
                         Cancel
                     </Button>

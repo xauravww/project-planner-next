@@ -6,6 +6,107 @@ import { revalidatePath } from "next/cache";
 import { serverOpenai } from "@/lib/ai-client";
 import { generateEmbedding } from "@/lib/embeddings";
 
+// Context Management Functions
+export async function getProjectContext(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const contexts = await prisma.projectContext.findMany({
+            where: { projectId },
+            orderBy: { createdAt: "desc" },
+        });
+
+        return { contexts };
+    } catch (error) {
+        console.error("Get context error:", error);
+        return { error: "Failed to get context" };
+    }
+}
+
+export async function saveProjectContext(
+    projectId: string,
+    questionId: string,
+    question: string,
+    answers: string[],
+    module: string
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.projectContext.upsert({
+            where: {
+                projectId_questionId: {
+                    projectId,
+                    questionId,
+                },
+            },
+            update: {
+                answers: JSON.stringify(answers),
+                module,
+                updatedAt: new Date(),
+            },
+            create: {
+                projectId,
+                questionId,
+                question,
+                answers: JSON.stringify(answers),
+                module,
+            },
+        });
+
+        return { success: true };
+    } catch (error) {
+        console.error("Save context error:", error);
+        return { error: "Failed to save context" };
+    }
+}
+
+// Chat Management Functions
+export async function saveChatMessage(
+    projectId: string,
+    module: string,
+    role: string,
+    content: string
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const message = await prisma.chatMessage.create({
+            data: {
+                projectId,
+                module,
+                role,
+                content,
+            },
+        });
+
+        return { message };
+    } catch (error) {
+        console.error("Save chat message error:", error);
+        return { error: "Failed to save message" };
+    }
+}
+
+export async function getChatHistory(projectId: string, module: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const messages = await prisma.chatMessage.findMany({
+            where: { projectId, module },
+            orderBy: { createdAt: "asc" },
+        });
+
+        return { messages };
+    } catch (error) {
+        console.error("Get chat history error:", error);
+        return { error: "Failed to get chat history" };
+    }
+}
+
 export async function generateGenerationQuestions(projectId: string, type: string) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -13,7 +114,11 @@ export async function generateGenerationQuestions(projectId: string, type: strin
     try {
         const project = await prisma.project.findFirst({
             where: { id: projectId, userId: (session.user as any).id },
-            include: { requirements: true, architecture: true } // Include context if available
+            include: {
+                requirements: true,
+                architecture: true,
+                contexts: true, // Get existing context
+            }
         });
 
         if (!project) return { error: "Project not found" };
@@ -30,15 +135,36 @@ export async function generateGenerationQuestions(projectId: string, type: strin
             }
         }
 
+        // Add existing context from other modules
+        const existingAnswers = project.contexts
+            .filter(ctx => ctx.answers && ctx.answers !== '[]')
+            .map(ctx => {
+                try {
+                    const answers = JSON.parse(ctx.answers);
+                    return `Previously answered in ${ctx.module}: ${ctx.question}\nAnswers: ${answers.join(', ')}`;
+                } catch {
+                    return '';
+                }
+            })
+            .filter(Boolean)
+            .join('\n\n');
+
+        if (existingAnswers) {
+            context += `\n\n--- User's Previous Preferences ---\n${existingAnswers}`;
+        }
+
         const response = await serverOpenai.chat.completions.create({
             model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: `You are an expert project manager. Based on the project description, generate 3-4 multiple choice questions to help clarify the specific needs for generating ${type}. 
+                    content: `You are an expert project manager. Based on the project description and any previous user preferences, generate 3-4 multiple choice questions to help clarify the specific needs for generating ${type}. 
+                    
+                    IMPORTANT: If the user has already answered similar questions in other modules (check "User's Previous Preferences"), do NOT ask those questions again. Instead, generate NEW questions that complement what you already know.
+                    
                     Each question should have 3-5 options. The user can select multiple options. 
-                    Return a JSON array of objects with:
-                    - id: string (unique)
+                    Return a JSON object with a "questions" array containing objects with:
+                    - id: string (unique identifier like "ui_framework_pref")
                     - text: string (the question)
                     - options: string[] (possible answers)`
                 },
@@ -67,7 +193,15 @@ export async function generateGenerationQuestions(projectId: string, type: strin
             ];
         }
 
-        return { questions };
+        // Also return existing contexts so UI can show them
+        return {
+            questions,
+            existingContext: project.contexts.map(ctx => ({
+                question: ctx.question,
+                answers: JSON.parse(ctx.answers || '[]'),
+                module: ctx.module,
+            }))
+        };
     } catch (error) {
         console.error("Generate questions error:", error);
         return { error: "Failed to generate questions" };

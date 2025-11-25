@@ -95,7 +95,7 @@ const CodeBlock = ({ code, language }: { code: string; language: string }) => {
                     )}
                 </Button>
             </div>
-            <pre className="bg-black/40 p-4 rounded-lg overflow-x-auto border border-white/10">
+            <pre className="bg-black/40 p-4 rounded-lg overflow-x-auto border border-white/10 max-w-full">
                 <code className={`language-${language} text-sm`}>{code}</code>
             </pre>
         </div>
@@ -194,10 +194,9 @@ const MermaidDiagram = ({ code }: { code: string }) => {
     }
 
     return (
-        <div className="my-6 flex justify-center">
+        <div className="my-6 flex justify-center overflow-x-auto">
             <div
-                className="mermaid-container inline-block p-6 bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl border border-white/10"
-                style={{ maxWidth: "none", width: "max-content" }}
+                className="mermaid-container inline-block p-6 bg-gradient-to-br from-slate-900/50 to-slate-800/50 rounded-xl border border-white/10 max-w-full"
                 dangerouslySetInnerHTML={{ __html: svg }}
             />
         </div>
