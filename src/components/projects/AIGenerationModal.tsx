@@ -18,7 +18,8 @@ interface AIGenerationModalProps {
     isOpen: boolean;
     onClose: () => void;
     projectId: string;
-    type: "requirements" | "architecture" | "workflows" | "stories" | "tech-stack";
+    type: "requirements" | "architecture" | "workflows" | "stories" | "tech-stack" |
+    "tasks" | "personas" | "journeys" | "mockups" | "business-rules" | "team";
     onGenerate: (answers: Array<{ question: string; selected: string[] }>) => Promise<void>;
 }
 

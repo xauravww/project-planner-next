@@ -1,10 +1,13 @@
+```
 "use client";
 
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, Users, Trash2, Pencil, Mail, Shield } from "lucide-react";
+import { Plus, Users, Trash2, Pencil, Mail, User, Wand2 } from "lucide-react";
 import { createMember, updateMember, deleteMember } from "@/actions/crud";
+import { generateTeamMembers } from "@/actions/project";
+import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
@@ -58,7 +61,7 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                         <Breadcrumb
                             items={[
                                 { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/projects/${params.id}` },
+                                { label: projectName, href: `/ projects / ${ params.id } ` },
                                 { label: "Team" },
                             ]}
                         />

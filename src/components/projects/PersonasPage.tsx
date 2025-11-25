@@ -3,13 +3,17 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X } from "lucide-react";
+import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X, Wand2 } from "lucide-react";
 import { createPersona, updatePersona, deletePersona } from "@/actions/crud";
+import { generatePersonas } from "@/actions/project";
+import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default function PersonasPage({ params, personas, projectName }: { params: { id: string }; personas: any[]; projectName: string }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -54,6 +58,13 @@ export default function PersonasPage({ params, personas, projectName }: { params
         }
     };
 
+    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
+        setIsGenerating(true);
+        await generatePersonas(params.id, answers);
+        setIsGenerating(false);
+        window.location.reload();
+    };
+
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col">
@@ -68,14 +79,24 @@ export default function PersonasPage({ params, personas, projectName }: { params
                         />
                         <h1 className="text-2xl font-semibold text-white mt-2">User Personas</h1>
                     </div>
-                    <Button onClick={() => {
-                        setEditingId(null);
-                        setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-                        setIsModalOpen(true);
-                    }} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Persona
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button onClick={() => {
+                            setEditingId(null);
+                            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
+                            setIsModalOpen(true);
+                        }} className="bg-white text-black hover:bg-gray-200">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Persona
+                        </Button>
+                        <Button
+                            onClick={() => setIsAIModalOpen(true)}
+                            disabled={isGenerating}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            {isGenerating ? "Generating..." : "Generate with AI"}
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-auto p-6">
@@ -208,6 +229,13 @@ export default function PersonasPage({ params, personas, projectName }: { params
                     </div>
                 )}
             </div>
+            <AIGenerationModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                projectId={params.id}
+                type="personas"
+                onGenerate={handleAIGenerate}
+            />
         </ProjectLayout>
     );
 }

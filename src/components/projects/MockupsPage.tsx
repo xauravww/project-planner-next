@@ -5,11 +5,14 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Plus, Trash2, Image as ImageIcon, Wand2, Download, ExternalLink } from "lucide-react";
 import { createMockup, deleteMockup } from "@/actions/crud";
+import { generateMockups } from "@/actions/project";
+import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default function MockupsPage({ params, mockups, projectName }: { params: { id: string }; mockups: any[]; projectName: string }) {
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [prompt, setPrompt] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -36,6 +39,13 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
         window.location.reload();
     };
 
+    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
+        setIsGenerating(true);
+        await generateMockups(params.id, answers);
+        setIsGenerating(false);
+        window.location.reload();
+    };
+
     const handleDelete = async (id: string) => {
         if (confirm("Delete this mockup?")) {
             await deleteMockup(id);
@@ -57,10 +67,20 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                         />
                         <h1 className="text-2xl font-semibold text-white mt-2">Visual Mockups</h1>
                     </div>
-                    <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Generate Mockup
-                    </Button>
+                    <div className="flex gap-3">
+                        <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Mockup
+                        </Button>
+                        <Button
+                            onClick={() => setIsAIModalOpen(true)}
+                            disabled={isGenerating}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            {isGenerating ? "Generating..." : "Generate with AI"}
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-auto p-6">
@@ -173,6 +193,13 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                     </div>
                 )}
             </div>
+            <AIGenerationModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                projectId={params.id}
+                type="mockups"
+                onGenerate={handleAIGenerate}
+            />
         </ProjectLayout>
     );
 }

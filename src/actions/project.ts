@@ -473,8 +473,385 @@ export async function getProject(projectId: string) {
             return { error: "Project not found" };
         }
 
+
         return { project };
     } catch (error) {
         return { error: "Failed to fetch project" };
+    }
+}
+
+// GENERATE TASKS
+export async function generateTasks(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a project manager. Generate tasks for the project. Return a JSON array with objects containing: title, description, status ('TODO'), priority ('LOW', 'MEDIUM', or 'HIGH'), assignee (can be empty string or suggested role)."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 8-12 project tasks.`
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let tasks = [];
+        try {
+            tasks = JSON.parse(aiResponse);
+        } catch {
+            tasks = [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }];
+        }
+
+        for (const task of tasks) {
+            await prisma.task.create({
+                data: {
+                    projectId,
+                    title: task.title,
+                    description: task.description || "",
+                    status: task.status || "TODO",
+                    priority: task.priority || "MEDIUM",
+                    assignee: task.assignee || "",
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/tasks`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate tasks error:", error);
+        return { error: "Failed to generate tasks" };
+    }
+}
+
+// GENERATE PERSONAS
+export async function generatePersonas(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a UX researcher. Generate user personas for the project. Return a JSON array with objects containing: name, role, bio (brief description), goals (array of strings), frustrations (array of strings)."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user personas.`
+                }
+            ],
+            temperature: 0.8,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let personas = [];
+        try {
+            personas = JSON.parse(aiResponse);
+        } catch {
+            personas = [{ name: "Primary User", role: "End User", bio: "Main user of the system", goals: ["Achieve efficiency"], frustrations: ["Slow processes"] }];
+        }
+
+        for (const persona of personas) {
+            await prisma.persona.create({
+                data: {
+                    projectId,
+                    name: persona.name,
+                    role: persona.role,
+                    bio: persona.bio || "",
+                    goals: JSON.stringify(persona.goals || []),
+                    frustrations: JSON.stringify(persona.frustrations || []),
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/personas`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate personas error:", error);
+        return { error: "Failed to generate personas" };
+    }
+}
+
+// GENERATE USER JOURNEYS
+export async function generateUserJourneys(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a UX designer. Generate user journey maps for the project. Return a JSON array with objects containing: title, steps (markdown formatted text describing the journey steps)."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user journeys.`
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let journeys = [];
+        try {
+            journeys = JSON.parse(aiResponse);
+        } catch {
+            journeys = [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }];
+        }
+
+        for (const journey of journeys) {
+            await prisma.userJourney.create({
+                data: {
+                    projectId,
+                    title: journey.title,
+                    steps: journey.steps || "",
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/journeys`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate user journeys error:", error);
+        return { error: "Failed to generate user journeys" };
+    }
+}
+
+// GENERATE MOCKUPS
+export async function generateMockups(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a UI/UX designer. Generate mockup prompts for key screens. Return a JSON array with objects containing: prompt (detailed description for image generation)."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 mockup prompts for key screens.`
+                }
+            ],
+            temperature: 0.8,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let mockups = [];
+        try {
+            mockups = JSON.parse(aiResponse);
+        } catch {
+            mockups = [{ prompt: "Modern dashboard with charts and analytics" }];
+        }
+
+        for (const mockup of mockups) {
+            const imageUrl = `https://placehold.co/800x600/1a1a2e/ffffff?text=${encodeURIComponent(mockup.prompt.slice(0, 50))}`;
+            await prisma.mockup.create({
+                data: {
+                    projectId,
+                    prompt: mockup.prompt,
+                    imageUrl,
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/mockups`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate mockups error:", error);
+        return { error: "Failed to generate mockups" };
+    }
+}
+
+// GENERATE BUSINESS RULES
+export async function generateBusinessRules(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a business analyst. Generate business rules and validation logic. Return a JSON array with objects containing: title, description, condition, action."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 5-8 business rules.`
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let rules = [];
+        try {
+            rules = JSON.parse(aiResponse);
+        } catch {
+            rules = [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }];
+        }
+
+        for (const rule of rules) {
+            await prisma.businessRule.create({
+                data: {
+                    projectId,
+                    title: rule.title,
+                    description: rule.description || "",
+                    condition: rule.condition || "",
+                    action: rule.action || "",
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/business-rules`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate business rules error:", error);
+        return { error: "Failed to generate business rules" };
+    }
+}
+
+// GENERATE TEAM MEMBERS
+export async function generateTeamMembers(
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) return { error: "Project not found" };
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a project manager. Suggest team structure and roles needed. Return a JSON array with objects containing: name (suggested role name like 'Senior Developer' or 'UX Designer'), email (placeholder like 'developer@project.com'), role (job title)."
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-7 team roles needed.`
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let members = [];
+        try {
+            members = JSON.parse(aiResponse);
+        } catch {
+            members = [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }];
+        }
+
+        for (const member of members) {
+            await prisma.member.create({
+                data: {
+                    projectId,
+                    name: member.name,
+                    email: member.email || "",
+                    role: member.role || "",
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/team`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate team members error:", error);
+        return { error: "Failed to generate team members" };
     }
 }

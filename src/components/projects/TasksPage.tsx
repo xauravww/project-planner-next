@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, LayoutGrid, List as ListIcon, Calendar, User, MoreHorizontal, Trash2, CheckCircle2, Circle, Clock } from "lucide-react";
+import { Plus, LayoutGrid, List as ListIcon, Calendar, User, MoreHorizontal, Trash2, CheckCircle2, Circle, Clock, Wand2 } from "lucide-react";
 import { createTask, updateTask, deleteTask } from "@/actions/crud";
+import { generateTasks } from "@/actions/project";
+import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
@@ -23,6 +25,8 @@ const PRIORITY_COLORS: Record<string, string> = {
 export default function TasksPage({ params, tasks, projectName }: { params: { id: string }; tasks: any[]; projectName: string }) {
     const [viewMode, setViewMode] = useState<"board" | "list">("board");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [isGenerating, setIsGenerating] = useState(false);
     const [newTask, setNewTask] = useState({
         title: "",
         description: "",
@@ -48,6 +52,13 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
             await deleteTask(id);
             window.location.reload();
         }
+    };
+
+    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
+        setIsGenerating(true);
+        await generateTasks(params.id, answers);
+        setIsGenerating(false);
+        window.location.reload();
     };
 
     const handleStatusChange = async (id: string, newStatus: string) => {
@@ -84,9 +95,17 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                 <ListIcon className="w-4 h-4" />
                             </button>
                         </div>
-                        <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700">
+                        <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200">
                             <Plus className="w-4 h-4 mr-2" />
                             New Task
+                        </Button>
+                        <Button
+                            onClick={() => setIsAIModalOpen(true)}
+                            disabled={isGenerating}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            {isGenerating ? "Generating..." : "Generate with AI"}
                         </Button>
                     </div>
                 </div>
@@ -164,7 +183,7 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                 <GlassCard key={task.id} className="p-4 flex items-center justify-between group">
                                     <div className="flex items-center gap-4">
                                         <div className={`p-2 rounded-full bg-white/5 ${task.status === "DONE" ? "text-green-400" :
-                                                task.status === "IN_PROGRESS" ? "text-blue-400" : "text-gray-400"
+                                            task.status === "IN_PROGRESS" ? "text-blue-400" : "text-gray-400"
                                             }`}>
                                             {task.status === "DONE" ? <CheckCircle2 className="w-5 h-5" /> :
                                                 task.status === "IN_PROGRESS" ? <Clock className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
@@ -288,6 +307,13 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                     </div>
                 )}
             </div>
+            <AIGenerationModal
+                isOpen={isAIModalOpen}
+                onClose={() => setIsAIModalOpen(false)}
+                projectId={params.id}
+                type="tasks"
+                onGenerate={handleAIGenerate}
+            />
         </ProjectLayout>
     );
 }
