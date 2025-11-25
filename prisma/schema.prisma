@@ -31,6 +31,14 @@ model Project {
   userStories     UserStory[]
   techStack       TechStack?
   
+  // New Modules
+  tasks           Task[]
+  personas        Persona[]
+  userJourneys    UserJourney[]
+  mockups         Mockup[]
+  businessRules   BusinessRule[]
+  members         Member[]
+  
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -98,4 +106,83 @@ model TechStack {
   embedding String?  // JSON array of embeddings
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// NEW MODELS
+
+model Task {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  status      String   @default("TODO") // TODO, IN_PROGRESS, DONE
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  assignee    String?
+  dueDate     DateTime?
+  embedding   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Persona {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  role        String
+  goals       String   // JSON array or text
+  frustrations String  // JSON array or text
+  bio         String
+  embedding   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserJourney {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  personaId   String?
+  steps       String   // JSON array of steps
+  embedding   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Mockup {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  prompt      String
+  imageUrl    String
+  status      String   @default("GENERATED")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BusinessRule {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  description String
+  condition   String?
+  action      String?
+  embedding   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Member {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name        String
+  role        String
+  email       String
+  avatar      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }

@@ -8,10 +8,16 @@ import { Button } from "@/components/ui/Button";
 
 const modules = [
     { name: "Requirements", icon: FileText, href: "requirements", color: "blue", description: "Define functional & non-functional requirements", gradient: "from-blue-500/20 to-cyan-500/20" },
-    { name: "Architecture", icon: Layers, href: "architecture", color: "purple", description: "Design system components & data flow", gradient: "from-purple-500/20 to-pink-500/20" },
-    { name: "Workflows", icon: GitBranch, href: "workflows", color: "green", description: "Map out user journeys & process flows", gradient: "from-green-500/20 to-emerald-500/20" },
     { name: "User Stories", icon: Users, href: "stories", color: "orange", description: "Create detailed user-centric feature stories", gradient: "from-orange-500/20 to-red-500/20" },
+    { name: "Personas", icon: Users, href: "personas", color: "pink", description: "Define user personas and target audience", gradient: "from-pink-500/20 to-rose-500/20" },
+    { name: "User Journeys", icon: GitBranch, href: "journeys", color: "indigo", description: "Map out user flows and experiences", gradient: "from-indigo-500/20 to-violet-500/20" },
+    { name: "Architecture", icon: Layers, href: "architecture", color: "purple", description: "Design system components & data flow", gradient: "from-purple-500/20 to-pink-500/20" },
     { name: "Tech Stack", icon: Code, href: "tech-stack", color: "cyan", description: "Select & document technology choices", gradient: "from-cyan-500/20 to-blue-500/20" },
+    { name: "Mockups", icon: Layers, href: "mockups", color: "teal", description: "Generate visual mockups for your project", gradient: "from-teal-500/20 to-emerald-500/20" },
+    { name: "Workflows", icon: GitBranch, href: "workflows", color: "green", description: "Map out user journeys & process flows", gradient: "from-green-500/20 to-emerald-500/20" },
+    { name: "Tasks", icon: FileText, href: "tasks", color: "yellow", description: "Manage tasks and track progress", gradient: "from-yellow-500/20 to-orange-500/20" },
+    { name: "Business Rules", icon: FileText, href: "business-rules", color: "red", description: "Define business logic and constraints", gradient: "from-red-500/20 to-orange-500/20" },
+    { name: "Team", icon: Users, href: "team", color: "blue", description: "Manage team members and roles", gradient: "from-blue-500/20 to-indigo-500/20" },
 ];
 
 export default async function ProjectDashboardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -33,9 +39,15 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
         workflows: project.workflows?.length || 0,
         stories: project.userStories?.length || 0,
         techStack: project.techStack ? 1 : 0,
+        tasks: project.tasks?.length || 0,
+        personas: project.personas?.length || 0,
+        journeys: project.userJourneys?.length || 0,
+        mockups: project.mockups?.length || 0,
+        "business-rules": project.businessRules?.length || 0,
+        team: project.members?.length || 0,
     };
 
-    const completionPercentage = Math.round((Object.values(stats).filter(v => v > 0).length / 5) * 100);
+    const completionPercentage = Math.round((Object.values(stats).filter(v => v > 0).length / modules.length) * 100);
 
     return (
         <div className="min-h-screen relative overflow-hidden pb-32">
@@ -137,7 +149,7 @@ export default async function ProjectDashboardPage({ params }: { params: Promise
 
                 {/* Planning Modules Grid */}
                 <div>
-                    <h2 className="text-2xl font-bold text-white mb-6">Planning Modules</h2>
+                    <h2 className="text-2xl font-bold text-white mb-6">Project Modules</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {modules.map((module) => (
                             <Link key={module.href} href={`/projects/${id}/${module.href}`} className="group">

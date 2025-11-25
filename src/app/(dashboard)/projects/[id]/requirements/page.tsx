@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getProject } from "@/actions/project";
 import RequirementsPageClient from "@/components/projects/RequirementsPage";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/projects/Breadcrumb";
+import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default async function RequirementsPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth();

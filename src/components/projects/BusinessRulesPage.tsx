@@ -1,0 +1,193 @@
+"use client";
+
+import { useState } from "react";
+import { GlassCard } from "@/components/ui/GlassCard";
+import { Button } from "@/components/ui/Button";
+import { Plus, Scale, Trash2, Pencil, AlertCircle } from "lucide-react";
+import { createBusinessRule, updateBusinessRule, deleteBusinessRule } from "@/actions/crud";
+import ProjectLayout from "@/components/projects/ProjectLayout";
+import Breadcrumb from "@/components/ui/Breadcrumb";
+
+export default function BusinessRulesPage({ params, rules, projectName }: { params: { id: string }; rules: any[]; projectName: string }) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        condition: "",
+        action: "",
+    });
+
+    const handleCreate = async () => {
+        if (!formData.title) return;
+        await createBusinessRule(params.id, formData);
+        setIsModalOpen(false);
+        setFormData({ title: "", description: "", condition: "", action: "" });
+        window.location.reload();
+    };
+
+    const handleUpdate = async () => {
+        if (!editingId) return;
+        await updateBusinessRule(editingId, formData);
+        setEditingId(null);
+        setFormData({ title: "", description: "", condition: "", action: "" });
+        window.location.reload();
+    };
+
+    const handleEdit = (rule: any) => {
+        setEditingId(rule.id);
+        setFormData({
+            title: rule.title,
+            description: rule.description,
+            condition: rule.condition || "",
+            action: rule.action || "",
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleDelete = async (id: string) => {
+        if (confirm("Delete this rule?")) {
+            await deleteBusinessRule(id);
+            window.location.reload();
+        }
+    };
+
+    return (
+        <ProjectLayout projectId={params.id} projectName={projectName}>
+            <div className="h-full flex flex-col">
+                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
+                    <div>
+                        <Breadcrumb
+                            items={[
+                                { label: "Projects", href: "/dashboard" },
+                                { label: projectName, href: `/projects/${params.id}` },
+                                { label: "Business Rules" },
+                            ]}
+                        />
+                        <h1 className="text-2xl font-semibold text-white mt-2">Business Rules</h1>
+                    </div>
+                    <Button onClick={() => {
+                        setEditingId(null);
+                        setFormData({ title: "", description: "", condition: "", action: "" });
+                        setIsModalOpen(true);
+                    }} className="bg-blue-600 hover:bg-blue-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Rule
+                    </Button>
+                </div>
+
+                <div className="flex-1 overflow-auto p-6">
+                    {rules.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+                                <Scale className="w-10 h-10 text-gray-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-white mb-2">No Business Rules Yet</h3>
+                            <p className="text-gray-400 max-w-md mb-6">
+                                Define the logic and constraints that govern your application's behavior.
+                            </p>
+                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                                <Plus className="w-5 h-5 mr-2" />
+                                Create First Rule
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {rules.map((rule) => (
+                                <GlassCard key={rule.id} className="p-6 relative group">
+                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button onClick={() => handleEdit(rule)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white">
+                                            <Pencil className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={() => handleDelete(rule.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400">
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                                        <AlertCircle className="w-5 h-5 text-blue-400" />
+                                        {rule.title}
+                                    </h3>
+                                    <p className="text-gray-400 text-sm mb-4">{rule.description}</p>
+
+                                    <div className="space-y-3">
+                                        {rule.condition && (
+                                            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                                                <span className="text-xs font-medium text-blue-400 uppercase tracking-wider block mb-1">Condition</span>
+                                                <code className="text-sm text-gray-300 font-mono">{rule.condition}</code>
+                                            </div>
+                                        )}
+                                        {rule.action && (
+                                            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                                                <span className="text-xs font-medium text-green-400 uppercase tracking-wider block mb-1">Action</span>
+                                                <code className="text-sm text-gray-300 font-mono">{rule.action}</code>
+                                            </div>
+                                        )}
+                                    </div>
+                                </GlassCard>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Create/Edit Modal */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <GlassCard className="w-full max-w-lg p-6">
+                            <h2 className="text-xl font-bold text-white mb-6">
+                                {editingId ? "Edit Rule" : "New Business Rule"}
+                            </h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Title</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="e.g. Password Complexity"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="Explain the rule..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Condition (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.condition}
+                                        onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="IF user.password.length < 8"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Action (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.action}
+                                        onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="THEN reject_registration()"
+                                    />
+                                </div>
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                                        {editingId ? "Save Changes" : "Create Rule"}
+                                    </Button>
+                                </div>
+                            </div>
+                        </GlassCard>
+                    </div>
+                )}
+            </div>
+        </ProjectLayout>
+    );
+}

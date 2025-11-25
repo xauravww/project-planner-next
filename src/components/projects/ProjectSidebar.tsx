@@ -43,15 +43,18 @@ export default function ProjectSidebar({ projectId, projectName, projectType }: 
             items: [
                 { name: "Requirements", href: `/projects/${projectId}/requirements`, icon: FileText },
                 { name: "User Stories", href: `/projects/${projectId}/stories`, icon: Users },
+                { name: "Personas", href: `/projects/${projectId}/personas`, icon: Users },
+                { name: "User Journeys", href: `/projects/${projectId}/journeys`, icon: GitBranch },
             ],
         },
         {
-            id: "architecture",
-            name: "Architecture",
+            id: "design",
+            name: "Design",
             icon: Layers,
             items: [
-                { name: "Design", href: `/projects/${projectId}/architecture`, icon: Layers },
+                { name: "Architecture", href: `/projects/${projectId}/architecture`, icon: Layers },
                 { name: "Tech Stack", href: `/projects/${projectId}/tech-stack`, icon: Code },
+                { name: "Mockups", href: `/projects/${projectId}/mockups`, icon: Layers },
             ],
         },
         {
@@ -60,6 +63,16 @@ export default function ProjectSidebar({ projectId, projectName, projectType }: 
             icon: GitBranch,
             items: [
                 { name: "Workflows", href: `/projects/${projectId}/workflows`, icon: GitBranch },
+                { name: "Tasks", href: `/projects/${projectId}/tasks`, icon: FileText },
+                { name: "Business Rules", href: `/projects/${projectId}/business-rules`, icon: FileText },
+            ],
+        },
+        {
+            id: "team",
+            name: "Team",
+            icon: Users,
+            items: [
+                { name: "Team Members", href: `/projects/${projectId}/team`, icon: Users },
             ],
         },
     ];
@@ -109,8 +122,8 @@ export default function ProjectSidebar({ projectId, projectName, projectType }: 
                                             <Button
                                                 variant="ghost"
                                                 className={`w-full justify-start text-sm ${isActive(item.href)
-                                                        ? "bg-white/10 text-white"
-                                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                                    ? "bg-white/10 text-white"
+                                                    : "text-gray-400 hover:text-white hover:bg-white/5"
                                                     }`}
                                             >
                                                 <item.icon className="w-4 h-4 mr-2" />

@@ -460,6 +460,12 @@ export async function getProject(projectId: string) {
                 workflows: true,
                 userStories: true,
                 techStack: true,
+                tasks: true,
+                personas: true,
+                userJourneys: true,
+                mockups: true,
+                businessRules: true,
+                members: true,
             },
         });
 

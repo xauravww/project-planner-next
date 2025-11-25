@@ -296,3 +296,397 @@ export async function deleteTechStack(id: string) {
         return { error: "Failed to delete tech stack" };
     }
 }
+
+// TASKS CRUD
+export async function createTask(
+    projectId: string,
+    data: { title: string; description?: string; status: string; priority: string; assignee?: string; dueDate?: Date }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const embedding = await generateEmbedding(`${data.title} ${data.description || ""}`);
+
+        const task = await prisma.task.create({
+            data: {
+                ...data,
+                projectId,
+                embedding: JSON.stringify(embedding),
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/tasks`);
+        return { success: true, task };
+    } catch (error) {
+        return { error: "Failed to create task" };
+    }
+}
+
+export async function updateTask(
+    id: string,
+    data: { title?: string; description?: string; status?: string; priority?: string; assignee?: string; dueDate?: Date }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        let embedding = undefined;
+        if (data.title || data.description) {
+            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.description || ""}`));
+        }
+
+        const task = await prisma.task.update({
+            where: { id },
+            data: {
+                ...data,
+                embedding,
+            },
+        });
+
+        revalidatePath(`/projects/${task.projectId}/tasks`);
+        return { success: true, task };
+    } catch (error) {
+        return { error: "Failed to update task" };
+    }
+}
+
+export async function deleteTask(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const task = await prisma.task.delete({ where: { id } });
+        revalidatePath(`/projects/${task.projectId}/tasks`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete task" };
+    }
+}
+
+// PERSONAS CRUD
+export async function createPersona(
+    projectId: string,
+    data: { name: string; role: string; goals: string; frustrations: string; bio: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const embedding = await generateEmbedding(`${data.name} ${data.role} ${data.bio}`);
+
+        const persona = await prisma.persona.create({
+            data: {
+                ...data,
+                projectId,
+                embedding: JSON.stringify(embedding),
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/personas`);
+        return { success: true, persona };
+    } catch (error) {
+        return { error: "Failed to create persona" };
+    }
+}
+
+export async function updatePersona(
+    id: string,
+    data: { name?: string; role?: string; goals?: string; frustrations?: string; bio?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        let embedding = undefined;
+        if (data.name || data.role || data.bio) {
+            embedding = JSON.stringify(await generateEmbedding(`${data.name || ""} ${data.role || ""} ${data.bio || ""}`));
+        }
+
+        const persona = await prisma.persona.update({
+            where: { id },
+            data: {
+                ...data,
+                embedding,
+            },
+        });
+
+        revalidatePath(`/projects/${persona.projectId}/personas`);
+        return { success: true, persona };
+    } catch (error) {
+        return { error: "Failed to update persona" };
+    }
+}
+
+export async function deletePersona(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const persona = await prisma.persona.delete({ where: { id } });
+        revalidatePath(`/projects/${persona.projectId}/personas`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete persona" };
+    }
+}
+
+// USER JOURNEYS CRUD
+export async function createUserJourney(
+    projectId: string,
+    data: { title: string; personaId?: string; steps: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const embedding = await generateEmbedding(`${data.title} ${data.steps}`);
+
+        const journey = await prisma.userJourney.create({
+            data: {
+                ...data,
+                projectId,
+                embedding: JSON.stringify(embedding),
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/journeys`);
+        return { success: true, journey };
+    } catch (error) {
+        return { error: "Failed to create user journey" };
+    }
+}
+
+export async function updateUserJourney(
+    id: string,
+    data: { title?: string; personaId?: string; steps?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        let embedding = undefined;
+        if (data.title || data.steps) {
+            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.steps || ""}`));
+        }
+
+        const journey = await prisma.userJourney.update({
+            where: { id },
+            data: {
+                ...data,
+                embedding,
+            },
+        });
+
+        revalidatePath(`/projects/${journey.projectId}/journeys`);
+        return { success: true, journey };
+    } catch (error) {
+        return { error: "Failed to update user journey" };
+    }
+}
+
+export async function deleteUserJourney(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const journey = await prisma.userJourney.delete({ where: { id } });
+        revalidatePath(`/projects/${journey.projectId}/journeys`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete user journey" };
+    }
+}
+
+// MOCKUPS CRUD
+export async function createMockup(
+    projectId: string,
+    data: { prompt: string; imageUrl: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const mockup = await prisma.mockup.create({
+            data: {
+                ...data,
+                projectId,
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/mockups`);
+        return { success: true, mockup };
+    } catch (error) {
+        return { error: "Failed to create mockup" };
+    }
+}
+
+export async function deleteMockup(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const mockup = await prisma.mockup.delete({ where: { id } });
+        revalidatePath(`/projects/${mockup.projectId}/mockups`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete mockup" };
+    }
+}
+
+// BUSINESS RULES CRUD
+export async function createBusinessRule(
+    projectId: string,
+    data: { title: string; description: string; condition?: string; action?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const embedding = await generateEmbedding(`${data.title} ${data.description}`);
+
+        const rule = await prisma.businessRule.create({
+            data: {
+                ...data,
+                projectId,
+                embedding: JSON.stringify(embedding),
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/business-rules`);
+        return { success: true, rule };
+    } catch (error) {
+        return { error: "Failed to create business rule" };
+    }
+}
+
+export async function updateBusinessRule(
+    id: string,
+    data: { title?: string; description?: string; condition?: string; action?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        let embedding = undefined;
+        if (data.title || data.description) {
+            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.description || ""}`));
+        }
+
+        const rule = await prisma.businessRule.update({
+            where: { id },
+            data: {
+                ...data,
+                embedding,
+            },
+        });
+
+        revalidatePath(`/projects/${rule.projectId}/business-rules`);
+        return { success: true, rule };
+    } catch (error) {
+        return { error: "Failed to update business rule" };
+    }
+}
+
+export async function deleteBusinessRule(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const rule = await prisma.businessRule.delete({ where: { id } });
+        revalidatePath(`/projects/${rule.projectId}/business-rules`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete business rule" };
+    }
+}
+
+// MEMBERS CRUD
+export async function createMember(
+    projectId: string,
+    data: { name: string; role: string; email: string; avatar?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const member = await prisma.member.create({
+            data: {
+                ...data,
+                projectId,
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/team`);
+        return { success: true, member };
+    } catch (error) {
+        return { error: "Failed to create member" };
+    }
+}
+
+export async function updateMember(
+    id: string,
+    data: { name?: string; role?: string; email?: string; avatar?: string }
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const member = await prisma.member.update({
+            where: { id },
+            data,
+        });
+
+        revalidatePath(`/projects/${member.projectId}/team`);
+        return { success: true, member };
+    } catch (error) {
+        return { error: "Failed to update member" };
+    }
+}
+
+export async function deleteMember(id: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const member = await prisma.member.delete({ where: { id } });
+        revalidatePath(`/projects/${member.projectId}/team`);
+        return { success: true };
+    } catch (error) {
+        return { error: "Failed to delete member" };
+    }
+}
+
+// AI TEXT IMPROVEMENT
+export async function improveText(text: string, context?: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const { serverOpenai } = await import("@/lib/ai-client");
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a professional writer and editor. Improve the given text to make it clearer, more concise, and more professional. Maintain the core meaning and intent. Return only the improved text without any additional commentary."
+                },
+                {
+                    role: "user",
+                    content: context
+                        ? `Context: ${context}\n\nText to improve:\n${text}`
+                        : `Text to improve:\n${text}`
+                }
+            ],
+            temperature: 0.7,
+        });
+
+        const improvedText = response.choices[0]?.message?.content || text;
+        return { success: true, improvedText: improvedText.trim() };
+    } catch (error) {
+        console.error("Improve text error:", error);
+        return { error: "Failed to improve text" };
+    }
+}
+

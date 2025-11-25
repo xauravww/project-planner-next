@@ -123,16 +123,14 @@ export default function WorkflowsPageClient({
                             <Plus className="w-4 h-4 mr-2" />
                             Add Workflow
                         </Button>
-                        {workflows.length === 0 && (
-                            <Button
-                                onClick={handleGenerateClick}
-                                disabled={isGenerating}
-                                className="bg-blue-600 hover:bg-blue-700"
-                            >
-                                <Wand2 className="w-4 h-4 mr-2" />
-                                {isGenerating ? "Generating..." : "Generate with AI"}
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleGenerateClick}
+                            disabled={isGenerating}
+                            className="bg-blue-600 hover:bg-blue-700"
+                        >
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            {isGenerating ? "Generating..." : "Generate with AI"}
+                        </Button>
                     </div>
                 )}
             </div>
