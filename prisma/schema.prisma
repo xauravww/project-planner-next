@@ -64,12 +64,29 @@ model Architecture {
   id        String   @id @default(cuid())
   projectId String   @unique
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  content   String
-  highLevel String?
-  lowLevel  String?
-  functionalDecomposition String?
-  diagram   String?
-  embedding String?  // JSON array of embeddings
+  
+  // Core content (generated initially)
+  content   String   // Overview and summary
+  highLevel String?  // High-level architecture description
+  lowLevel  String?  // Low-level component details
+  functionalDecomposition String?  // Functional breakdown
+  
+  // Diagram fields (generated on-demand)
+  systemDiagram      String?  // Main system architecture (Mermaid)
+  erDiagram          String?  // Database ER diagram (Mermaid)
+  sequenceDiagrams   String?  // API sequence diagrams (JSON array of Mermaid diagrams)
+  dataFlowDiagram    String?  // Data flow diagram (Mermaid)
+  deploymentDiagram  String?  // Infrastructure/deployment (Mermaid)
+  componentDiagram   String?  // Component relationships (Mermaid)
+  
+  // Structured data (generated on-demand)
+  databaseSchema String?  // JSON: { tables: [{ name, fields, relationships }] }
+  apiSpec        String?  // JSON: { endpoints: [{ method, path, request, response }] }
+  techStack      String?  // JSON: { frontend, backend, database, infrastructure }
+  securityDesign String?  // Security architecture details
+  scalingStrategy String?  // Scalability approach
+  
+  embedding String?  // Shared embedding for all sections
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

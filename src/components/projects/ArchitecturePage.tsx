@@ -10,6 +10,7 @@ import { updateArchitecture, deleteArchitecture } from "@/actions/crud";
 import { MessageContent } from "@/components/chat/MessageContent";
 import CanvasViewer from "@/components/ui/CanvasViewer";
 import { AIGenerationModal } from "./AIGenerationModal";
+import { ArchitectureTabs } from "./ArchitectureTabs";
 
 export default function ArchitecturePageClient({
     project,
@@ -155,122 +156,8 @@ export default function ArchitecturePageClient({
                     </div>
                 ) : (
                     <div className="p-6 space-y-6 max-w-7xl mx-auto">
-                        {/* View Tabs */}
-                        <div className="flex p-1 bg-white/5 rounded-lg w-fit">
-                            {[
-                                { id: "overview", label: "Overview" },
-                                { id: "highLevel", label: "High Level" },
-                                { id: "lowLevel", label: "Low Level" },
-                                { id: "functional", label: "Functional" },
-                                { id: "diagram", label: "Diagram" },
-                            ].map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveView(tab.id as any)}
-                                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${activeView === tab.id
-                                        ? "bg-blue-600 text-white shadow-lg"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Content Area */}
-                        <GlassCard className="p-6 relative overflow-hidden min-h-[500px]">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent" />
-                            <div className="relative z-10">
-                                <AnimatePresence mode="wait">
-                                    <motion.div
-                                        key={activeView}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.2 }}
-                                    >
-                                        {activeView === "diagram" ? (
-                                            <>
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <Network className="w-5 h-5 text-purple-400" />
-                                                    <h2 className="text-xl font-bold text-white">System Diagram</h2>
-                                                </div>
-                                                {isEditing ? (
-                                                    <div>
-                                                        <label className="text-sm text-muted-foreground mb-2 block">Mermaid diagram code</label>
-                                                        <textarea
-                                                            value={formData.diagram}
-                                                            onChange={(e) => setFormData({ ...formData, diagram: e.target.value })}
-                                                            className="w-full h-96 bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white font-mono text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                                            placeholder="graph TD&#10;  A[Client] --> B[Server]&#10;  B --> C[Database]"
-                                                        />
-                                                        <p className="text-xs text-muted-foreground mt-2">
-                                                            Use Mermaid syntax. See{" "}
-                                                            <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                                                                documentation
-                                                            </a>
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="min-h-[600px]">
-                                                        <CanvasViewer>
-                                                            <div className="p-6">
-                                                                <MessageContent content={`\`\`\`mermaid\n${architecture?.diagram}\n\`\`\``} />
-                                                            </div>
-                                                        </CanvasViewer>
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <div className="flex items-center gap-3 mb-4">
-                                                    <FileText className="w-5 h-5 text-blue-400" />
-                                                    <h2 className="text-xl font-bold text-white">
-                                                        {activeView === "overview" && "System Overview"}
-                                                        {activeView === "highLevel" && "High-Level Architecture"}
-                                                        {activeView === "lowLevel" && "Low-Level Components"}
-                                                        {activeView === "functional" && "Functional Decomposition"}
-                                                    </h2>
-                                                </div>
-                                                {isEditing ? (
-                                                    <div>
-                                                        <label className="text-sm text-muted-foreground mb-2 block">Content (Markdown)</label>
-                                                        <textarea
-                                                            value={
-                                                                activeView === "overview" ? formData.content :
-                                                                    activeView === "highLevel" ? formData.highLevel :
-                                                                        activeView === "lowLevel" ? formData.lowLevel :
-                                                                            formData.functionalDecomposition
-                                                            }
-                                                            onChange={(e) => {
-                                                                const val = e.target.value;
-                                                                if (activeView === "overview") setFormData({ ...formData, content: val });
-                                                                else if (activeView === "highLevel") setFormData({ ...formData, highLevel: val });
-                                                                else if (activeView === "lowLevel") setFormData({ ...formData, lowLevel: val });
-                                                                else if (activeView === "functional") setFormData({ ...formData, functionalDecomposition: val });
-                                                            }}
-                                                            className="w-full h-[600px] bg-black/40 border border-white/10 rounded-lg px-4 py-3 text-white resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                                            placeholder={`Enter ${activeView} details...`}
-                                                        />
-                                                    </div>
-                                                ) : (
-                                                    <div className="prose prose-invert max-w-none">
-                                                        <MessageContent
-                                                            content={
-                                                                (activeView === "overview" ? architecture?.content :
-                                                                    activeView === "highLevel" ? architecture?.highLevel :
-                                                                        activeView === "lowLevel" ? architecture?.lowLevel :
-                                                                            architecture?.functionalDecomposition) || "*No content available for this section.*"
-                                                            }
-                                                        />
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </motion.div>
-                                </AnimatePresence>
-                            </div>
-                        </GlassCard>
+                        {/* Use new comprehensive tabs component */}
+                        <ArchitectureTabs projectId={project.id} architecture={architecture} />
                     </div>
                 )}
             </div>

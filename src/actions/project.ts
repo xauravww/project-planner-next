@@ -375,7 +375,7 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                 highLevel: archData.highLevel,
                 lowLevel: archData.lowLevel,
                 functionalDecomposition: archData.functionalDecomposition,
-                diagram: archData.diagram,
+                systemDiagram: archData.diagram,
                 embedding: JSON.stringify(embedding),
             },
         });

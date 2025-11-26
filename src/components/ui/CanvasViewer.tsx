@@ -2,7 +2,7 @@
 
 import { ReactNode, useRef, useState, useEffect } from "react";
 import { Button } from "@/components/ui/Button";
-import { ZoomIn, ZoomOut, Maximize2, RotateCcw } from "lucide-react";
+import { ZoomIn, ZoomOut, Maximize2, RotateCcw, Move } from "lucide-react";
 
 interface CanvasViewerProps {
     children: ReactNode;
@@ -79,6 +79,18 @@ export default function CanvasViewer({
         setPosition({ x: 0, y: 0 });
     };
 
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().catch((err) => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    };
+
     return (
         <div className="relative w-full h-full bg-black/20 rounded-lg overflow-hidden border border-white/10">
             {/* Controls */}
@@ -107,6 +119,15 @@ export default function CanvasViewer({
                     variant="ghost"
                     className="bg-black/50 hover:bg-black/70"
                     title="Fit to View"
+                >
+                    <Move className="w-4 h-4" />
+                </Button>
+                <Button
+                    onClick={toggleFullscreen}
+                    size="sm"
+                    variant="ghost"
+                    className="bg-black/50 hover:bg-black/70"
+                    title="Toggle Fullscreen"
                 >
                     <Maximize2 className="w-4 h-4" />
                 </Button>

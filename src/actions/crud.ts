@@ -212,19 +212,38 @@ export async function deleteWorkflow(id: string) {
 // UPDATE ARCHITECTURE
 export async function updateArchitecture(
     id: string,
-    data: { content: string; highLevel?: string; lowLevel?: string; functionalDecomposition?: string; diagram?: string }
+    data: {
+        content?: string;
+        highLevel?: string;
+        lowLevel?: string;
+        functionalDecomposition?: string;
+        systemDiagram?: string;
+        erDiagram?: string;
+        sequenceDiagrams?: string;
+        dataFlowDiagram?: string;
+        deploymentDiagram?: string;
+        componentDiagram?: string;
+        databaseSchema?: string;
+        apiSpec?: string;
+        techStack?: string;
+        securityDesign?: string;
+        scalingStrategy?: string;
+    }
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(data.content);
+        let embedding = undefined;
+        if (data.content) {
+            embedding = await generateEmbedding(data.content);
+        }
 
         const architecture = await prisma.architecture.update({
             where: { id },
             data: {
                 ...data,
-                embedding: JSON.stringify(embedding),
+                ...(embedding ? { embedding: JSON.stringify(embedding) } : {}),
             },
         });
 
