@@ -65,7 +65,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div>
-                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
+                <div className="sticky top-0 z-10 border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/60 backdrop-blur-xl">
                     <div>
                         <Breadcrumb
                             items={[
@@ -142,7 +142,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                             </div>
                                         )}
                                         {/* Overlay on hover - minimal, just status and delete */}
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                             {mockup.code && (
                                                 <div className="absolute top-4 left-4 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-400 text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
                                                     <Code2 className="w-3 h-3" />

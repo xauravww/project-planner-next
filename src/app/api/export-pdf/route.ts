@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-// @ts-ignore
-import { connect } from "puppeteer-real-browser";
+import puppeteer from "puppeteer-core";
 
 export async function POST(req: NextRequest) {
+    let browser;
     try {
         const session = await auth();
         if (!session?.user) {
@@ -36,20 +36,126 @@ export async function POST(req: NextRequest) {
         // Generate HTML content
         const html = generateProjectHTML(project);
 
-        // Launch Puppeteer using real-browser
-        const { browser, page } = await connect({
+        // Launch Puppeteer - try to find Chrome installation
+        const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH ||
+            process.env.CHROME_BIN ||
+            '/usr/bin/google-chrome-stable' ||
+            '/usr/bin/chromium-browser' ||
+            '/usr/bin/chromium';
+
+        browser = await puppeteer.launch({
+            executablePath,
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
-            customConfig: {},
-            turnstile: true,
-            connectOption: {},
-            disableXvfb: false,
-            ignoreAllFlags: false
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-accelerated-2d-canvas',
+                '--disable-gpu'
+            ],
         });
 
-        await page.setContent(html, { waitUntil: 'networkidle0' });
+        const page = await browser.newPage();
 
-        // Generate PDF with A4 size
+        // Intercept and block unnecessary requests to speed up loading
+        await page.setRequestInterception(true);
+        page.on('request', (request) => {
+            const resourceType = request.resourceType();
+            // Block media files and fonts that aren't critical for PDF
+            if (['media', 'font'].includes(resourceType)) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
+
+        // Ignore failed requests that might cause timeouts
+        page.on('requestfailed', (request) => {
+            console.log('Request failed (non-critical):', request.url());
+        });
+
+        // Set a longer timeout for the navigation
+        page.setDefaultTimeout(90000);
+
+        // Use 'load' instead of 'networkidle2' to wait for all resources but not network idle
+        console.log('[PDF] Setting page content...');
+        await page.setContent(html, {
+            waitUntil: 'load',
+            timeout: 90000
+        });
+        console.log('[PDF] Page content loaded successfully');
+
+        // Check for Mermaid diagrams in the HTML
+        const mermaidDiagramCount = await page.evaluate(() => {
+            return document.querySelectorAll('.mermaid').length;
+        });
+        console.log(`[PDF] Found ${mermaidDiagramCount} Mermaid diagrams in HTML`);
+
+        // Wait for Mermaid to load and initialize
+        console.log('[PDF] Waiting for Mermaid script to load...');
+        await page.waitForFunction(() => {
+            return typeof (window as any).mermaid !== 'undefined';
+        }, { timeout: 20000 }).catch((err) => {
+            console.error('[PDF] Mermaid script failed to load:', err.message);
+            return false;
+        });
+
+        // Check if Mermaid loaded successfully
+        const mermaidLoaded = await page.evaluate(() => {
+            return typeof (window as any).mermaid !== 'undefined';
+        });
+        console.log(`[PDF] Mermaid loaded: ${mermaidLoaded}`);
+
+        if (!mermaidLoaded) {
+            console.error('[PDF] Mermaid is not available, diagrams will not render');
+        }
+
+        // Give Mermaid time to initialize
+        console.log('[PDF] Waiting for Mermaid to initialize...');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+
+        // Manually trigger Mermaid rendering if needed
+        console.log('[PDF] Attempting to initialize Mermaid diagrams...');
+        const initResult = await page.evaluate(() => {
+            if (typeof (window as any).mermaid !== 'undefined') {
+                try {
+                    const diagrams = document.querySelectorAll('.mermaid');
+                    console.log(`Found ${diagrams.length} .mermaid elements`);
+                    (window as any).mermaid.init(undefined, diagrams);
+                    return { success: true, count: diagrams.length };
+                } catch (error: any) {
+                    console.error('Mermaid init error:', error);
+                    return { success: false, error: error.message };
+                }
+            } else {
+                return { success: false, error: 'Mermaid not loaded' };
+            }
+        }).catch((err) => {
+            console.error('[PDF] Mermaid init failed:', err.message);
+            return { success: false, error: err.message };
+        });
+        console.log('[PDF] Mermaid init result:', JSON.stringify(initResult));
+
+        // Wait for all Mermaid diagrams to render
+        console.log('[PDF] Waiting for diagrams to render (3s)...');
+        await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 3000)));
+
+        // Check if diagrams actually rendered
+        const svgCount = await page.evaluate(() => {
+            return document.querySelectorAll('.mermaid svg').length;
+        });
+        console.log(`[PDF] Rendered ${svgCount} SVG diagrams out of ${mermaidDiagramCount} total`);
+
+        // Wait for iframes to load
+        const hasIframes = await page.$$('iframe.mockup-iframe');
+        console.log(`[PDF] Found ${hasIframes.length} mockup iframes`);
+        if (hasIframes.length > 0) {
+            console.log('[PDF] Waiting for iframes to load (2s)...');
+            await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 2000)));
+        }
+
+        // Generate PDF
+        console.log('[PDF] Generating PDF...');
         const pdf = await page.pdf({
             format: 'A4',
             printBackground: true,
@@ -62,16 +168,20 @@ export async function POST(req: NextRequest) {
         });
 
         await browser.close();
+        console.log('[PDF] PDF generated successfully, size:', pdf.length, 'bytes');
 
         // Return PDF
         return new NextResponse(Buffer.from(pdf), {
             headers: {
                 'Content-Type': 'application/pdf',
-                'Content-Disposition': `attachment; filename="${project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf"`,
+                'Content-Disposition': `attachment; filename="${project.name.replace(/[^a-z0-9]/gi, '_')}.pdf"`,
             },
         });
     } catch (error) {
-        console.error("PDF generation error:", error);
+        if (browser) {
+            await browser.close().catch(() => { });
+        }
+        console.error('PDF generation error:', error);
         return NextResponse.json(
             { error: "Failed to generate PDF" },
             { status: 500 }
@@ -112,8 +222,8 @@ function generateProjectHTML(project: any): string {
 
         // 1. Protect Code Blocks (Mermaid and standard)
         const codeBlocks: string[] = [];
-        let processed = content.replace(/```mermaid\n([\s\S]*?)```/g, (match, code) => {
-            codeBlocks.push(`<div class="mermaid">${code}</div>`);
+        let processed = content.replace(/```mermaid\n([\s\S] *?)```/g, (match, code) => {
+            codeBlocks.push(`< div class="mermaid" > ${code} </div>`);
             return `__CODEBLOCK_${codeBlocks.length - 1}__`;
         });
 
@@ -559,13 +669,25 @@ function generateProjectHTML(project: any): string {
         <div class="section-header">
             <div class="section-title">Mockups</div>
         </div>
-        ${mockups.map((mockup: any, index: number) => `
+        ${mockups.map((mockup: any, index: number) => {
+        const escapedCode = mockup.code ? mockup.code.replace(/`/g, '\\`').replace(/\$/g, '\\$') : '';
+        return `
             <div class="mockup-item">
                 <div class="item-title">${index + 1}. ${mockup.prompt}</div>
                 <div class="item-meta">Status: ${mockup.status}</div>
-                ${mockup.imageUrl ? `<img src="${mockup.imageUrl}" alt="Mockup ${index + 1}" class="mockup-image" />` : ''}
+                ${mockup.code ? `
+                    <iframe 
+                        class="mockup-iframe" 
+                        srcdoc="${escapedCode.replace(/"/g, '&quot;')}"
+                        style="width: 100%; height: 1200px; border: 1px solid #e0e0e0; border-radius: 8px; margin-top: 15px; background: white; transform: scale(0.8); transform-origin: top left;"
+                        sandbox="allow-scripts"
+                    ></iframe>
+                ` : mockup.imageUrl ? `
+                    <img src="${mockup.imageUrl}" alt="Mockup ${index + 1}" class="mockup-image" />
+                ` : ''}
             </div>
-        `).join('')}
+        `;
+    }).join('')}
     </div>
     ` : ''}
 
@@ -573,9 +695,16 @@ function generateProjectHTML(project: any): string {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-jsx.min.js"></script>
-    <script type="module">
-        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-        mermaid.initialize({ startOnLoad: true });
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        // Initialize Mermaid when ready
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({ 
+                startOnLoad: false,
+                theme: 'default',
+                securityLevel: 'loose'
+            });
+        }
     </script>
 </body>
 </html>
