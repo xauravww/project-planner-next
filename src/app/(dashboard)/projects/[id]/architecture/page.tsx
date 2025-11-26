@@ -32,6 +32,7 @@ export default async function ArchitecturePage({ params }: { params: Promise<{ i
                     <ArchitecturePageClient
                         project={result.project}
                         architecture={result.project.architecture}
+                        staleStatus={result.project.staleStatus ? JSON.parse(result.project.staleStatus) : {}}
                     />
                 </div>
             </div>

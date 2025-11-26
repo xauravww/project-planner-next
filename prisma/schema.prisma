@@ -24,6 +24,7 @@ model Project {
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   embedding   String?   // JSON array of embeddings
+  staleStatus String?   // JSON: tracks which modules are stale due to dependency changes
   
   requirements    Requirement[]
   architecture    Architecture?

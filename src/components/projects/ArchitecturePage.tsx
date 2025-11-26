@@ -11,13 +11,16 @@ import { MessageContent } from "@/components/chat/MessageContent";
 import CanvasViewer from "@/components/ui/CanvasViewer";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ArchitectureTabs } from "./ArchitectureTabs";
+import { StaleModuleBanner } from "@/components/ui/StaleModuleBanner";
 
 export default function ArchitecturePageClient({
     project,
     architecture,
+    staleStatus = {},
 }: {
     project: any;
     architecture: any;
+    staleStatus?: Record<string, any>;
 }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -155,8 +158,19 @@ export default function ArchitecturePageClient({
                         </div>
                     </div>
                 ) : (
-                    <div className="p-6 space-y-6 max-w-7xl mx-auto">
-                        {/* Use new comprehensive tabs component */}
+                    <div className="p-6 space-y-6">
+                        {/* Stale Module Notification */}
+                        {staleStatus.architecture && (
+                            <StaleModuleBanner
+                                projectId={project.id}
+                                module="architecture"
+                                reason={staleStatus.architecture.reason}
+                                changedModule={staleStatus.architecture.changedModule}
+                                updatedAt={staleStatus.architecture.updatedAt}
+                                onRegenerate={handleGenerateClick}
+                            />
+                        )}
+
                         <ArchitectureTabs projectId={project.id} architecture={architecture} />
                     </div>
                 )}

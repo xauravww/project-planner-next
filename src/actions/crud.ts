@@ -5,6 +5,79 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { generateEmbedding } from "@/lib/embeddings";
 
+// DEPENDENCY TRACKING HELPERS
+const DEPENDENCY_MAP: Record<string, string[]> = {
+    requirements: ['architecture', 'userStories', 'workflows', 'techStack'],
+    personas: ['userStories'],
+    userStories: ['tasks', 'workflows', 'mockups'],
+    architecture: ['mockups', 'techStack'],
+    workflows: ['tasks']
+};
+
+async function markDependentModulesStale(
+    projectId: string,
+    sourceModule: string
+) {
+    const dependents = DEPENDENCY_MAP[sourceModule] || [];
+    if (dependents.length === 0) return;
+
+    try {
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { staleStatus: true }
+        });
+
+        const currentStale = project?.staleStatus
+            ? JSON.parse(project.staleStatus)
+            : {};
+
+        // Mark each dependent as stale
+        dependents.forEach(dep => {
+            currentStale[dep] = {
+                reason: `${sourceModule}_updated`,
+                changedModule: sourceModule,
+                updatedAt: new Date().toISOString()
+            };
+        });
+
+        await prisma.project.update({
+            where: { id: projectId },
+            data: { staleStatus: JSON.stringify(currentStale) }
+        });
+    } catch (error) {
+        console.error("Failed to mark dependent modules stale:", error);
+    }
+}
+
+export async function clearStaleStatus(projectId: string, module: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { staleStatus: true }
+        });
+
+        if (!project?.staleStatus) return { success: true };
+
+        const staleStatus = JSON.parse(project.staleStatus);
+        delete staleStatus[module];
+
+        await prisma.project.update({
+            where: { id: projectId },
+            data: { staleStatus: JSON.stringify(staleStatus) }
+        });
+
+        revalidatePath(`/projects/${projectId}/${module}`);
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to clear stale status:", error);
+        return { error: "Failed to clear stale status" };
+    }
+}
+
+
 // REQUIREMENT CRUD
 export async function createRequirement(
     projectId: string,
@@ -24,6 +97,7 @@ export async function createRequirement(
             },
         });
 
+        await markDependentModulesStale(projectId, 'requirements');
         revalidatePath(`/projects/${projectId}/requirements`);
         return { success: true, requirement };
     } catch (error) {
@@ -49,6 +123,7 @@ export async function updateRequirement(
             },
         });
 
+        await markDependentModulesStale(requirement.projectId, 'requirements');
         revalidatePath(`/projects/${requirement.projectId}/requirements`);
         return { success: true, requirement };
     } catch (error) {
@@ -94,6 +169,7 @@ export async function createUserStory(
             },
         });
 
+        await markDependentModulesStale(projectId, 'userStories');
         revalidatePath(`/projects/${projectId}/stories`);
         return { success: true, story };
     } catch (error) {
@@ -125,6 +201,7 @@ export async function updateUserStory(
             },
         });
 
+        await markDependentModulesStale(story.projectId, 'userStories');
         revalidatePath(`/projects/${story.projectId}/stories`);
         return { success: true, story };
     } catch (error) {
@@ -164,6 +241,7 @@ export async function createWorkflow(
             },
         });
 
+        await markDependentModulesStale(projectId, 'workflows');
         revalidatePath(`/projects/${projectId}/workflows`);
         return { success: true, workflow };
     } catch (error) {
@@ -189,6 +267,7 @@ export async function updateWorkflow(
             },
         });
 
+        await markDependentModulesStale(workflow.projectId, 'workflows');
         revalidatePath(`/projects/${workflow.projectId}/workflows`);
         return { success: true, workflow };
     } catch (error) {
@@ -234,9 +313,21 @@ export async function updateArchitecture(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
+        // Fetch existing architecture to combine with new data for comprehensive embedding
+        const existingArch = await prisma.architecture.findUnique({
+            where: { id },
+            select: { content: true, highLevel: true, lowLevel: true }
+        });
+
+        const combinedContent = [
+            data.content || existingArch?.content || "",
+            data.highLevel || existingArch?.highLevel || "",
+            data.lowLevel || existingArch?.lowLevel || ""
+        ].filter(Boolean).join("\n\n");
+
         let embedding = undefined;
-        if (data.content) {
-            embedding = await generateEmbedding(data.content);
+        if (combinedContent) {
+            embedding = await generateEmbedding(combinedContent);
         }
 
         const architecture = await prisma.architecture.update({
@@ -402,6 +493,7 @@ export async function createPersona(
             },
         });
 
+        await markDependentModulesStale(projectId, 'personas');
         revalidatePath(`/projects/${projectId}/personas`);
         return { success: true, persona };
     } catch (error) {
@@ -430,6 +522,7 @@ export async function updatePersona(
             },
         });
 
+        await markDependentModulesStale(persona.projectId, 'personas');
         revalidatePath(`/projects/${persona.projectId}/personas`);
         return { success: true, persona };
     } catch (error) {
