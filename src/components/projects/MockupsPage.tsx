@@ -64,7 +64,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
-            <div className="h-full flex flex-col">
+            <div>
                 <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
                     <div>
                         <Breadcrumb
@@ -92,7 +92,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto p-6">
+                <div className="p-6">
                     {mockups.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">

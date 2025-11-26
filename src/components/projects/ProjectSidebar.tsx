@@ -80,21 +80,6 @@ export default function ProjectSidebar({ projectId, projectName, projectType }: 
     return (
         <aside className="w-64 border-r border-white/10 bg-black/20 flex flex-col h-full">
             <div className="flex-1 overflow-y-auto p-4">
-                {/* Back button */}
-                <Link
-                    href="/dashboard"
-                    className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors mb-4"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Dashboard
-                </Link>
-
-                {/* Project info */}
-                <div className="mb-6">
-                    <h2 className="text-lg font-semibold text-white truncate">{projectName}</h2>
-                    {projectType && <p className="text-sm text-gray-400 truncate">{projectType}</p>}
-                </div>
-
                 {/* Navigation */}
                 <nav className="space-y-1">
                     {categories.map((category) => (

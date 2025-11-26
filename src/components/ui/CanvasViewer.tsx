@@ -27,6 +27,7 @@ export default function CanvasViewer({
 
     const handleWheel = (e: React.WheelEvent) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent scroll from propagating outside the canvas
         const delta = e.deltaY > 0 ? -0.1 : 0.1;
         const newScale = Math.min(Math.max(scale + delta, minScale), maxScale);
         setScale(newScale);
@@ -90,6 +91,20 @@ export default function CanvasViewer({
             document.exitFullscreen();
         }
     };
+
+    // Reset zoom when exiting fullscreen
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement) {
+                // Reset to 100% when exiting fullscreen
+                setScale(1);
+                setPosition({ x: 0, y: 0 });
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    }, []);
 
     return (
         <div className="relative w-full h-full bg-black/20 rounded-lg overflow-hidden border border-white/10">

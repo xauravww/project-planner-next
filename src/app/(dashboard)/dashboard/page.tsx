@@ -17,7 +17,7 @@ export default async function DashboardPage() {
     const projects = result.projects || [];
 
     return (
-        <div className="min-h-screen relative overflow-hidden pb-32">
+        <div className="h-full overflow-y-auto pb-32 relative">
             {/* Background Effects */}
             <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
             <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />

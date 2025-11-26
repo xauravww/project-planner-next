@@ -27,6 +27,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.24",
     "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
     "langchain": "^1.0.6",
     "lucide-react": "^0.554.0",
     "mermaid": "^11.12.1",
