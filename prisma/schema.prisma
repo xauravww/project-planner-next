@@ -65,6 +65,9 @@ model Architecture {
   projectId String   @unique
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   content   String
+  highLevel String?
+  lowLevel  String?
+  functionalDecomposition String?
   diagram   String?
   embedding String?  // JSON array of embeddings
   createdAt DateTime @default(now())
@@ -161,6 +164,7 @@ model Mockup {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   prompt      String
   imageUrl    String
+  code        String?  // Generated HTML/CSS/JS code
   status      String   @default("GENERATED")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

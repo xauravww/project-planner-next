@@ -340,7 +340,7 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                 {
                     role: "system",
                     content:
-                        "You are a software architect. Generate a system architecture document with: overview, components, and design decisions. Also provide a simple Mermaid diagram code. Return a JSON object with 'content' (markdown text) and 'diagram' (mermaid code) fields.",
+                        "You are a software architect. Generate a comprehensive system architecture document. Return a JSON object with the following fields:\n- 'content': Overview and design decisions (markdown).\n- 'highLevel': High-level architecture description (markdown).\n- 'lowLevel': Low-level component details (markdown).\n- 'functionalDecomposition': Functional decomposition of the system (markdown).\n- 'diagram': Mermaid diagram code.",
                 },
                 {
                     role: "user",
@@ -352,13 +352,16 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
         });
 
         const aiResponse = response.choices[0]?.message?.content || "{}";
-        let archData = { content: "", diagram: "" };
+        let archData = { content: "", highLevel: "", lowLevel: "", functionalDecomposition: "", diagram: "" };
 
         try {
             archData = JSON.parse(aiResponse);
         } catch {
             archData = {
                 content: aiResponse,
+                highLevel: "High level architecture generation failed.",
+                lowLevel: "Low level architecture generation failed.",
+                functionalDecomposition: "Functional decomposition generation failed.",
                 diagram: "graph TD\nA[Frontend] --> B[Backend]\nB --> C[Database]",
             };
         }
@@ -369,6 +372,9 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
             data: {
                 projectId,
                 content: archData.content,
+                highLevel: archData.highLevel,
+                lowLevel: archData.lowLevel,
+                functionalDecomposition: archData.functionalDecomposition,
                 diagram: archData.diagram,
                 embedding: JSON.stringify(embedding),
             },
@@ -828,11 +834,62 @@ export async function generateMockups(
             messages: [
                 {
                     role: "system",
-                    content: "You are a UI/UX designer. Generate mockup prompts for key screens. Return a JSON array with objects containing: prompt (detailed description for image generation)."
+                    content: `You are a UI/UX expert creating ultra-specific mockup prompts for modern web interfaces.
+
+Your prompts MUST be extremely detailed and structured. Each prompt should include ALL of these elements:
+
+1. **Page/Screen Purpose**: What is this screen for? (e.g., "User login page", "Project dashboard", "Settings panel")
+
+2. **Layout Structure**: Describe the layout precisely
+   - Container max-width (e.g., "max-w-md for forms", "max-w-7xl for dashboards")
+   - Positioning (e.g., "centered on page", "full-width with sidebar")
+   - Background (e.g., "white card on gradient background", "light gray page background")
+
+3. **Components List**: List EVERY component that should appear
+   - Headers, navigation, forms, buttons, cards, icons
+   - Be specific about component types (e.g., "text input with focus ring", "primary CTA button with hover scale")
+
+4. **Color Specifications**: Use EXACT hex codes from this palette
+   - Primary Blue: #3B82F6
+   - Purple: #8B5CF6  
+   - Green (Success): #10B981
+   - Red (Error): #EF4444
+   - Neutral 50: #F9FAFB (lightest)
+   - Neutral 200: #E5E7EB (borders)
+   - Neutral 700: #374151 (text)
+   - Neutral 900: #111827 (headings)
+
+5. **Typography Details**: Specify exact text sizes and weights
+   - Headings: text-3xl font-bold, text-2xl font-semibold, etc.
+   - Body: text-base, text-sm
+   - Font weight: font-bold, font-semibold, font-medium, font-normal
+
+6. **Spacing & Padding**: Use Tailwind scale
+   - Card/Container padding: p-8, p-6, p-4
+   - Element spacing: space-y-6, space-y-4, gap-6, gap-4
+   - Margin: mt-6, mb-4, etc.
+
+7. **Interactive States**: Describe hover/focus/active states
+   - Buttons: "hover:bg-blue-600, hover:scale-105, shadow-md transition"
+   - Inputs: "focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+   - Cards: "hover:shadow-lg transition-shadow"
+
+8. **Icons**: Mention specific Lucide icons if needed
+   - "mail icon for email field", "lock icon for password", "check icon for success"
+
+Return a JSON array with objects containing ONE field: "prompt" (the ultra-detailed description).
+
+EXAMPLE PERFECT PROMPT:
+"Create a modern user login page for a SaaS project management application. Layout: Center a white card (max-w-md, rounded-2xl, shadow-2xl, p-8) on a full-height page with blue-to-purple gradient background (#3B82F6 to #8B5CF6). Components: (1) Company logo/name at top (text-2xl font-bold tracking-tight #111827), (2) 'Welcome Back' heading (text-3xl font-bold tracking-tight #111827 mb-2 text-center), (3) 'Sign in to your account' subtext (text-neutral-500 text-center mb-8), (4) Email input field with label (block text-sm font-semibold #374151 mb-2, input: w-full px-4 py-3 border border-neutral-300 rounded-lg, focus:ring-2 focus:ring-blue-500), (5) Password input with label (same styling as email), (6) 'Sign In' button (w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 shadow-sm hover:shadow-md transition-all duration-200), (7) 'Forgot password?' link (text-blue-600 text-sm mt-4 text-center), (8) 'Create account' link at bottom (text-neutral-600 text-sm). Spacing: space-y-6 between form fields, p-8 card padding. Use smooth transitions (transition-all duration-200) on all interactive elements."
+
+ANOTHER EXAMPLE:
+"Create a modern analytics dashboard overview page. Layout: Full-width container (max-w-7xl mx-auto px-6 py-12) on light gray background (#F9FAFB). Components: (1) Page header with 'Analytics' title (text-4xl font-bold tracking-tight #111827) and 'Last 30 days' subtitle (text-neutral-500), (2) 4-column grid (grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6) of metric cards, (3) Each card: white background (bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 hover:shadow-md transition-shadow), contains metric label (text-xs font-medium uppercase tracking-wide text-neutral-500), large number (text-3xl font-bold #111827), growth indicator (text-sm text-green-500 for positive), and colored icon in top-right (Lucide icon, w-5 h-5). Card examples: 'Total Users' with users icon (#3B82F6), 'Revenue' with dollar-sign icon (#10B981), 'Active Projects' with folder icon (#8B5CF6), 'Pending Tasks' with clipboard icon (#F59E0B). Below cards: 2-column grid (grid-cols-1 lg:grid-cols-2 gap-8 mt-8) with chart placeholders."
+
+Now generate 4-6 ultra-specific prompts like these examples for the given project context.`
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 mockup prompts for key screens.`
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 ultra-detailed mockup prompts for the most important screens in this project. Each prompt should be as detailed as the examples provided, with exact specifications for layout, colors (using hex codes), components, typography, spacing, and interactions.`
                 }
             ],
             temperature: 0.8,

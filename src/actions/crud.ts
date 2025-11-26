@@ -212,7 +212,7 @@ export async function deleteWorkflow(id: string) {
 // UPDATE ARCHITECTURE
 export async function updateArchitecture(
     id: string,
-    data: { content: string; diagram?: string }
+    data: { content: string; highLevel?: string; lowLevel?: string; functionalDecomposition?: string; diagram?: string }
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -501,7 +501,7 @@ export async function deleteUserJourney(id: string) {
 // MOCKUPS CRUD
 export async function createMockup(
     projectId: string,
-    data: { prompt: string; imageUrl: string }
+    data: { prompt: string; imageUrl: string; code?: string }
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -523,7 +523,7 @@ export async function createMockup(
 
 export async function updateMockup(
     id: string,
-    data: { prompt?: string; imageUrl?: string }
+    data: { prompt?: string; imageUrl?: string; code?: string }
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };

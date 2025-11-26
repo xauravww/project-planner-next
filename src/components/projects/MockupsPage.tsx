@@ -1,39 +1,39 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, Trash2, Image as ImageIcon, Wand2, Download, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Wand2, Code2 } from "lucide-react";
 import { createMockup, deleteMockup } from "@/actions/crud";
 import { generateMockups } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
-import { MockupDetailModal } from "./MockupDetailModal";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default function MockupsPage({ params, mockups, projectName }: { params: { id: string }; mockups: any[]; projectName: string }) {
+    const router = useRouter();
     const [isGenerating, setIsGenerating] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [prompt, setPrompt] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedMockup, setSelectedMockup] = useState<any | null>(null);
-    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [mockupToDelete, setMockupToDelete] = useState<string | null>(null);
 
     // Dummy image generation
+    // Create mockup entry (generation happens in detail view)
     const handleGenerate = async () => {
         if (!prompt) return;
         setIsGenerating(true);
 
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        // Use a placeholder service that generates deterministic images based on text
-        // In a real app, this would call an AI image generation API
-        const dummyImageUrl = `https://placehold.co/1024x768/1e1e1e/FFF?text=${encodeURIComponent(prompt)}`;
+        // Create a mockup entry with a placeholder. The actual UI generation happens in the detail view.
+        // We use a generic placeholder for now.
+        const placeholderUrl = `https://placehold.co/1024x768/1e1e1e/FFF?text=${encodeURIComponent("Click to Generate UI")}`;
 
         await createMockup(params.id, {
             prompt,
-            imageUrl: dummyImageUrl,
+            imageUrl: placeholderUrl,
         });
 
         setIsGenerating(false);
@@ -49,9 +49,15 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
         window.location.reload();
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this mockup?")) {
-            await deleteMockup(id);
+    const handleDeleteClick = (id: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        setMockupToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (mockupToDelete) {
+            await deleteMockup(mockupToDelete);
             window.location.reload();
         }
     };
@@ -106,47 +112,54 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                             {mockups.map((mockup) => (
                                 <GlassCard
                                     key={mockup.id}
-                                    className="group relative overflow-hidden cursor-pointer"
-                                    onClick={() => {
-                                        setSelectedMockup(mockup);
-                                        setIsDetailModalOpen(true);
-                                    }}
+                                    className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] p-0"
+                                    onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
                                 >
-                                    <div className="aspect-video bg-black/40 relative">
-                                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img
-                                            src={mockup.imageUrl}
-                                            alt={mockup.prompt}
-                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                        />
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                            <a
-                                                href={mockup.imageUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-                                            >
-                                                <ExternalLink className="w-5 h-5" />
-                                            </a>
-                                            <a
-                                                href={mockup.imageUrl}
-                                                download={`mockup-${mockup.id}.png`}
-                                                className="p-2 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
-                                            >
-                                                <Download className="w-5 h-5" />
-                                            </a>
+                                    <div className="aspect-[4/3] bg-black/40 relative">
+                                        {mockup.code ? (
+                                            // Show live iframe preview if code exists
+                                            <iframe
+                                                title="Mockup preview"
+                                                srcDoc={mockup.code}
+                                                className="w-full h-full border-0 pointer-events-none"
+                                                sandbox="allow-scripts allow-same-origin"
+                                            />
+                                        ) : mockup.imageUrl ? (
+                                            // Show image if available but no code
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={mockup.imageUrl}
+                                                alt="Mockup preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            // Show placeholder if neither code nor image
+                                            <div className="w-full h-full flex items-center justify-center text-gray-500">
+                                                <div className="text-center">
+                                                    <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                                    <p className="text-sm">Click to generate UI</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Overlay on hover - minimal, just status and delete */}
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            {mockup.code && (
+                                                <div className="absolute top-4 left-4 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-400 text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
+                                                    <Code2 className="w-3 h-3" />
+                                                    <span>UI Generated</span>
+                                                </div>
+                                            )}
                                             <button
-                                                onClick={() => handleDelete(mockup.id)}
-                                                className="p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 transition-colors"
+                                                onClick={(e) => handleDeleteClick(mockup.id, e)}
+                                                className="absolute top-4 right-4 p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 transition-colors backdrop-blur-sm"
                                             >
-                                                <Trash2 className="w-5 h-5" />
+                                                <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="p-4">
-                                        <p className="text-sm text-gray-300 line-clamp-2">{mockup.prompt}</p>
-                                        <p className="text-xs text-gray-500 mt-2">
-                                            Generated {new Date(mockup.createdAt).toLocaleDateString()}
+                                    <div className="p-3 bg-black/20">
+                                        <p className="text-xs text-gray-400">
+                                            {new Date(mockup.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
                                 </GlassCard>
@@ -210,14 +223,17 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 type="mockups"
                 onGenerate={handleAIGenerate}
             />
-            <MockupDetailModal
-                isOpen={isDetailModalOpen}
+            <ConfirmDialog
+                isOpen={isDeleteDialogOpen}
                 onClose={() => {
-                    setIsDetailModalOpen(false);
-                    setSelectedMockup(null);
+                    setIsDeleteDialogOpen(false);
+                    setMockupToDelete(null);
                 }}
-                mockup={selectedMockup}
-                projectId={params.id}
+                onConfirm={handleDeleteConfirm}
+                title="Delete Mockup"
+                description="Are you sure you want to delete this mockup? This action cannot be undone."
+                confirmText="Delete"
+                intent="danger"
             />
         </ProjectLayout>
     );
