@@ -6,3 +6,9 @@ Generating embedding...
 Embedding generated, length: 384
 Executing query: UPDATE "Project" SET embedding_vector = $1 WHERE id = $2 test-id
 Query result: 1
+Received request: { text: 'test', table: 'Project', id: 'test-id' }
+Initializing embeddings...
+Generating embedding...
+Embedding generated, length: 384
+Executing query: UPDATE "Project" SET embedding_vector = $1 WHERE id = $2 test-id
+Query result: 1

@@ -1,7 +1,8 @@
-const express = require('express');
-const { pipeline } = require('@xenova/transformers');
-const { Pool } = require('pg');
-require('dotenv').config();
+import express from 'express';
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 app.use(express.json());
@@ -15,7 +16,19 @@ let embeddingPipeline = null;
 
 async function initEmbeddings() {
   if (!embeddingPipeline) {
-    embeddingPipeline = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    try {
+      console.log('Loading transformers...');
+      const { pipeline } = await import('@xenova/transformers');
+      console.log('Creating pipeline...');
+      embeddingPipeline = await pipeline(
+        "feature-extraction",
+        "Xenova/all-MiniLM-L6-v2"
+      );
+      console.log('Pipeline ready');
+    } catch (error) {
+      console.error('Failed to load transformers:', error);
+      throw error;
+    }
   }
   return embeddingPipeline;
 }
@@ -29,9 +42,8 @@ app.post('/generate-embeddings', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields: text, table, id' });
     }
 
-    console.log('Initializing embeddings...');
-    const pipe = await initEmbeddings();
     console.log('Generating embedding...');
+    const pipe = await initEmbeddings();
     const output = await pipe(text, { pooling: 'mean', normalize: true });
     const embedding = Array.from(output.data);
     console.log('Embedding generated, length:', embedding.length);
