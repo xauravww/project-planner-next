@@ -82,6 +82,26 @@ graph LR
         </div>
     </div>
 
+    <div class="test-section">
+        <h2>Test Diagram 4: Class Diagram</h2>
+        <div class="mermaid">
+classDiagram
+    class User {
+        +String name
+        +String email
+        +login()
+        +logout()
+    }
+    class Project {
+        +String name
+        +String description
+        +create()
+        +update()
+    }
+    User ||--o{ Project : owns
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <script>
         console.log('📦 Mermaid script loaded');
@@ -229,7 +249,7 @@ graph LR
 
         // Get details about rendered diagrams
         const diagramDetails = await page.evaluate(() => {
-            const details: any[] = [];
+            const details = [];
             document.querySelectorAll('.mermaid').forEach((el, idx) => {
                 const svg = el.querySelector('svg');
                 details.push({

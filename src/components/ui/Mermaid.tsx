@@ -28,31 +28,56 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
         let isMounted = true;
 
         const renderChart = async () => {
-            if (!chart) return;
+            console.log("[Mermaid] Starting render for chart:", chart.substring(0, 100) + "...");
+
+            if (!chart) {
+                console.log("[Mermaid] No chart provided, skipping render");
+                return;
+            }
 
             setLoading(true);
             setError(null);
 
             try {
+                // Check if mermaid is available
+                if (typeof mermaid === 'undefined') {
+                    throw new Error("Mermaid library is not loaded");
+                }
+                console.log("[Mermaid] Mermaid library available, version:", (mermaid as any).version || "unknown");
+
                 // Generate a unique ID for each diagram
                 const id = `mermaid-${Math.random().toString(36).substring(2, 9)}`;
+                console.log("[Mermaid] Generated ID:", id);
 
                 // Check for validity first
+                console.log("[Mermaid] Parsing chart syntax...");
                 try {
                     await mermaid.parse(chart);
-                } catch (e) {
-                    throw new Error("Invalid Mermaid syntax");
+                    console.log("[Mermaid] Chart syntax is valid");
+                } catch (parseErr) {
+                    console.error("[Mermaid] Parse error:", parseErr);
+                    throw new Error(`Invalid Mermaid syntax: ${parseErr instanceof Error ? parseErr.message : String(parseErr)}`);
                 }
 
                 // Render
+                console.log("[Mermaid] Rendering chart...");
                 const { svg } = await mermaid.render(id, chart);
+                console.log("[Mermaid] Render successful, SVG length:", svg.length);
 
                 if (isMounted) {
                     setSvg(svg);
                     setLoading(false);
+                    console.log("[Mermaid] State updated successfully");
+                } else {
+                    console.log("[Mermaid] Component unmounted, skipping state update");
                 }
             } catch (err) {
-                console.error("Mermaid render error:", err);
+                console.error("[Mermaid] Render error:", err);
+                console.error("[Mermaid] Error details:", {
+                    message: err instanceof Error ? err.message : String(err),
+                    stack: err instanceof Error ? err.stack : undefined,
+                    chart: chart.substring(0, 200) + "..."
+                });
                 if (isMounted) {
                     setError(err instanceof Error ? err.message : "Failed to render diagram");
                     setLoading(false);
@@ -63,6 +88,7 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
         renderChart();
 
         return () => {
+            console.log("[Mermaid] Component unmounting, cleaning up");
             isMounted = false;
         };
     }, [chart]);

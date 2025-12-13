@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { useState } from "react";
+import { PDFExportProgress } from "./PDFExportProgress";
 
 interface ProjectDashboardClientProps {
     project: any;
@@ -19,9 +20,14 @@ interface ProjectDashboardClientProps {
 
 export default function ProjectDashboardClient({ project, stats }: ProjectDashboardClientProps) {
     const [isExporting, setIsExporting] = useState(false);
+    const [showProgress, setShowProgress] = useState(false);
+    const [exportId, setExportId] = useState<string | null>(null);
+    const [progressData, setProgressData] = useState({ progress: 0, status: 'idle', message: 'Preparing...' });
 
     const handleExport = async () => {
         setIsExporting(true);
+        setShowProgress(true);
+
         try {
             const response = await fetch('/api/export-pdf', {
                 method: 'POST',
@@ -31,23 +37,85 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
 
             if (!response.ok) throw new Error('Export failed');
 
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
+            const data = await response.json();
+            setExportId(data.exportId);
 
-            toast.success("Project exported successfully!");
+            // Start polling for progress
+            pollProgress(data.exportId);
+
         } catch (error) {
             console.error("Export error:", error);
-            toast.error("Failed to export project");
-        } finally {
+            toast.error("❌ Failed to start export. Please try again.");
             setIsExporting(false);
+            setShowProgress(false);
         }
+    };
+
+    const pollProgress = async (id: string) => {
+        const pollInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/export-pdf/progress?exportId=${id}`);
+                const data = await response.json();
+
+                setProgressData({
+                    progress: data.progress,
+                    status: data.status,
+                    message: data.message
+                });
+
+                if (data.downloadReady) {
+                    clearInterval(pollInterval);
+
+                    // Download the PDF
+                    const downloadResponse = await fetch('/api/export-pdf/progress', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ exportId: id }),
+                    });
+
+                    if (downloadResponse.ok) {
+                        const blob = await downloadResponse.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${project.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${new Date().toISOString().split('T')[0]}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        toast.success("🎉 Project exported successfully!");
+                    } else {
+                        throw new Error('Download failed');
+                    }
+
+                    setIsExporting(false);
+                    setShowProgress(false);
+                    setExportId(null);
+
+                } else if (data.status === 'error') {
+                    clearInterval(pollInterval);
+                    toast.error("❌ Export failed. Please try again.");
+                    setIsExporting(false);
+                    setShowProgress(false);
+                    setExportId(null);
+                }
+            } catch (error) {
+                console.error("Progress check error:", error);
+                clearInterval(pollInterval);
+                toast.error("❌ Export failed. Please try again.");
+                setIsExporting(false);
+                setShowProgress(false);
+                setExportId(null);
+            }
+        }, 1000); // Poll every second
+    };
+
+    const handleCancelExport = () => {
+        setIsExporting(false);
+        setShowProgress(false);
+        setExportId(null);
+        toast.info("Export cancelled");
     };
 
     const modules = [
@@ -103,6 +171,14 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
 
     return (
         <div className="space-y-6">
+            {/* PDF Export Progress Modal */}
+            <PDFExportProgress
+                isOpen={showProgress}
+                onCancel={handleCancelExport}
+                projectStats={stats}
+                progressData={progressData}
+            />
+
             {/* Project Header with Export Button */}
             <div className="flex items-start justify-between">
                 <div className="space-y-2 flex-1">

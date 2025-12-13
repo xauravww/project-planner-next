@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog platform - Test Export</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .mermaid { background: #f9f9f9; padding: 20px; border: 1px solid #ddd; margin: 20px 0; }
+        .section { margin: 40px 0; }
+        .subsection-title { font-weight: bold; margin: 20px 0 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Blog platform</h1>
+
+    <!-- Architecture Section -->
+    
+    <div class="section">
+        <h2>Architecture</h2>
+        
+            <div class="subsection">
+                <div class="subsection-title">Overview</div>
+                <div># Blog Platform System Architecture Document<br><br>## Overview<br>This document outlines the architecture for a small MVP blog platform targeted at developers and students. The platform focuses on core functionalities such as user authentication, blog post creation, reading, and management, with special support for code snippets and syntax highlighting. The design prioritizes simplicity, scalability for MVP scale, and a seamless user experience. The system is web-only, built as a full-stack application.<br><br>## Design Decisions<br>- **Technology Stack**: Frontend uses React with Next.js for server-side rendering and routing, leveraging React Context API or Zustand for state management. Backend employs Node.js with Express.js for API development. Database: MongoDB for flexible document storage suitable for blog posts.<br>- **Authentication**: JWT-based authentication for secure, stateless user sessions.<br>- **State Management**: React Context API for global state (e.g., user info), supplemented by Zustand for complex state logic.<br>- **Routing**: Next.js built-in routing for client-side navigation between pages like blog lists, individual posts, and user dashboards.<br>- **Code Snippets**: Integration of Prism.js for syntax highlighting to enhance readability for developer content.<br>- **Deployment**: Containerized with Docker for easy scaling, deployed on a cloud platform like Vercel (frontend) and Heroku/AWS (backend).<br>- **Security**: HTTPS enforced, input validation, and rate limiting on APIs.<br>- **Scalability**: MVP-focused, using serverless functions where possible for cost-efficiency.<br>- **Trade-offs**: Prioritized rapid development over advanced features; no real-time features yet to keep MVP simple.</div>
+            </div>
+        
+        
+            <div class="subsection">
+                <div class="subsection-title">System Architecture Diagram</div>
+                <div class="mermaid">graph TB
+    subgraph Frontend ["Frontend (Next.js/React)"]
+        A["User Interface"] --> B["State Management (Context/Zustand)"]
+        B --> C["Routing (Next.js)"]
+        C --> D["Code Highlighting (Prism.js)"]
+    end
+    subgraph Backend ["Backend (Node.js/Express)"]
+        E["API Layer"] --> F["Authentication (JWT)"]
+        F --> G["Blog Logic"]
+        G --> H["User Logic"]
+    end
+    subgraph Database ["Database (MongoDB)"]
+        I["Users Collection"]
+        J["Posts Collection"]
+    end
+    A --> E
+    E --> I
+    E --> J
+    G --> J
+    H --> I</div>
+            </div>
+        
+        
+            <div class="subsection">
+                <div class="subsection-title">Database ER Diagram</div>
+                <div class="mermaid">erDiagram
+  User ||--o{ Post : creates
+  User ||--o{ Comment : writes
+  Post ||--o{ Comment : has
+  Post ||--o{ Tag : belongs_to
+  Tag ||--o{ Post : tags
+  User {
+    UUID id
+    VARCHAR(255) email
+    VARCHAR(255) username
+    VARCHAR(255) password_hash
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+  }
+  Post {
+    UUID id
+    VARCHAR(255) title
+    TEXT content
+    UUID author_id
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+    BOOLEAN published
+    VARCHAR(50) category
+  }
+  Comment {
+    UUID id
+    TEXT content
+    UUID post_id
+    UUID author_id
+    TIMESTAMP created_at
+    TIMESTAMP updated_at
+  }
+  Tag {
+    UUID id
+    VARCHAR(100) name
+    VARCHAR(255) description
+  }
+  PostTag {
+    UUID post_id
+    UUID tag_id
+  }</div>
+            </div>
+        
+        
+            <div class="subsection">
+                <div class="subsection-title">Deployment Diagram</div>
+                <div class="mermaid">graph TB
+  User["User"] --> LoadBalancer["Load Balancer"]
+  LoadBalancer --> Frontend1["Frontend Instance 1"]
+  LoadBalancer --> Frontend2["Frontend Instance 2"]
+  Frontend1 --> Backend["Backend API"]
+  Frontend2 --> Backend
+  Backend --> Database["MongoDB Database"]
+  Backend --> AuthService["JWT Authentication Service"]
+  Database --> Backup["Database Backup"]
+  LoadBalancer --> CDN["Content Delivery Network"]</div>
+            </div>
+        
+        
+                    <div class="subsection">
+                        <div class="subsection-title">Sequence Diagram 1: User Registration Flow</div>
+                        <div class="mermaid">sequenceDiagram
+  Client->>API: "POST /api/v1/auth/register with user data"
+  API->>Database: "Check if email exists"
+  Database-->>API: "Email available"
+  API->>Database: "Insert new user"
+  Database-->>API: "User created"
+  API-->>Client: "Return user data and success"</div>
+                    </div>
+                
+                    <div class="subsection">
+                        <div class="subsection-title">Sequence Diagram 2: User Login Flow</div>
+                        <div class="mermaid">sequenceDiagram
+  Client->>API: "POST /api/v1/auth/login with credentials"
+  API->>Database: "Verify credentials"
+  Database-->>API: "Credentials valid"
+  API->>API: "Generate JWT token"
+  API-->>Client: "Return token and user info"</div>
+                    </div>
+                
+                    <div class="subsection">
+                        <div class="subsection-title">Sequence Diagram 3: Create Blog Post Flow</div>
+                        <div class="mermaid">sequenceDiagram
+  Client->>API: "POST /api/v1/posts with post data (authenticated)"
+  API->>API: "Verify JWT token"
+  API->>Database: "Insert new post"
+  Database-->>API: "Post created"
+  API-->>Client: "Return post data"</div>
+                    </div>
+                
+                    <div class="subsection">
+                        <div class="subsection-title">Sequence Diagram 4: Retrieve Blog Posts Flow</div>
+                        <div class="mermaid">sequenceDiagram
+  Client->>API: "GET /api/v1/posts"
+  API->>Database: "Query posts (public only)"
+  Database-->>API: "Return posts list"
+  API-->>Client: "Return posts with pagination"</div>
+                    </div>
+                
+                    <div class="subsection">
+                        <div class="subsection-title">Sequence Diagram 5: Add Comment to Post Flow</div>
+                        <div class="mermaid">sequenceDiagram
+  Client->>API: "POST /api/v1/posts/{postId}/comments with comment data (authenticated)"
+  API->>API: "Verify JWT token"
+  API->>Database: "Verify post exists"
+  Database-->>API: "Post exists"
+  API->>Database: "Insert comment"
+  Database-->>API: "Comment created"
+  API-->>Client: "Return comment data"</div>
+                    </div>
+                
+    </div>
+    
+
+    <!-- Workflows Section -->
+    
+    <div class="section">
+        <h2>Workflows</h2>
+        
+            <div>
+                <h3>1. Creating a New Blog Post</h3>
+                <div>{"steps":["User logs in or registers if not already a user","User navigates to the 'Create Post' page","User enters title and content, with support for code snippets and tutorials","System validates required fields (title and content) and provides real-time feedback","System auto-saves drafts at regular intervals to prevent data loss","User adds tags, categories, or categories for organization","User previews the post","User publishes the post, making it visible to others"]}</div>
+                <div class="mermaid">flowchart TD
+    A[User Logs In/Registers] --> B[Navigate to Create Post Page]
+    B --> C[Enter Title and Content]
+    C --> D[System Validates Fields]
+    D --> E[Auto-Save Draft]
+    E --> F[Add Tags/Categories]
+    F --> G[Preview Post]
+    G --> H[Publish Post]</div>
+            </div>
+        
+            <div>
+                <h3>2. Commenting on a Blog Post</h3>
+                <div>{"steps":["User views a blog post","User clicks to add a comment or reply","If not logged in, prompt to register or log in","User types comment content","System checks if user is registered; if yes, automatically approves comment","For nested replies, user selects parent comment to reply to","User submits comment","Other users can report inappropriate comments via a reporting system","Moderators review reported comments and take action if needed"]}</div>
+                <div class="mermaid">flowchart TD
+    A[View Blog Post] --> B[Click Add Comment/Reply]
+    B --> C{Prompt Login/Register}
+    C -->|Logged In| D[Type Comment]
+    C -->|Not Logged In| E[Register/Login]
+    E --> D
+    D --> F[System Approves for Registered Users]
+    F --> G[Submit Comment]
+    G --> H[Others Can Report]
+    H --> I[Moderators Review]</div>
+            </div>
+        
+            <div>
+                <h3>3. Searching and Filtering Blog Posts</h3>
+                <div>{"steps":["User accesses the search bar on the homepage or search page","As user types, system provides autocomplete suggestions for keywords, titles, or tags","User selects or enters search query","System displays initial results","User applies advanced filters: by author, date range, tags, or categories","System refines and displays filtered results","User can sort results by relevance, date, or popularity","If no results, suggest alternatives or related posts"]}</div>
+                <div class="mermaid">flowchart TD
+    A[Access Search Bar] --> B[Type Query with Autocomplete]
+    B --> C[Enter/Select Search Query]
+    C --> D[Display Initial Results]
+    D --> E[Apply Filters: Author, Date, Tags]
+    E --> F[Refine and Display Results]
+    F --> G[Sort by Relevance/Date/Popularity]
+    G --> H{No Results?}
+    H -->|Yes| I[Suggest Alternatives]
+    H -->|No| J[End]</div>
+            </div>
+        
+    </div>
+    
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+        }
+    </script>
+</body>
+</html>
