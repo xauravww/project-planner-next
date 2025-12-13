@@ -1,0 +1,8 @@
+[dotenv@17.2.3] injecting env (3) from .env -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+Embedding service running on port 3001
+Received request: { text: 'test embedding storage', table: 'Project', id: 'test-id' }
+Initializing embeddings...
+Generating embedding...
+Embedding generated, length: 384
+Executing query: UPDATE "Project" SET embedding_vector = $1 WHERE id = $2 test-id
+Query result: 1

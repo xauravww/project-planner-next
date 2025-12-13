@@ -87,15 +87,14 @@ export async function createRequirement(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const requirement = await prisma.requirement.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'Requirement', requirement.id);
 
         await markDependentModulesStale(projectId, 'requirements');
         revalidatePath(`/projects/${projectId}/requirements`);
@@ -113,15 +112,14 @@ export async function updateRequirement(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const requirement = await prisma.requirement.update({
             where: { id },
             data: {
                 ...data,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'Requirement', id);
 
         await markDependentModulesStale(requirement.projectId, 'requirements');
         revalidatePath(`/projects/${requirement.projectId}/requirements`);
@@ -159,15 +157,14 @@ export async function createUserStory(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const story = await prisma.userStory.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'UserStory', story.id);
 
         await markDependentModulesStale(projectId, 'userStories');
         revalidatePath(`/projects/${projectId}/stories`);
@@ -191,15 +188,14 @@ export async function updateUserStory(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const story = await prisma.userStory.update({
             where: { id },
             data: {
                 ...data,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'UserStory', id);
 
         await markDependentModulesStale(story.projectId, 'userStories');
         revalidatePath(`/projects/${story.projectId}/stories`);
@@ -231,15 +227,14 @@ export async function createWorkflow(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const workflow = await prisma.workflow.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'Workflow', workflow.id);
 
         await markDependentModulesStale(projectId, 'workflows');
         revalidatePath(`/projects/${projectId}/workflows`);
@@ -257,15 +252,14 @@ export async function updateWorkflow(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.content}`);
-
         const workflow = await prisma.workflow.update({
             where: { id },
             data: {
                 ...data,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.content}`, 'Workflow', id);
 
         await markDependentModulesStale(workflow.projectId, 'workflows');
         revalidatePath(`/projects/${workflow.projectId}/workflows`);
@@ -325,18 +319,16 @@ export async function updateArchitecture(
             data.lowLevel || existingArch?.lowLevel || ""
         ].filter(Boolean).join("\n\n");
 
-        let embedding = undefined;
-        if (combinedContent) {
-            embedding = await generateEmbedding(combinedContent);
-        }
-
         const architecture = await prisma.architecture.update({
             where: { id },
             data: {
                 ...data,
-                ...(embedding ? { embedding: JSON.stringify(embedding) } : {}),
             },
         });
+
+        if (combinedContent) {
+            generateEmbedding(combinedContent, 'Architecture', id);
+        }
 
         revalidatePath(`/projects/${architecture.projectId}/architecture`);
         return { success: true, architecture };
@@ -373,8 +365,6 @@ export async function updateTechStack(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(JSON.stringify(data));
-
         const techStack = await prisma.techStack.update({
             where: { id },
             data: {
@@ -383,9 +373,10 @@ export async function updateTechStack(
                 database: data.database ? JSON.stringify(data.database) : undefined,
                 devops: data.devops ? JSON.stringify(data.devops) : undefined,
                 other: data.other ? JSON.stringify(data.other) : undefined,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(JSON.stringify(data), 'TechStack', id);
 
         revalidatePath(`/projects/${techStack.projectId}/tech-stack`);
         return { success: true, techStack };
@@ -416,15 +407,14 @@ export async function createTask(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.description || ""}`);
-
         const task = await prisma.task.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.description || ""}`, 'Task', task.id);
 
         revalidatePath(`/projects/${projectId}/tasks`);
         return { success: true, task };
@@ -441,18 +431,16 @@ export async function updateTask(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        let embedding = undefined;
-        if (data.title || data.description) {
-            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.description || ""}`));
-        }
-
         const task = await prisma.task.update({
             where: { id },
             data: {
                 ...data,
-                embedding,
             },
         });
+
+        if (data.title || data.description) {
+            generateEmbedding(`${data.title || ""} ${data.description || ""}`, 'Task', id);
+        }
 
         revalidatePath(`/projects/${task.projectId}/tasks`);
         return { success: true, task };
@@ -483,15 +471,14 @@ export async function createPersona(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.name} ${data.role} ${data.bio}`);
-
         const persona = await prisma.persona.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.name} ${data.role} ${data.bio}`, 'Persona', persona.id);
 
         await markDependentModulesStale(projectId, 'personas');
         revalidatePath(`/projects/${projectId}/personas`);
@@ -509,18 +496,16 @@ export async function updatePersona(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        let embedding = undefined;
-        if (data.name || data.role || data.bio) {
-            embedding = JSON.stringify(await generateEmbedding(`${data.name || ""} ${data.role || ""} ${data.bio || ""}`));
-        }
-
         const persona = await prisma.persona.update({
             where: { id },
             data: {
                 ...data,
-                embedding,
             },
         });
+
+        if (data.name || data.role || data.bio) {
+            generateEmbedding(`${data.name || ""} ${data.role || ""} ${data.bio || ""}`, 'Persona', id);
+        }
 
         await markDependentModulesStale(persona.projectId, 'personas');
         revalidatePath(`/projects/${persona.projectId}/personas`);
@@ -552,15 +537,14 @@ export async function createUserJourney(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.steps}`);
-
         const journey = await prisma.userJourney.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.steps}`, 'UserJourney', journey.id);
 
         revalidatePath(`/projects/${projectId}/journeys`);
         return { success: true, journey };
@@ -577,18 +561,16 @@ export async function updateUserJourney(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        let embedding = undefined;
-        if (data.title || data.steps) {
-            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.steps || ""}`));
-        }
-
         const journey = await prisma.userJourney.update({
             where: { id },
             data: {
                 ...data,
-                embedding,
             },
         });
+
+        if (data.title || data.steps) {
+            generateEmbedding(`${data.title || ""} ${data.steps || ""}`, 'UserJourney', id);
+        }
 
         revalidatePath(`/projects/${journey.projectId}/journeys`);
         return { success: true, journey };
@@ -675,15 +657,14 @@ export async function createBusinessRule(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        const embedding = await generateEmbedding(`${data.title} ${data.description}`);
-
         const rule = await prisma.businessRule.create({
             data: {
                 ...data,
                 projectId,
-                embedding: JSON.stringify(embedding),
             },
         });
+
+        generateEmbedding(`${data.title} ${data.description}`, 'BusinessRule', rule.id);
 
         revalidatePath(`/projects/${projectId}/business-rules`);
         return { success: true, rule };
@@ -700,18 +681,16 @@ export async function updateBusinessRule(
     if (!session?.user) return { error: "Unauthorized" };
 
     try {
-        let embedding = undefined;
-        if (data.title || data.description) {
-            embedding = JSON.stringify(await generateEmbedding(`${data.title || ""} ${data.description || ""}`));
-        }
-
         const rule = await prisma.businessRule.update({
             where: { id },
             data: {
                 ...data,
-                embedding,
             },
         });
+
+        if (data.title || data.description) {
+            generateEmbedding(`${data.title || ""} ${data.description || ""}`, 'BusinessRule', id);
+        }
 
         revalidatePath(`/projects/${rule.projectId}/business-rules`);
         return { success: true, rule };

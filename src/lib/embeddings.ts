@@ -1,29 +1,28 @@
-import { pipeline, env } from "@xenova/transformers";
+const EMBEDDING_SERVICE_URL = process.env.EMBEDDING_SERVICE_URL || 'http://localhost:3001';
 
-// Disable local model loading for serverless environments
-env.allowLocalModels = false;
+export async function generateEmbedding(text: string, table: string, id: string): Promise<void> {
+    try {
+        const response = await fetch(`${EMBEDDING_SERVICE_URL}/generate-embeddings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ text, table, id }),
+        });
 
-let embeddingPipeline: any = null;
+        if (!response.ok) {
+            throw new Error(`Embedding service error: ${response.statusText}`);
+        }
 
-export async function initEmbeddings() {
-    if (!embeddingPipeline) {
-        embeddingPipeline = await pipeline(
-            "feature-extraction",
-            "Xenova/all-MiniLM-L6-v2"
-        );
+        // Service stores directly in DB, no return needed
+    } catch (error) {
+        console.error('Failed to generate embedding:', error);
+        // Continue without embedding - graceful degradation
     }
-    return embeddingPipeline;
 }
 
-export async function generateEmbedding(text: string): Promise<number[]> {
-    const pipe = await initEmbeddings();
-    const output = await pipe(text, { pooling: "mean", normalize: true });
-    return Array.from(output.data);
-}
-
-export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-    const embeddings = await Promise.all(texts.map(text => generateEmbedding(text)));
-    return embeddings;
+export async function generateEmbeddings(texts: string[], table: string, ids: string[]): Promise<void> {
+    await Promise.all(texts.map((text, index) => generateEmbedding(text, table, ids[index])));
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {
@@ -44,27 +43,46 @@ export function cosineSimilarity(a: number[], b: number[]): number {
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
 export async function findSimilar(
     queryText: string,
-    candidates: Array<{ text: string; embedding?: string; id: string }>,
+    table: string,
+    projectId?: string,
     topK: number = 5
 ) {
-    const queryEmbedding = await generateEmbedding(queryText);
+    // Generate embedding for query
+    const queryEmbedding = await generateEmbeddingForQuery(queryText);
 
-    const similarities = candidates.map((candidate) => {
-        const embedding = candidate.embedding
-            ? JSON.parse(candidate.embedding)
-            : null;
+    // Use pgvector for similarity search
+    const result = await prisma.$queryRaw`
+        SELECT id, title, content, 1 - (embedding_vector <=> ${queryEmbedding}::vector) as similarity
+        FROM ${table}
+        WHERE embedding_vector IS NOT NULL
+        ${projectId ? prisma.$queryRaw`AND "projectId" = ${projectId}` : prisma.$queryRaw``}
+        ORDER BY embedding_vector <=> ${queryEmbedding}::vector
+        LIMIT ${topK}
+    `;
 
-        if (!embedding) {
-            return { ...candidate, similarity: 0 };
-        }
+    return result;
+}
 
-        const similarity = cosineSimilarity(queryEmbedding, embedding);
-        return { ...candidate, similarity };
+// Helper function to generate embedding for queries
+async function generateEmbeddingForQuery(text: string): Promise<number[]> {
+    const response = await fetch(`${EMBEDDING_SERVICE_URL}/generate-embedding`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
     });
 
-    return similarities
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(0, topK);
+    if (!response.ok) {
+        throw new Error(`Embedding service error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.embedding;
 }

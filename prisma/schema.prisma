@@ -24,6 +24,7 @@ model Project {
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   embedding   String?   // JSON array of embeddings
+  embedding_vector Unsupported("vector(384)")?
   staleStatus String?   // JSON: tracks which modules are stale due to dependency changes
   
   requirements    Requirement[]
@@ -57,6 +58,7 @@ model Requirement {
   type      String
   priority  String
   embedding String?  // JSON array of embeddings
+  embedding_vector Unsupported("vector(384)")?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -84,10 +86,11 @@ model Architecture {
   databaseSchema String?  // JSON: { tables: [{ name, fields, relationships }] }
   apiSpec        String?  // JSON: { endpoints: [{ method, path, request, response }] }
   techStack      String?  // JSON: { frontend, backend, database, infrastructure }
-  securityDesign String?  // Security architecture details
-  scalingStrategy String?  // Scalability approach
-  
-  embedding String?  // Shared embedding for all sections
+   securityDesign String?  // Security architecture details
+   scalingStrategy String?  // Scalability approach
+
+   embedding String?  // Shared embedding for all sections
+   embedding_vector Unsupported("vector(384)")?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -100,6 +103,7 @@ model Workflow {
   content   String
   diagram   String?
   embedding String?  // JSON array of embeddings
+  embedding_vector Unsupported("vector(384)")?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -114,6 +118,7 @@ model UserStory {
   priority  String
   storyPoints Int?
   embedding String?  // JSON array of embeddings
+  embedding_vector Unsupported("vector(384)")?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -125,10 +130,11 @@ model TechStack {
   frontend  String?
   backend   String?
   database  String?
-  devops    String?
-  other     String?
-  rationale String?  // Overall rationale for tech stack choices
-  embedding String?  // JSON array of embeddings
+   devops    String?
+   other     String?
+   rationale String?  // Overall rationale for tech stack choices
+   embedding String?  // JSON array of embeddings
+   embedding_vector Unsupported("vector(384)")?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -143,9 +149,10 @@ model Task {
   description String?
   status      String   @default("TODO") // TODO, IN_PROGRESS, DONE
   priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
-  assignee    String?
-  dueDate     DateTime?
-  embedding   String?
+   assignee    String?
+   dueDate     DateTime?
+   embedding   String?
+   embedding_vector Unsupported("vector(384)")?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -157,9 +164,10 @@ model Persona {
   name        String
   role        String
   goals       String   // JSON array or text
-  frustrations String  // JSON array or text
-  bio         String
-  embedding   String?
+   frustrations String  // JSON array or text
+   bio         String
+   embedding   String?
+   embedding_vector Unsupported("vector(384)")?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -169,9 +177,10 @@ model UserJourney {
   projectId   String
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   title       String
-  personaId   String?
-  steps       String   // JSON array of steps
-  embedding   String?
+   personaId   String?
+   steps       String   // JSON array of steps
+   embedding   String?
+   embedding_vector Unsupported("vector(384)")?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
@@ -194,9 +203,10 @@ model BusinessRule {
   project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   title       String
   description String
-  condition   String?
-  action      String?
-  embedding   String?
+   condition   String?
+   action      String?
+   embedding   String?
+   embedding_vector Unsupported("vector(384)")?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }

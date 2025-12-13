@@ -1,0 +1,1 @@
+SELECT id, embedding_vector FROM "Project" WHERE id = 'test-id';
