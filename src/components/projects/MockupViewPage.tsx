@@ -246,7 +246,7 @@ export default function MockupViewPage({
                             ) : (
                                 <GlassCard className="flex flex-col items-center justify-center py-16 text-center">
                                     <p className="text-gray-400">
-                                        No code generated yet. Click "Generate UI" in the Preview tab.
+                                        No code generated yet. Click &quot;Generate UI&quot; in the Preview tab.
                                     </p>
                                 </GlassCard>
                             )}

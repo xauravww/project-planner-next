@@ -90,7 +90,7 @@ export default function NewProjectPage() {
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
-            let assistantMessage = { id: (Date.now() + 1).toString(), role: "assistant", content: "" };
+            const assistantMessage = { id: (Date.now() + 1).toString(), role: "assistant", content: "" };
 
             setMessages((prev) => [...prev, assistantMessage]);
 

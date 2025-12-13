@@ -44,8 +44,8 @@ async function markDependentModulesStale(
             where: { id: projectId },
             data: { staleStatus: JSON.stringify(currentStale) }
         });
-    } catch (error) {
-        console.error("Failed to mark dependent modules stale:", error);
+    } catch (_error) {
+        console.error("Failed to mark dependent modules stale:", _error);
     }
 }
 
@@ -71,8 +71,8 @@ export async function clearStaleStatus(projectId: string, module: string) {
 
         revalidatePath(`/projects/${projectId}/${module}`);
         return { success: true };
-    } catch (error) {
-        console.error("Failed to clear stale status:", error);
+    } catch (_error) {
+        console.error("Failed to clear stale status:", _error);
         return { error: "Failed to clear stale status" };
     }
 }
@@ -100,7 +100,7 @@ export async function createRequirement(
         await markDependentModulesStale(projectId, 'requirements');
         revalidatePath(`/projects/${projectId}/requirements`);
         return { success: true, requirement };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create requirement" };
     }
 }
@@ -126,7 +126,7 @@ export async function updateRequirement(
         await markDependentModulesStale(requirement.projectId, 'requirements');
         revalidatePath(`/projects/${requirement.projectId}/requirements`);
         return { success: true, requirement };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update requirement" };
     }
 }
@@ -139,7 +139,7 @@ export async function deleteRequirement(id: string) {
         const requirement = await prisma.requirement.delete({ where: { id } });
         revalidatePath(`/projects/${requirement.projectId}/requirements`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete requirement" };
     }
 }
@@ -172,7 +172,7 @@ export async function createUserStory(
         await markDependentModulesStale(projectId, 'userStories');
         revalidatePath(`/projects/${projectId}/stories`);
         return { success: true, story };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create user story" };
     }
 }
@@ -204,7 +204,7 @@ export async function updateUserStory(
         await markDependentModulesStale(story.projectId, 'userStories');
         revalidatePath(`/projects/${story.projectId}/stories`);
         return { success: true, story };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update user story" };
     }
 }
@@ -217,7 +217,7 @@ export async function deleteUserStory(id: string) {
         const story = await prisma.userStory.delete({ where: { id } });
         revalidatePath(`/projects/${story.projectId}/stories`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete user story" };
     }
 }
@@ -244,7 +244,7 @@ export async function createWorkflow(
         await markDependentModulesStale(projectId, 'workflows');
         revalidatePath(`/projects/${projectId}/workflows`);
         return { success: true, workflow };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create workflow" };
     }
 }
@@ -270,7 +270,7 @@ export async function updateWorkflow(
         await markDependentModulesStale(workflow.projectId, 'workflows');
         revalidatePath(`/projects/${workflow.projectId}/workflows`);
         return { success: true, workflow };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update workflow" };
     }
 }
@@ -283,7 +283,7 @@ export async function deleteWorkflow(id: string) {
         const workflow = await prisma.workflow.delete({ where: { id } });
         revalidatePath(`/projects/${workflow.projectId}/workflows`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete workflow" };
     }
 }
@@ -340,7 +340,7 @@ export async function updateArchitecture(
 
         revalidatePath(`/projects/${architecture.projectId}/architecture`);
         return { success: true, architecture };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update architecture" };
     }
 }
@@ -353,7 +353,7 @@ export async function deleteArchitecture(id: string) {
         const architecture = await prisma.architecture.delete({ where: { id } });
         revalidatePath(`/projects/${architecture.projectId}/architecture`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete architecture" };
     }
 }
@@ -389,7 +389,7 @@ export async function updateTechStack(
 
         revalidatePath(`/projects/${techStack.projectId}/tech-stack`);
         return { success: true, techStack };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update tech stack" };
     }
 }
@@ -402,7 +402,7 @@ export async function deleteTechStack(id: string) {
         const techStack = await prisma.techStack.delete({ where: { id } });
         revalidatePath(`/projects/${techStack.projectId}/tech-stack`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete tech stack" };
     }
 }
@@ -428,7 +428,7 @@ export async function createTask(
 
         revalidatePath(`/projects/${projectId}/tasks`);
         return { success: true, task };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create task" };
     }
 }
@@ -456,7 +456,7 @@ export async function updateTask(
 
         revalidatePath(`/projects/${task.projectId}/tasks`);
         return { success: true, task };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update task" };
     }
 }
@@ -469,7 +469,7 @@ export async function deleteTask(id: string) {
         const task = await prisma.task.delete({ where: { id } });
         revalidatePath(`/projects/${task.projectId}/tasks`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete task" };
     }
 }
@@ -496,7 +496,7 @@ export async function createPersona(
         await markDependentModulesStale(projectId, 'personas');
         revalidatePath(`/projects/${projectId}/personas`);
         return { success: true, persona };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create persona" };
     }
 }
@@ -525,7 +525,7 @@ export async function updatePersona(
         await markDependentModulesStale(persona.projectId, 'personas');
         revalidatePath(`/projects/${persona.projectId}/personas`);
         return { success: true, persona };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update persona" };
     }
 }
@@ -538,7 +538,7 @@ export async function deletePersona(id: string) {
         const persona = await prisma.persona.delete({ where: { id } });
         revalidatePath(`/projects/${persona.projectId}/personas`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete persona" };
     }
 }
@@ -564,7 +564,7 @@ export async function createUserJourney(
 
         revalidatePath(`/projects/${projectId}/journeys`);
         return { success: true, journey };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create user journey" };
     }
 }
@@ -592,7 +592,7 @@ export async function updateUserJourney(
 
         revalidatePath(`/projects/${journey.projectId}/journeys`);
         return { success: true, journey };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update user journey" };
     }
 }
@@ -605,7 +605,7 @@ export async function deleteUserJourney(id: string) {
         const journey = await prisma.userJourney.delete({ where: { id } });
         revalidatePath(`/projects/${journey.projectId}/journeys`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete user journey" };
     }
 }
@@ -628,7 +628,7 @@ export async function createMockup(
 
         revalidatePath(`/projects/${projectId}/mockups`);
         return { success: true, mockup };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create mockup" };
     }
 }
@@ -648,7 +648,7 @@ export async function updateMockup(
 
         revalidatePath(`/projects/${mockup.projectId}/mockups`);
         return { success: true, mockup };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update mockup" };
     }
 }
@@ -661,7 +661,7 @@ export async function deleteMockup(id: string) {
         const mockup = await prisma.mockup.delete({ where: { id } });
         revalidatePath(`/projects/${mockup.projectId}/mockups`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete mockup" };
     }
 }
@@ -687,7 +687,7 @@ export async function createBusinessRule(
 
         revalidatePath(`/projects/${projectId}/business-rules`);
         return { success: true, rule };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create business rule" };
     }
 }
@@ -715,7 +715,7 @@ export async function updateBusinessRule(
 
         revalidatePath(`/projects/${rule.projectId}/business-rules`);
         return { success: true, rule };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update business rule" };
     }
 }
@@ -728,7 +728,7 @@ export async function deleteBusinessRule(id: string) {
         const rule = await prisma.businessRule.delete({ where: { id } });
         revalidatePath(`/projects/${rule.projectId}/business-rules`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete business rule" };
     }
 }
@@ -751,7 +751,7 @@ export async function createMember(
 
         revalidatePath(`/projects/${projectId}/team`);
         return { success: true, member };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to create member" };
     }
 }
@@ -771,7 +771,7 @@ export async function updateMember(
 
         revalidatePath(`/projects/${member.projectId}/team`);
         return { success: true, member };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to update member" };
     }
 }
@@ -784,7 +784,7 @@ export async function deleteMember(id: string) {
         const member = await prisma.member.delete({ where: { id } });
         revalidatePath(`/projects/${member.projectId}/team`);
         return { success: true };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to delete member" };
     }
 }
@@ -816,8 +816,8 @@ export async function improveText(text: string, context?: string) {
 
         const improvedText = response.choices[0]?.message?.content || text;
         return { success: true, improvedText: improvedText.trim() };
-    } catch (error) {
-        console.error("Improve text error:", error);
+    } catch (_error) {
+        console.error("Improve text error:", _error);
         return { error: "Failed to improve text" };
     }
 }

@@ -45,7 +45,7 @@ export async function signup(formData: FormData) {
         });
 
         return { success: true };
-    } catch (error) {
+    } catch {
         return { error: "Something went wrong" };
     }
 }

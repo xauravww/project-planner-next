@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { writeFile } from "fs/promises";
+import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,7 +44,6 @@ export async function POST(req: NextRequest) {
         const filePath = path.join(uploadsDir, filename);
 
         // Ensure directory exists
-        const fs = require("fs");
         if (!fs.existsSync(uploadsDir)) {
             fs.mkdirSync(uploadsDir, { recursive: true });
         }

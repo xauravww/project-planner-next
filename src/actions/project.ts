@@ -18,8 +18,8 @@ export async function getProjectContext(projectId: string) {
         });
 
         return { contexts };
-    } catch (error) {
-        console.error("Get context error:", error);
+    } catch (_error) {
+        console.error("Get context error:", _error);
         return { error: "Failed to get context" };
     }
 }
@@ -57,8 +57,8 @@ export async function saveProjectContext(
         });
 
         return { success: true };
-    } catch (error) {
-        console.error("Save context error:", error);
+    } catch (_error) {
+        console.error("Save context error:", _error);
         return { error: "Failed to save context" };
     }
 }
@@ -84,8 +84,8 @@ export async function saveChatMessage(
         });
 
         return { message };
-    } catch (error) {
-        console.error("Save chat message error:", error);
+    } catch (_error) {
+        console.error("Save chat message error:", _error);
         return { error: "Failed to save message" };
     }
 }
@@ -101,8 +101,8 @@ export async function getChatHistory(projectId: string, module: string) {
         });
 
         return { messages };
-    } catch (error) {
-        console.error("Get chat history error:", error);
+    } catch (_error) {
+        console.error("Get chat history error:", _error);
         return { error: "Failed to get chat history" };
     }
 }
@@ -202,8 +202,8 @@ export async function generateGenerationQuestions(projectId: string, type: strin
                 module: ctx.module,
             }))
         };
-    } catch (error) {
-        console.error("Generate questions error:", error);
+    } catch (_error) {
+        console.error("Generate questions error:", _error);
         return { error: "Failed to generate questions" };
     }
 }
@@ -234,8 +234,8 @@ export async function createProjectWithAI(
 
         revalidatePath("/dashboard");
         return { success: true, projectId: project.id };
-    } catch (error) {
-        console.error("Create project error:", error);
+    } catch (_error) {
+        console.error("Create project error:", _error);
         return { error: "Failed to create project" };
     }
 }
@@ -313,8 +313,8 @@ export async function generateRequirements(projectId: string, qaPairs?: Array<{ 
 
         revalidatePath(`/projects/${projectId}/requirements`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate requirements error:", error);
+    } catch (_error) {
+        console.error("Generate requirements error:", _error);
         return { error: "Failed to generate requirements" };
     }
 }
@@ -382,8 +382,8 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
 
         revalidatePath(`/projects/${projectId}/architecture`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate architecture error:", error);
+    } catch (_error) {
+        console.error("Generate architecture error:", _error);
         return { error: "Failed to generate architecture" };
     }
 }
@@ -435,8 +435,8 @@ export async function generateWorkflows(projectId: string, qaPairs?: Array<{ que
 
         revalidatePath(`/projects/${projectId}/workflows`);
         return { success: true };
-    } catch (error) {
-        console.error(error);
+    } catch (_error) {
+        console.error(_error);
         return { error: "Failed to generate workflows" };
     }
 }
@@ -494,8 +494,8 @@ export async function generateUserStories(projectId: string, qaPairs?: Array<{ q
 
         revalidatePath(`/projects/${projectId}/stories`);
         return { success: true };
-    } catch (error) {
-        console.error(error);
+    } catch (_error) {
+        console.error(_error);
         return { error: "Failed to generate user stories" };
     }
 }
@@ -558,8 +558,8 @@ export async function generateTechStack(projectId: string, qaPairs?: Array<{ que
 
         revalidatePath(`/projects/${projectId}/tech-stack`);
         return { success: true };
-    } catch (error) {
-        console.error(error);
+    } catch (_error) {
+        console.error(_error);
         return { error: "Failed to generate tech stack" };
     }
 }
@@ -577,7 +577,7 @@ export async function getProjects() {
         });
 
         return { projects };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to fetch projects" };
     }
 }
@@ -615,7 +615,7 @@ export async function getProject(projectId: string) {
 
 
         return { project };
-    } catch (error) {
+    } catch (_error) {
         return { error: "Failed to fetch project" };
     }
 }
@@ -678,8 +678,8 @@ export async function generateTasks(
 
         revalidatePath(`/projects/${projectId}/tasks`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate tasks error:", error);
+    } catch (_error) {
+        console.error("Generate tasks error:", _error);
         return { error: "Failed to generate tasks" };
     }
 }
@@ -742,8 +742,8 @@ export async function generatePersonas(
 
         revalidatePath(`/projects/${projectId}/personas`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate personas error:", error);
+    } catch (_error) {
+        console.error("Generate personas error:", _error);
         return { error: "Failed to generate personas" };
     }
 }
@@ -803,8 +803,8 @@ export async function generateUserJourneys(
 
         revalidatePath(`/projects/${projectId}/journeys`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate user journeys error:", error);
+    } catch (_error) {
+        console.error("Generate user journeys error:", _error);
         return { error: "Failed to generate user journeys" };
     }
 }
@@ -916,8 +916,8 @@ Now generate 4-6 ultra-specific prompts like these examples for the given projec
 
         revalidatePath(`/projects/${projectId}/mockups`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate mockups error:", error);
+    } catch (_error) {
+        console.error("Generate mockups error:", _error);
         return { error: "Failed to generate mockups" };
     }
 }
@@ -979,8 +979,8 @@ export async function generateBusinessRules(
 
         revalidatePath(`/projects/${projectId}/business-rules`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate business rules error:", error);
+    } catch (_error) {
+        console.error("Generate business rules error:", _error);
         return { error: "Failed to generate business rules" };
     }
 }
@@ -1041,8 +1041,8 @@ export async function generateTeamMembers(
 
         revalidatePath(`/projects/${projectId}/team`);
         return { success: true };
-    } catch (error) {
-        console.error("Generate team members error:", error);
+    } catch (_error) {
+        console.error("Generate team members error:", _error);
         return { error: "Failed to generate team members" };
     }
 }

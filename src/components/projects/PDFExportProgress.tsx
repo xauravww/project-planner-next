@@ -111,7 +111,7 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
             Exporting Your Project
           </DialogTitle>
           <DialogDescription className="text-gray-300">
-            We're creating a beautiful PDF of your project documentation
+            We&apos;re creating a beautiful PDF of your project documentation
           </DialogDescription>
         </DialogHeader>
 

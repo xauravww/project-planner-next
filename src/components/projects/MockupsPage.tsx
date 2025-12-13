@@ -100,7 +100,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                             </div>
                             <h3 className="text-xl font-semibold text-white mb-2">No Mockups Yet</h3>
                             <p className="text-gray-400 max-w-md mb-6">
-                                Generate visual mockups for your project using AI. Describe what you want to see, and we'll create it.
+                                Generate visual mockups for your project using AI. Describe what you want to see, and we&apos;ll create it.
                             </p>
                             <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
                                 <Wand2 className="w-5 h-5 mr-2" />

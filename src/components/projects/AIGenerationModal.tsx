@@ -43,12 +43,6 @@ export function AIGenerationModal({
     const [existingContext, setExistingContext] = useState<ExistingContext[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (isOpen && step === "loading") {
-            loadQuestions();
-        }
-    }, [isOpen]);
-
     const loadQuestions = async () => {
         try {
             setError(null);
@@ -72,6 +66,12 @@ export function AIGenerationModal({
             setError("Failed to load questions");
         }
     };
+
+    useEffect(() => {
+        if (isOpen && step === "loading") {
+            loadQuestions();
+        }
+    }, [isOpen, loadQuestions, step]);
 
     const handleAnswerToggle = (questionId: string, option: string) => {
         setAnswers(prev => {
@@ -167,7 +167,7 @@ export function AIGenerationModal({
                                         <div>
                                             <p className="text-sm font-medium text-blue-300">Using your previous preferences</p>
                                             <p className="text-xs text-blue-400/70 mt-1">
-                                                We've remembered your choices from other modules
+                                                We&apos;ve remembered your choices from other modules
                                             </p>
                                         </div>
                                     </div>

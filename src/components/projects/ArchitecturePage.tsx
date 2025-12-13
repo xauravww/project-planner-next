@@ -137,7 +137,7 @@ export default function ArchitecturePageClient({
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-3">No Architecture Defined</h3>
                             <p className="text-muted-foreground mb-6 leading-relaxed">
-                                Define your system architecture with AI assistance. We'll help you create a comprehensive design including components, data flow, and infrastructure.
+                                Define your system architecture with AI assistance. We&apos;ll help you create a comprehensive design including components, data flow, and infrastructure.
                             </p>
                             <Button
                                 onClick={handleGenerateClick}

@@ -105,7 +105,7 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
                             </div>
                             <h3 className="text-xl font-semibold text-white mb-2">No Business Rules Yet</h3>
                             <p className="text-gray-400 max-w-md mb-6">
-                                Define the logic and constraints that govern your application's behavior.
+                                Define the logic and constraints that govern your application&apos;s behavior.
                             </p>
                             <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
                                 <Plus className="w-5 h-5 mr-2" />

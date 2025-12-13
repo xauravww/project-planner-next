@@ -14,7 +14,10 @@ export default async function DashboardPage() {
     }
 
     const result = await getProjects();
-    const projects = result.projects || [];
+    const projects: { updatedAt: Date }[] = result.projects || [];
+
+    const activeProjectsCount = projects.filter((p: { updatedAt: Date }) => new Date(p.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length;
+    const aiSuggestionsCount = projects.length > 0 ? Math.floor(Math.random() * 20 + 5) : 0;
 
     return (
         <div className="h-full overflow-y-auto pb-32 relative">
@@ -31,7 +34,7 @@ export default async function DashboardPage() {
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
                             Welcome back, <span className="text-gradient">{session.user?.name?.split(" ")[0] || "Builder"}</span>
                         </h1>
-                        <p className="text-lg text-muted-foreground">Here's what's happening with your projects today.</p>
+                        <p className="text-lg text-muted-foreground">Here&apos;s what&apos;s happening with your projects today.</p>
                     </div>
                     <div className="flex items-center gap-4">
                         <Button variant="glass" className="h-12 px-6">
@@ -72,7 +75,7 @@ export default async function DashboardPage() {
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground mb-1">Active Now</div>
                                 <div className="text-4xl font-bold text-white">
-                                    {projects.filter((p: any) => new Date(p.updatedAt) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)).length}
+                                    {activeProjectsCount}
                                 </div>
                             </div>
                             <div className="w-12 h-12 rounded-2xl bg-green-500/20 flex items-center justify-center border border-green-500/30">
@@ -89,7 +92,7 @@ export default async function DashboardPage() {
                         <div className="relative z-10 flex items-center justify-between">
                             <div>
                                 <div className="text-sm font-medium text-muted-foreground mb-1">AI Suggestions</div>
-                                <div className="text-4xl font-bold text-white">{projects.length > 0 ? Math.floor(Math.random() * 20 + 5) : 0}</div>
+                                <div className="text-4xl font-bold text-white">{aiSuggestionsCount}</div>
                             </div>
                             <div className="w-12 h-12 rounded-2xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30">
                                 <span className="text-lg">✨</span>

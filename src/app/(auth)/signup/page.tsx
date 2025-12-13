@@ -10,13 +10,18 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-const initialState = {
+type State = {
+    error: string;
+    success: boolean;
+};
+
+const initialState: State = {
     error: "",
     success: false,
 };
 
 export default function SignupPage() {
-    const [state, action, isPending] = useActionState(async (prevState: any, formData: FormData) => {
+    const [state, action, isPending] = useActionState(async (prevState: State, formData: FormData) => {
         const result = await signup(formData);
         if (result.error) {
             return { ...prevState, error: result.error, success: false };

@@ -122,7 +122,7 @@ export default function AISummaryPanel({
                 <p className="text-gray-300 text-sm leading-relaxed">{currentSummary}</p>
             ) : (
                 <p className="text-gray-500 text-sm italic">
-                    No summary yet. Click "Generate Summary" to create one with AI.
+                    No summary yet. Click &quot;Generate Summary&quot; to create one with AI.
                 </p>
             )}
         </div>
