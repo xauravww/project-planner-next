@@ -87,13 +87,225 @@ export async function createProjectWithAI(name: string, description?: string, me
 }
 
 export async function generateGenerationQuestions(projectId: string, type?: string) {
-  // Placeholder implementation
-  return { success: false, error: "Not implemented", questions: [], existingContext: [] };
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized", questions: [], existingContext: [] };
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: { id: projectId, userId: (session.user as any).id },
+            include: {
+                requirements: true,
+                userStories: true,
+                techStack: true,
+                architecture: true,
+            },
+        });
+
+        if (!project) {
+            return { error: "Project not found", questions: [], existingContext: [] };
+        }
+
+        // Get existing context from previous generations
+        const existingContext = await prisma.projectContext.findMany({
+            where: { projectId, module: type || "general" },
+        });
+
+        let questions: Array<{
+            id: string;
+            text: string;
+            type: "single" | "multiple";
+            options: string[];
+        }> = [];
+
+        // Generate questions based on module type
+        switch (type) {
+            case "architecture":
+                questions = [
+                    {
+                        id: "scale",
+                        text: "What is the expected scale of your application?",
+                        type: "single",
+                        options: ["Small (1-10 users)", "Medium (10-100 users)", "Large (100-1000 users)", "Enterprise (1000+ users)"],
+                    },
+                    {
+                        id: "complexity",
+                        text: "How complex is your business logic?",
+                        type: "single",
+                        options: ["Simple CRUD operations", "Moderate complexity", "High complexity with workflows", "Very complex with integrations"],
+                    },
+                    {
+                        id: "performance",
+                        text: "What are your performance requirements?",
+                        type: "multiple",
+                        options: ["High throughput", "Low latency", "Real-time updates", "Batch processing", "Data analytics"],
+                    },
+                    {
+                        id: "scalability",
+                        text: "How important is horizontal scalability?",
+                        type: "single",
+                        options: ["Not important", "Somewhat important", "Very important", "Critical requirement"],
+                    },
+                    {
+                        id: "security",
+                        text: "What security level do you need?",
+                        type: "multiple",
+                        options: ["Basic authentication", "Role-based access", "Data encryption", "Audit logging", "Compliance (GDPR/HIPAA)"],
+                    },
+                    {
+                        id: "deployment",
+                        text: "What deployment environment do you prefer?",
+                        type: "single",
+                        options: ["Cloud (AWS/GCP/Azure)", "On-premises", "Hybrid", "Serverless"],
+                    },
+                ];
+                break;
+
+            case "requirements":
+                questions = [
+                    {
+                        id: "user_types",
+                        text: "What types of users will use your system?",
+                        type: "multiple",
+                        options: ["End users", "Administrators", "API consumers", "System integrators"],
+                    },
+                    {
+                        id: "functionality",
+                        text: "What is the primary functionality?",
+                        type: "multiple",
+                        options: ["Data management", "User interactions", "Reporting/Analytics", "Workflow automation", "Integration with other systems"],
+                    },
+                    {
+                        id: "constraints",
+                        text: "What are your key constraints?",
+                        type: "multiple",
+                        options: ["Budget limitations", "Time constraints", "Existing systems integration", "Regulatory compliance", "Performance requirements"],
+                    },
+                ];
+                break;
+
+            case "tech-stack":
+                questions = [
+                    {
+                        id: "experience",
+                        text: "What is your team's experience level?",
+                        type: "single",
+                        options: ["Beginners", "Intermediate", "Advanced", "Mixed team"],
+                    },
+                    {
+                        id: "timeline",
+                        text: "What is your project timeline?",
+                        type: "single",
+                        options: ["Flexible", "3-6 months", "6-12 months", "ASAP"],
+                    },
+                    {
+                        id: "maintenance",
+                        text: "How important is long-term maintainability?",
+                        type: "single",
+                        options: ["Not important", "Somewhat important", "Very important", "Critical"],
+                    },
+                    {
+                        id: "innovation",
+                        text: "How important is using cutting-edge technologies?",
+                        type: "single",
+                        options: ["Prefer stable/proven tech", "Open to new technologies", "Must use latest tech"],
+                    },
+                ];
+                break;
+
+            default:
+                questions = [
+                    {
+                        id: "project_type",
+                        text: "What type of project is this?",
+                        type: "single",
+                        options: ["Web Application", "Mobile App", "API/Service", "Desktop Software", "IoT System"],
+                    },
+                    {
+                        id: "team_size",
+                        text: "What is your team size?",
+                        type: "single",
+                        options: ["Solo developer", "Small team (2-5)", "Medium team (6-15)", "Large team (15+)"],
+                    },
+                ];
+        }
+
+        return {
+            success: true,
+            questions,
+            existingContext: existingContext.map(ctx => ({
+                questionId: ctx.questionId,
+                question: ctx.question,
+                answers: JSON.parse(ctx.answers),
+                module: ctx.module,
+            })),
+        };
+    } catch (error) {
+        console.error("Generate questions error:", error);
+        return { error: "Failed to generate questions", questions: [], existingContext: [] };
+    }
 }
 
 export async function generateRequirements(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
-  // Placeholder implementation
-  return { success: false, error: "Not implemented" };
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: { id: projectId, userId: (session.user as any).id },
+        });
+
+        if (!project) {
+            return { error: "Project not found" };
+        }
+
+        const response = await serverOpenai.chat.completions.create({
+            model: "grok-code",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a requirements analyst. Generate comprehensive functional and non-functional requirements. Return a JSON array of requirement objects with fields: title, content, type (functional/non-functional), priority (must-have/should-have/nice-to-have).",
+                },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""
+                        }Generate requirements.`,
+                },
+            ],
+            temperature: 0.7,
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let requirements = [];
+
+        try {
+            requirements = JSON.parse(aiResponse);
+        } catch {
+            requirements = [{
+                title: "Sample Requirement",
+                content: aiResponse,
+                type: "functional",
+                priority: "must-have",
+            }];
+        }
+
+        for (const req of requirements) {
+            await prisma.requirement.create({
+                data: {
+                    projectId,
+                    title: req.title,
+                    content: req.content,
+                    type: req.type || "functional",
+                    priority: req.priority || "should-have",
+                },
+            });
+        }
+
+        revalidatePath(`/projects/${projectId}/requirements`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate requirements error:", error);
+        return { error: "Failed to generate requirements" };
+    }
 }
 
 export async function saveProjectContext(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
@@ -43,7 +43,7 @@ export function AIGenerationModal({
     const [existingContext, setExistingContext] = useState<ExistingContext[]>([]);
     const [error, setError] = useState<string | null>(null);
 
-    const loadQuestions = async () => {
+    const loadQuestions = useCallback(async () => {
         try {
             setError(null);
             const result = await generateGenerationQuestions(projectId, type);
@@ -65,13 +65,13 @@ export function AIGenerationModal({
         } catch (err) {
             setError("Failed to load questions");
         }
-    };
+    }, [projectId, type]);
 
     useEffect(() => {
         if (isOpen && step === "loading") {
             loadQuestions();
         }
-    }, [isOpen, loadQuestions, step]);
+    }, [isOpen, step]);
 
     const handleAnswerToggle = (questionId: string, option: string) => {
         setAnswers(prev => {
@@ -113,8 +113,9 @@ export function AIGenerationModal({
                 }
             }
 
-            await onGenerate(formattedAnswers);
+            // Close modal immediately to prevent re-triggering
             onClose();
+            await onGenerate(formattedAnswers);
         } catch (err) {
             setError("Failed to generate content");
             setStep("questions");

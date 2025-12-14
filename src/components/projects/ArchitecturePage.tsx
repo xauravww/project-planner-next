@@ -26,6 +26,7 @@ export default function ArchitecturePageClient({
     const [isGenerating, setIsGenerating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [activeView, setActiveView] = useState<"overview" | "highLevel" | "lowLevel" | "functional" | "diagram">("overview");
     const [formData, setFormData] = useState({
         content: architecture?.content || "",
@@ -43,9 +44,14 @@ export default function ArchitecturePageClient({
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
         setIsGenerating(true);
-        await generateArchitecture(project.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        try {
+            await generateArchitecture(project.id, answers);
+            setIsAIModalOpen(false); // Close modal before reload
+            window.location.reload();
+        } catch (error) {
+            console.error("Generation failed:", error);
+            setIsGenerating(false);
+        }
     };
 
     const handleSave = async () => {
@@ -57,14 +63,40 @@ export default function ArchitecturePageClient({
     };
 
     const handleDelete = () => {
+        console.log("Delete button clicked");
         setDeleteModalOpen(true);
     };
 
     const confirmDelete = async () => {
+        console.log("confirmDelete called");
         if (architecture?.id) {
-            await deleteArchitecture(architecture.id);
+            setIsDeleting(true);
+            try {
+                console.log("Deleting architecture:", architecture.id);
+                const result = await deleteArchitecture(architecture.id);
+                console.log("Delete result:", result);
+
+                if (result.error) {
+                    console.error("Delete failed:", result.error);
+                    alert("Failed to delete architecture: " + result.error);
+                    setDeleteModalOpen(false);
+                    setIsDeleting(false);
+                    return;
+                }
+
+                console.log("Delete successful, closing modal");
+                setDeleteModalOpen(false);
+                window.location.reload();
+            } catch (error) {
+                console.error("Delete error:", error);
+                alert("An error occurred while deleting the architecture");
+                setDeleteModalOpen(false);
+                setIsDeleting(false);
+            }
+        } else {
+            console.error("No architecture ID found");
+            alert("No architecture found to delete");
             setDeleteModalOpen(false);
-            window.location.reload();
         }
     };
 
@@ -126,9 +158,9 @@ export default function ArchitecturePageClient({
                                                 <Pencil className="w-4 h-4 mr-2" />
                                                 <span className="hidden sm:inline">Edit</span>
                                             </Button>
-                                            <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2">
-                                                <Trash2 className="w-4 h-4" />
-                                            </Button>
+                                             <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20 border border-transparent hover:border-red-500/40 p-2 transition-all duration-200">
+                                                  <Trash2 className="w-4 h-4" />
+                                              </Button>
                                         </>
                                     )}
                                 </>
@@ -204,6 +236,7 @@ export default function ArchitecturePageClient({
                 title="Delete Architecture"
                 description="Are you sure you want to delete this architecture documentation? This action cannot be undone and will permanently remove all architecture data from your project."
                 confirmText="Delete Architecture"
+                isDeleting={isDeleting}
             />
         </div >
     );
