@@ -25,8 +25,65 @@ export async function getProjectContext(projectId: string) {
 }
 
 export async function createProjectWithAI(name: string, description?: string, messages?: any[]): Promise<{ success: true; projectId: string } | { success: false; error: string }> {
-  // Placeholder implementation
-  return { success: false, error: "Not implemented" };
+  const session = await auth();
+  if (!session?.user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    // Generate project summary using AI if messages are provided
+    let projectDescription = description || "AI-generated project";
+    if (messages && messages.length > 0) {
+      const conversationText = messages.map((m: any) => `${m.role}: ${m.content}`).join('\n');
+
+      const response = await serverOpenai.chat.completions.create({
+        model: "grok-code",
+        messages: [
+          {
+            role: "system",
+            content: "You are a project summarizer. Create a concise 1-2 sentence summary of what this project is about based on the conversation. Focus on the main idea, target users, and key features mentioned."
+          },
+          {
+            role: "user",
+            content: `Conversation:\n${conversationText}\n\nCreate a brief project summary.`
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 100,
+      });
+
+      const aiSummary = response.choices[0]?.message?.content?.trim();
+      if (aiSummary) {
+        projectDescription = aiSummary;
+      }
+    }
+
+    // Create the project
+    const project = await prisma.project.create({
+      data: {
+        name,
+        description: projectDescription,
+        userId: (session.user as any).id,
+      },
+    });
+
+    // Save chat messages if provided
+    if (messages && messages.length > 0) {
+      await prisma.chatMessage.createMany({
+        data: messages.map((msg: any) => ({
+          projectId: project.id,
+          module: "initial_chat",
+          role: msg.role,
+          content: msg.content,
+        })),
+      });
+    }
+
+    return { success: true, projectId: project.id };
+  } catch (error: any) {
+    console.error("Create project error:", error);
+    return { success: false, error: error.message || "Failed to create project" };
+  }
 }
 
 export async function generateGenerationQuestions(projectId: string, type?: string) {

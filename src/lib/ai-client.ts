@@ -1,13 +1,23 @@
+import "dotenv/config";
 import OpenAI from "openai";
 
-const baseURL = process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:3010/v1";
+const baseURL = (process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:3010") + "/v1";
 const apiKey = process.env.NEXT_PUBLIC_AI_API_KEY || "sk-myproxyserverkey23";
 
-export const openai = new OpenAI({
-    baseURL,
-    apiKey,
-    dangerouslyAllowBrowser: true, // Allow client-side calls
-});
+let _openai: OpenAI | null = null;
+
+export const getOpenaiClient = () => {
+    if (!_openai) {
+        _openai = new OpenAI({
+            baseURL,
+            apiKey,
+            dangerouslyAllowBrowser: true, // Allow client-side calls
+        });
+    }
+    return _openai;
+};
+
+export const openai = getOpenaiClient();
 
 // Server-side client (doesn't need dangerouslyAllowBrowser)
 export const serverOpenai = new OpenAI({
