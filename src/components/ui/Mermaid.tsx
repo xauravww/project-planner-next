@@ -148,10 +148,10 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
     }
 
     return (
-        <div className={`h-[500px] w-full bg-white/5 rounded-lg overflow-hidden border border-white/10 ${className}`}>
+        <div className={`h-[300px] sm:h-[400px] lg:h-[500px] w-full bg-white/5 rounded-lg overflow-hidden border border-white/10 ${className}`}>
             <CanvasViewer>
                 <div
-                    className="mermaid-container w-full h-full flex items-center justify-center p-8"
+                    className="mermaid-container w-full h-full flex items-center justify-center p-2 sm:p-4 lg:p-8 overflow-x-auto max-w-full"
                     dangerouslySetInnerHTML={{ __html: svg }}
                 />
             </CanvasViewer>

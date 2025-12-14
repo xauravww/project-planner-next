@@ -117,6 +117,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -134,10 +135,15 @@
 }
 
 @keyframes swirl {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .bg-gradient-radial {
-  background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.5) 50%, black 100%);
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 50%, black 100%);
 }

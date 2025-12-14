@@ -4,7 +4,7 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Plus, LayoutGrid, List as ListIcon, Calendar, User, MoreHorizontal, Trash2, CheckCircle2, Circle, Clock, Wand2 } from "lucide-react";
+import { Plus, LayoutGrid, List as ListIcon, Calendar, User, CheckCircle2, Circle, Trash2, Wand2 } from "lucide-react";
 import { createTask, updateTask, deleteTask } from "@/actions/crud";
 import { generateTasks } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
@@ -65,6 +65,11 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
         }
     };
 
+    const handleStatusChange = async (taskId: string, newStatus: string) => {
+        await updateTask(taskId, { status: newStatus });
+        window.location.reload();
+    };
+
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
         setIsGenerating(true);
         await generateTasks(params.id, answers);
@@ -72,10 +77,282 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
         window.location.reload();
     };
 
-    const handleStatusChange = async (id: string, newStatus: string) => {
-        await updateTask(id, { status: newStatus });
-        window.location.reload();
-    };
+    return (
+        <ProjectLayout projectId={params.id} projectName={projectName}>
+            <div className="h-full flex flex-col">
+                {/* Header */}
+                <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="text-center lg:text-left">
+                                <Breadcrumb
+                                    items={[
+                                        { label: "Projects", href: "/dashboard" },
+                                        { label: projectName, href: `/projects/${params.id}` },
+                                        { label: "Tasks" },
+                                    ]}
+                                />
+                                <h1 className="text-xl lg:text-2xl font-semibold text-white mt-2">Tasks</h1>
+                            </div>
+                            <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-end">
+                                <div className="bg-white/5 p-1 rounded-lg flex items-center">
+                                    <button
+                                        onClick={() => setViewMode("board")}
+                                        className={`p-2 rounded-md transition-colors ${viewMode === "board" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
+                                    >
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode("list")}
+                                        className={`p-2 rounded-md transition-colors ${viewMode === "list" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
+                                    >
+                                        <ListIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">New Task</span>
+                                    <span className="sm:hidden">New</span>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-auto">
+                    <div className="p-4 lg:p-6 max-w-7xl mx-auto">
+                        {tasks.length === 0 ? (
+                            <div className="flex items-center justify-center h-96">
+                                <div className="text-center">
+                                    <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <CheckCircle2 className="w-8 h-8 text-gray-400" />
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-white mb-2">No Tasks Yet</h3>
+                                    <p className="text-gray-400">Create your first task or let AI generate them</p>
+                                </div>
+                            </div>
+                        ) : viewMode === "board" ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {STATUS_COLS.map((col) => (
+                                    <div key={col.id} className="space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <div className={`w-3 h-3 rounded-full ${col.color}`} />
+                                            <h3 className="text-sm font-semibold text-white">{col.label}</h3>
+                                            <span className="text-xs text-gray-400 bg-white/5 px-2 py-1 rounded-full">
+                                                {tasks.filter((task: any) => task.status === col.id).length}
+                                            </span>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {tasks
+                                                .filter((task: any) => task.status === col.id)
+                                                .map((task: any) => (
+                                                    <GlassCard key={task.id} className="p-4">
+                                                        <div className="flex justify-between items-start mb-2">
+                                                            <h4 className={`text-white font-medium ${task.status === "DONE" ? "line-through text-gray-500" : ""}`}>
+                                                                {task.title}
+                                                            </h4>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded border ${PRIORITY_COLORS[task.priority]}`}>
+                                                                {task.priority}
+                                                            </span>
+                                                        </div>
+                                                        {task.description && (
+                                                            <p className="text-xs text-gray-400 mb-3">{task.description}</p>
+                                                        )}
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                                                                {task.assignee && (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <User className="w-3 h-3" />
+                                                                        <span>{task.assignee}</span>
+                                                                    </div>
+                                                                )}
+                                                                {task.dueDate && (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <Calendar className="w-3 h-3" />
+                                                                        <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex gap-1">
+                                                                <button
+                                                                    onClick={() => handleStatusChange(task.id, col.id === "TODO" ? "IN_PROGRESS" : col.id === "IN_PROGRESS" ? "DONE" : "TODO")}
+                                                                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                                                                >
+                                                                    {task.status === "DONE" ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Circle className="w-4 h-4" />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDelete(task.id)}
+                                                                    className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </GlassCard>
+                                                ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="space-y-4">
+                                {tasks.map((task: any) => (
+                                    <GlassCard key={task.id} className="p-4">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <h4 className={`text-white font-medium ${task.status === "DONE" ? "line-through text-gray-500" : ""}`}>
+                                                {task.title}
+                                            </h4>
+                                            <span className={`text-[10px] px-2 py-0.5 rounded border ${PRIORITY_COLORS[task.priority]}`}>
+                                                {task.priority}
+                                            </span>
+                                        </div>
+                                        {task.description && (
+                                            <p className="text-xs text-gray-400 mb-3">{task.description}</p>
+                                        )}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                                                {task.assignee && (
+                                                    <div className="flex items-center gap-1">
+                                                        <User className="w-3 h-3" />
+                                                        <span>{task.assignee}</span>
+                                                    </div>
+                                                )}
+                                                {task.dueDate && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Calendar className="w-3 h-3" />
+                                                        <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <button
+                                                    onClick={() => handleStatusChange(task.id, task.status === "TODO" ? "IN_PROGRESS" : task.status === "IN_PROGRESS" ? "DONE" : "TODO")}
+                                                    className="p-1 hover:bg-white/10 rounded transition-colors"
+                                                >
+                                                    {task.status === "DONE" ? <CheckCircle2 className="w-4 h-4 text-green-400" /> : <Circle className="w-4 h-4" />}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(task.id)}
+                                                    className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-400" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </GlassCard>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* New Task Modal */}
+                {isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <GlassCard className="w-full max-w-lg p-6">
+                            <h2 className="text-xl font-bold text-white mb-4">New Task</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Title</label>
+                                    <input
+                                        type="text"
+                                        value={newTask.title}
+                                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="Task title"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm text-gray-400 mb-1 block">Description</label>
+                                    <textarea
+                                        value={newTask.description}
+                                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        placeholder="Task description"
+                                        rows={3}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Status</label>
+                                        <select
+                                            value={newTask.status}
+                                            onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        >
+                                            <option value="TODO">To Do</option>
+                                            <option value="IN_PROGRESS">In Progress</option>
+                                            <option value="DONE">Done</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Priority</label>
+                                        <select
+                                            value={newTask.priority}
+                                            onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        >
+                                            <option value="LOW">Low</option>
+                                            <option value="MEDIUM">Medium</option>
+                                            <option value="HIGH">High</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Assignee</label>
+                                        <input
+                                            type="text"
+                                            value={newTask.assignee}
+                                            onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            placeholder="John Doe"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Due Date</label>
+                                        <input
+                                            type="date"
+                                            value={newTask.dueDate}
+                                            onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex gap-3">
+                                    <Button onClick={() => setIsModalOpen(false)} variant="ghost">
+                                        Cancel
+                                    </Button>
+                                    <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                                        Create Task
+                                    </Button>
+                                </div>
+                            </div>
+                        </GlassCard>
+                    </div>
+                )}
+
+                <AIGenerationModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    projectId={params.id}
+                    type="tasks"
+                    onGenerate={handleAIGenerate}
+                />
+
+                <DeleteModal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    onConfirm={confirmDelete}
+                    title="Delete Task"
+                    description="Are you sure you want to delete this task? This action cannot be undone."
+                    confirmText="Delete Task"
+                />
+            </div>
+        </ProjectLayout>
+    );
+}
 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
@@ -167,31 +444,36 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                                     {task.description && (
                                                         <p className="text-xs text-gray-400 line-clamp-2 mb-3">{task.description}</p>
                                                     )}
-                                                    <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-white/5">
-                                                        {task.assignee && (
-                                                            <div className="flex items-center gap-1">
-                                                                <User className="w-3 h-3" />
-                                                                <span>{task.assignee}</span>
-                                                            </div>
-                                                        )}
-                                                        {task.dueDate && (
-                                                            <div className="flex items-center gap-1">
-                                                                <Calendar className="w-3 h-3" />
-                                                                <span>{new Date(task.dueDate).toLocaleDateString()}</span>
-                                                            </div>
-                 ) : (
-                     <div className="space-y-4">
-                         {tasks.map((task) => (
-                             <GlassCard key={task.id} className="p-4">
-                                 <div className="flex justify-between items-start mb-2">
-                                     <h4 className="text-white font-medium">{task.title}</h4>
-                                     <span className={`text-[10px] px-2 py-0.5 rounded border ${PRIORITY_COLORS[task.priority]}`}>
-                                         {task.priority}
-                                     </span>
-                                 </div>
-                                 {task.description && (
-                                     <p className="text-xs text-gray-400 mb-3">{task.description}</p>
-                                 )}
+                                                     <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-white/5">
+                                                         {task.assignee && (
+                                                             <div className="flex items-center gap-1">
+                                                                 <User className="w-3 h-3" />
+                                                                 <span>{task.assignee}</span>
+                                                             </div>
+                                                         )}
+                                                         {task.dueDate && (
+                                                             <div className="flex items-center gap-1">
+                                                                 <Calendar className="w-3 h-3" />
+                                                                 <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                                             </div>
+                                                         )}
+                                                     </div>
+                                                 </GlassCard>
+                                          ))}
+                                      </div>
+                                  ) : (
+                                      <div className="space-y-4">
+                                          {tasks.map((task) => (
+                                              <GlassCard key={task.id} className="p-4">
+                                                  <div className="flex justify-between items-start mb-2">
+                                                      <h4 className="text-white font-medium">{task.title}</h4>
+                                                      <span className={`text-[10px] px-2 py-0.5 rounded border ${PRIORITY_COLORS[task.priority]}`}>
+                                                          {task.priority}
+                                                      </span>
+                                                  </div>
+                                                  {task.description && (
+                                                      <p className="text-xs text-gray-400 mb-3">{task.description}</p>
+                                                  )}
                                  <div className="flex items-center justify-between text-xs text-gray-500">
                                      <span className={`px-2 py-1 rounded ${STATUS_COLS.find(col => col.id === task.status)?.color} text-white`}>
                                          {STATUS_COLS.find(col => col.id === task.status)?.label}

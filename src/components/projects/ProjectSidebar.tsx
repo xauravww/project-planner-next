@@ -14,6 +14,8 @@ import {
     ArrowLeft,
     Settings,
     X,
+    LayoutDashboard,
+    Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -36,6 +38,12 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
     };
 
     const isActive = (path: string) => pathname?.includes(path);
+
+    // Global navigation items that could be in dock
+    const globalItems = [
+        { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+        { name: "New Project", href: "/dashboard/new", icon: Plus },
+    ];
 
     const categories = [
         {
@@ -97,6 +105,30 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
             )}
 
             <div className="flex-1 overflow-y-auto p-4">
+                {/* Global Navigation */}
+                <div className="mb-6">
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Navigation</div>
+                    <nav className="space-y-1">
+                        {globalItems.map((item) => (
+                            <Link key={item.href} href={item.href}>
+                                <Button
+                                    variant="ghost"
+                                    className={`w-full justify-start text-sm ${isActive(item.href)
+                                        ? "bg-white/10 text-white"
+                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    }`}
+                                >
+                                    <item.icon className="w-4 h-4 mr-2" />
+                                    {item.name}
+                                </Button>
+                            </Link>
+                        ))}
+                    </nav>
+                </div>
+
+                <div className="border-t border-white/10 pt-4 mb-4">
+                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Project: {projectName}</div>
+                </div>
                 {/* Navigation */}
                 <nav className="space-y-1">
                     {categories.map((category) => (

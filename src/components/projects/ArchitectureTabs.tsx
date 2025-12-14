@@ -107,29 +107,29 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
         : [];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 overflow-x-hidden">
             {/* Tab Navigation */}
-            <div className="flex gap-2 border-b border-white/10 pb-4">
+            <div className="flex gap-1 sm:gap-2 border-b border-white/10 pb-4 overflow-x-auto">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${activeTab === tab.id
+                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
                                 ? "bg-white/10 text-white"
                                 : "text-gray-400 hover:text-white hover:bg-white/5"
                                 }`}
                         >
-                            <Icon className="w-4 h-4" />
-                            {tab.label}
+                            <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
+                            <span className="text-xs sm:text-sm">{tab.label}</span>
                         </button>
                     );
                 })}
             </div>
 
             {/* Tab Content */}
-            <div className="space-y-6">
+            <div className="space-y-6 overflow-x-hidden w-full max-w-full">
                 {/* Overview Tab */}
                 {activeTab === "overview" && (
                     <div className="space-y-6">
@@ -206,8 +206,8 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
                                             <h4 className="text-md font-semibold text-blue-400 mb-2">{table.name}</h4>
                                             <p className="text-sm text-gray-400 mb-4">{table.description}</p>
 
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full text-sm">
+                                             <div className="overflow-x-auto max-w-full">
+                                                 <table className="w-full text-sm min-w-[600px]">
                                                     <thead>
                                                         <tr className="border-b border-white/10">
                                                             <th className="text-left py-2 px-2">Field</th>
@@ -311,15 +311,15 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
                                                         <div className="mt-3 space-y-2 pl-4 border-l-2 border-white/10">
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 mb-1">Request Body:</p>
-                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
-                                                                    {JSON.stringify(endpoint.requestBody, null, 2)}
-                                                                </pre>
+                                                                 <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                     {JSON.stringify(endpoint.requestBody, null, 2)}
+                                                                 </pre>
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 mb-1">Success Response ({endpoint.responseSuccess.code}):</p>
-                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto">
-                                                                    {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
-                                                                </pre>
+                                                                 <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                     {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
+                                                                 </pre>
                                                             </div>
                                                             {endpoint.responseErrors.length > 0 && (
                                                                 <div>

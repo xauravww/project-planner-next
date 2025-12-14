@@ -18,16 +18,16 @@ export function Dock() {
     const mouseX = useMotionValue(Infinity);
 
     return (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100]">
+        <div className="fixed bottom-4 lg:bottom-8 left-1/2 -translate-x-1/2 z-[100]">
             <motion.div
                 onMouseMove={(e) => mouseX.set(e.pageX)}
                 onMouseLeave={() => mouseX.set(Infinity)}
-                className="flex h-16 items-end gap-4 rounded-2xl border border-white/10 bg-black/40 px-4 pb-3 backdrop-blur-2xl shadow-2xl shadow-black/50"
+                className="flex h-12 lg:h-16 items-end gap-2 lg:gap-4 rounded-2xl border border-white/10 bg-black/40 px-3 lg:px-4 pb-2 lg:pb-3 backdrop-blur-2xl shadow-2xl shadow-black/50"
             >
                 {items.map((item) => (
                     <DockIcon key={item.label} mouseX={mouseX} {...item} />
                 ))}
-                <div className="h-10 w-[1px] bg-white/10 mx-2 self-center" />
+                <div className="h-8 lg:h-10 w-[1px] bg-white/10 mx-1 lg:mx-2 self-center" />
                 <SignOutButton mouseX={mouseX} />
             </motion.div>
         </div>
@@ -52,7 +52,7 @@ function DockIcon({
         return val - bounds.x - bounds.width / 2;
     });
 
-    const widthSync = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
+    const widthSync = useTransform(distance, [-150, 0, 150], [32, 64, 32]);
     const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 });
 
     return (
@@ -79,7 +79,7 @@ function SignOutButton({ mouseX }: { mouseX: any }) {
         return val - bounds.x - bounds.width / 2;
     });
 
-    const widthSync = useTransform(distance, [-150, 0, 150], [40, 80, 40]);
+    const widthSync = useTransform(distance, [-150, 0, 150], [32, 64, 32]);
     const width = useSpring(widthSync, { mass: 0.1, stiffness: 150, damping: 12 });
 
     return (

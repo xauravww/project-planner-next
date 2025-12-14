@@ -133,24 +133,7 @@ export default function TechStackPageClient({
                             placeholder="Add technology..."
                             onKeyPress={(e) => e.key === 'Enter' && addItem(category)}
                         />
-                        <Button onClick={() => addItem(category)} className="bg-green-600 hover:bg-green-700">
-                            <Plus className="w-4 h-4" />
-                        </Button>
-                        <Button onClick={() => setActiveCategory(null)} variant="ghost">
-                            <X className="w-4 h-4" />
-                        </Button>
                     </div>
-                )}
-
-                {isEditing && activeCategory !== category && (
-                    <Button
-                        onClick={() => setActiveCategory(category)}
-                        variant="ghost"
-                        className="text-sm"
-                    >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Item
-                    </Button>
                 )}
             </GlassCard>
         );
@@ -159,79 +142,77 @@ export default function TechStackPageClient({
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
-                <div>
-                    <h1 className="text-2xl font-semibold text-white">Tech Stack</h1>
-                    <p className="text-sm text-gray-400 mt-1">{project.name}</p>
-                </div>
-                <div className="flex gap-3">
-                    {!techStack ? (
-                        <Button
-                            onClick={handleGenerateClick}
-                            disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            <Wand2 className="w-4 h-4 mr-2" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
-                    ) : (
-                        <>
-                            {isEditing ? (
+            <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="text-center lg:text-left">
+                            <h1 className="text-xl lg:text-2xl font-semibold text-white">Tech Stack</h1>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                            {!techStack ? (
+                                <Button
+                                    onClick={handleGenerateClick}
+                                    disabled={isGenerating}
+                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                >
+                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                </Button>
+                            ) : (
                                 <>
-                                    <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700">
-                                        <Save className="w-4 h-4 mr-2" />
-                                        Save
-                                    </Button>
-                                    <Button onClick={() => setIsEditing(false)} variant="ghost">
-                                        <X className="w-4 h-4 mr-2" />
-                                        Cancel
+                                    {isEditing ? (
+                                        <>
+                                            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2">
+                                                <Save className="w-4 h-4 mr-2" />
+                                                <span className="hidden sm:inline">Save</span>
+                                            </Button>
+                                            <Button onClick={() => setIsEditing(false)} variant="ghost" className="text-sm px-4 py-2">
+                                                <X className="w-4 h-4 mr-2" />
+                                                Cancel
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button onClick={() => setIsEditing(true)} className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2">
+                                            <Pencil className="w-4 h-4 mr-2" />
+                                            <span className="hidden sm:inline">Edit</span>
+                                        </Button>
+                                    )}
+                                    <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2">
+                                        <Trash2 className="w-4 h-4" />
                                     </Button>
                                 </>
-                            ) : (
-                                <Button onClick={() => setIsEditing(true)} className="bg-white text-black hover:bg-gray-200">
-                                    <Pencil className="w-4 h-4 mr-2" />
-                                    Edit
-                                </Button>
                             )}
-                            <Button onClick={handleDelete} className="bg-red-600/20 text-red-400 hover:bg-red-600/30">
-                                <Trash2 className="w-4 h-4" />
-                            </Button>
-                        </>
-                    )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-auto">
-                {!techStack && !isGenerating ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Wand2 className="w-8 h-8 text-gray-400" />
+                <div className="p-4 lg:p-6 max-w-4xl mx-auto">
+                    {!techStack && !isGenerating ? (
+                        <div className="flex items-center justify-center h-96">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Code2 className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-xl font-semibold text-white mb-2">No Tech Stack Defined</h3>
+                                <p className="text-gray-400">Generate your tech stack with AI</p>
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Tech Stack Yet</h3>
-                            <p className="text-gray-400">Generate with AI to create technology recommendations</p>
                         </div>
-                    </div>
-                ) : (
-                    <div className="p-6 space-y-4">
-                        {/* Rationale */}
-                        {techStack?.rationale && (
-                            <GlassCard className="p-5">
-                                <h3 className="text-lg font-semibold text-white mb-3">Rationale</h3>
-                                <p className="text-gray-300 text-sm leading-relaxed">{techStack.rationale}</p>
-                            </GlassCard>
-                        )}
-
-                        {/* Categories */}
-                        {renderCategory("Frontend", "frontend", "blue")}
-                        {renderCategory("Backend", "backend", "green")}
-                        {renderCategory("Database", "database", "purple")}
-                        {renderCategory("DevOps", "devops", "orange")}
-                        {renderCategory("Other", "other", "gray")}
-                    </div>
-                )}
+                    ) : (
+                        <div className="space-y-6">
+                            {renderCategory("Frontend", "frontend", "blue")}
+                            {renderCategory("Backend", "backend", "green")}
+                            {renderCategory("Database", "database", "purple")}
+                            {renderCategory("DevOps", "devops", "orange")}
+                            {renderCategory("Other", "other", "gray")}
+                        </div>
+                    )}
+                </div>
             </div>
+
             <AIGenerationModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}
@@ -239,6 +220,6 @@ export default function TechStackPageClient({
                 type="tech-stack"
                 onGenerate={handleAIGenerate}
             />
-        </div >
+        </div>
     );
 }

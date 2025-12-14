@@ -139,61 +139,62 @@ export default function ArchitecturePageClient({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-auto">
-                <div className="p-4 lg:p-6 max-w-6xl mx-auto">
-                {!architecture && !isGenerating ? (
-                    <div className="flex items-center justify-center h-full p-8">
-                        <div className="max-w-md text-center">
-                            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-purple-500/20">
-                                <Network className="w-10 h-10 text-purple-400" />
+            <div className="flex-1 overflow-auto overflow-x-hidden">
+                <div className="p-2 sm:p-4 lg:p-6 w-full max-w-full sm:max-w-4xl lg:max-w-6xl mx-auto box-border">
+                    {!architecture && !isGenerating ? (
+                        <div className="flex items-center justify-center h-full p-4 sm:p-8">
+                            <div className="max-w-sm sm:max-w-md text-center px-4">
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-purple-500/20">
+                                    <Network className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" />
+                                </div>
+                                <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">No Architecture Defined</h3>
+                                <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 leading-relaxed break-words">
+                                    Define your system architecture with AI assistance. We&apos;ll help you create a comprehensive design including components, data flow, and infrastructure.
+                                </p>
+                                <Button
+                                    onClick={handleGenerateClick}
+                                    size="lg"
+                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20 text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
+                                >
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    <span className="hidden xs:inline">Generate with AI</span>
+                                    <span className="xs:hidden">Generate</span>
+                                </Button>
                             </div>
-                            <h3 className="text-2xl font-bold text-white mb-3">No Architecture Defined</h3>
-                            <p className="text-muted-foreground mb-6 leading-relaxed">
-                                Define your system architecture with AI assistance. We&apos;ll help you create a comprehensive design including components, data flow, and infrastructure.
-                            </p>
-                            <Button
-                                onClick={handleGenerateClick}
-                                size="lg"
-                                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20"
-                            >
-                                <Sparkles className="w-5 h-5 mr-2" />
-                                Generate with AI
-                            </Button>
                         </div>
-                    </div>
-                ) : isGenerating ? (
-                    <div className="flex items-center justify-center h-full">
-                        <div className="text-center">
-                            <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
-                            <p className="text-white font-medium">Generating architecture...</p>
-                            <p className="text-sm text-muted-foreground mt-1">This may take a moment</p>
+                    ) : isGenerating ? (
+                        <div className="flex items-center justify-center h-full">
+                            <div className="text-center px-4">
+                                <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
+                                <p className="text-white font-medium text-sm sm:text-base">Generating architecture...</p>
+                                <p className="text-xs sm:text-sm text-muted-foreground mt-1">This may take a moment</p>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="p-6 space-y-6">
-                        {/* Stale Module Notification */}
-                        {staleStatus.architecture && (
-                            <StaleModuleBanner
-                                projectId={project.id}
-                                module="architecture"
-                                reason={staleStatus.architecture.reason}
-                                changedModule={staleStatus.architecture.changedModule}
-                                updatedAt={staleStatus.architecture.updatedAt}
-                                onRegenerate={handleGenerateClick}
-                            />
-                        )}
+                    ) : (
+                        <div className="p-4 sm:p-6 space-y-6 overflow-x-hidden">
+                            {/* Stale Module Notification */}
+                            {staleStatus.architecture && (
+                                <StaleModuleBanner
+                                    projectId={project.id}
+                                    module="architecture"
+                                    reason={staleStatus.architecture.reason}
+                                    changedModule={staleStatus.architecture.changedModule}
+                                    updatedAt={staleStatus.architecture.updatedAt}
+                                    onRegenerate={handleGenerateClick}
+                                />
+                            )}
 
-                        <ArchitectureTabs projectId={project.id} architecture={architecture} />
-                    </div>
-                )}
-            </div>
-            <AIGenerationModal
-                isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
-                projectId={project.id}
-                type="architecture"
-                onGenerate={handleAIGenerate}
-            />
+                            <ArchitectureTabs projectId={project.id} architecture={architecture} />
+                        </div>
+                    )}
+                </div>
+                <AIGenerationModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    projectId={project.id}
+                    type="architecture"
+                    onGenerate={handleAIGenerate}
+                />
             </div>
 
             <DeleteModal

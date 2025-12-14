@@ -91,7 +91,6 @@ export default function RequirementsPageClient({
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="text-center lg:text-left">
                             <h1 className="text-xl lg:text-2xl font-semibold text-white">Requirements</h1>
-                            <p className="text-sm text-gray-400 mt-1">{project.name}</p>
                         </div>
                         {!isAdding && !editingId && (
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">

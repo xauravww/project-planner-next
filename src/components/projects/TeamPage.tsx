@@ -63,8 +63,9 @@ export default function TeamPage({ params, members, projectName }: { params: { i
     };
 
     return (
-        <ProjectLayout projectId={params.id} projectName={projectName}>
-            <div className="h-full flex flex-col">
+        <>
+            <ProjectLayout projectId={params.id} projectName={projectName}>
+                <div className="h-full flex flex-col">
                 {/* Header */}
                 <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
                     <div className="max-w-7xl mx-auto">
@@ -201,17 +202,18 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                         </GlassCard>
                     </div>
                 )}
-                    </div>
-                </div>
+                     </div>
+                 </div>
 
-            <DeleteModal
-                isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                onConfirm={confirmDelete}
-                title="Remove Team Member"
-                description="Are you sure you want to remove this member from the team?"
-                confirmText="Remove Member"
-            />
-        </ProjectLayout>
+                 <DeleteModal
+                     isOpen={deleteModalOpen}
+                     onClose={() => setDeleteModalOpen(false)}
+                     onConfirm={confirmDelete}
+                     title="Remove Team Member"
+                     description="Are you sure you want to remove this member from the team?"
+                     confirmText="Remove Member"
+                 />
+             </ProjectLayout>
+        </>
     );
 }

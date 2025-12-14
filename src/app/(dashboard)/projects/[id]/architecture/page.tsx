@@ -28,7 +28,7 @@ export default async function ArchitecturePage({ params }: { params: Promise<{ i
                         { label: "Architecture" }
                     ]} />
                 </div>
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto overflow-x-hidden">
                     <ArchitecturePageClient
                         project={result.project}
                         architecture={result.project.architecture}

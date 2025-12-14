@@ -109,37 +109,43 @@ export default function WorkflowsPageClient({
     return (
         <div className="h-full flex flex-col overflow-auto">
             {/* Header */}
-            <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
-                <div>
-                    <h1 className="text-2xl font-semibold text-white">Workflows</h1>
-                    <p className="text-sm text-gray-400 mt-1">{project.name}</p>
-                </div>
-                {!isAdding && !editingId && (
-                    <div className="flex gap-3">
-                        <Button
-                            onClick={() => setIsAdding(true)}
-                            className="bg-white text-black hover:bg-gray-200"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Workflow
-                        </Button>
-                        <Button
-                            onClick={handleGenerateClick}
-                            disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            <Wand2 className="w-4 h-4 mr-2" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
+            <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="text-center lg:text-left">
+                            <h1 className="text-xl lg:text-2xl font-semibold text-white">Workflows</h1>
+                        </div>
+                        {!isAdding && !editingId && (
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                                <Button
+                                    onClick={() => setIsAdding(true)}
+                                    className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">Add Workflow</span>
+                                    <span className="sm:hidden">Add</span>
+                                </Button>
+                                <Button
+                                    onClick={handleGenerateClick}
+                                    disabled={isGenerating}
+                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                >
+                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-auto">
-                {/* Add/Edit Form */}
-                {(isAdding || editingId) && (
-                    <div className="p-6">
+                <div className="p-4 lg:p-6 max-w-4xl mx-auto">
+                    {/* Add/Edit Form */}
+                    {(isAdding || editingId) && (
+                        <div className="mb-6">
                         <GlassCard className="p-6">
                             <h3 className="text-lg font-semibold text-white mb-4">
                                 {editingId ? "Edit Workflow" : "New Workflow"}
@@ -255,7 +261,8 @@ export default function WorkflowsPageClient({
                         ))}
                     </div>
                 )}
-            </div>
+                    </div>
+                </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}
