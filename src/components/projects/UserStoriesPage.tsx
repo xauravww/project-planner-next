@@ -4,6 +4,7 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Pencil, Trash2, Target, Wand2 } from "lucide-react";
 import { generateUserStories } from "@/actions/project";
 import { createUserStory, updateUserStory, deleteUserStory } from "@/actions/crud";
@@ -78,9 +79,19 @@ export default function UserStoriesPageClient({
         setIsAdding(false);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this user story?")) {
-            await deleteUserStory(id);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [storyToDelete, setStoryToDelete] = useState<string | null>(null);
+
+    const handleDelete = (id: string) => {
+        setStoryToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (storyToDelete) {
+            await deleteUserStory(storyToDelete);
+            setDeleteModalOpen(false);
+            setStoryToDelete(null);
             window.location.reload();
         }
     };
@@ -287,6 +298,16 @@ export default function UserStoriesPageClient({
                 type="stories"
                 onGenerate={handleAIGenerate}
             />
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete User Story"
+                description="Are you sure you want to delete this user story? This action cannot be undone."
+                confirmText="Delete Story"
+            />
+
         </div >
     );
 }

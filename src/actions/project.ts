@@ -391,6 +391,37 @@ export async function generateTechStack(projectId: string, qaPairs?: Array<{ que
     }
 }
 
+export async function deleteProject(projectId: string) {
+    const session = await auth();
+    if (!session?.user) {
+        return { error: "Unauthorized" };
+    }
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId,
+                userId: (session.user as any).id,
+            },
+        });
+
+        if (!project) {
+            return { error: "Project not found" };
+        }
+
+        // Delete the project (cascade will handle all related data)
+        await prisma.project.delete({
+            where: { id: projectId },
+        });
+
+        revalidatePath("/dashboard");
+        return { success: true };
+    } catch (_error) {
+        console.error("Delete project error:", _error);
+        return { error: "Failed to delete project" };
+    }
+}
+
 export async function getProjects() {
     const session = await auth();
     if (!session?.user) {

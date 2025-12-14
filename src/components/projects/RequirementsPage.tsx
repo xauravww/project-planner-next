@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Plus, Pencil, Trash2, Wand2 } from "lucide-react";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { generateRequirements } from "@/actions/project";
 import { createRequirement, updateRequirement, deleteRequirement } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
@@ -28,6 +29,8 @@ export default function RequirementsPageClient({
     });
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [requirementToDelete, setRequirementToDelete] = useState<string | null>(null);
 
     const handleGenerateClick = () => {
         setIsAIModalOpen(true);
@@ -66,9 +69,16 @@ export default function RequirementsPageClient({
         setIsAdding(false);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this requirement?")) {
-            await deleteRequirement(id);
+    const handleDelete = (id: string) => {
+        setRequirementToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (requirementToDelete) {
+            await deleteRequirement(requirementToDelete);
+            setDeleteModalOpen(false);
+            setRequirementToDelete(null);
             window.location.reload();
         }
     };
@@ -76,38 +86,44 @@ export default function RequirementsPageClient({
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
-                <div>
-                    <h1 className="text-2xl font-semibold text-white">Requirements</h1>
-                    <p className="text-sm text-gray-400 mt-1">{project.name}</p>
-                </div>
-                {!isAdding && !editingId && (
-                    <div className="flex gap-3">
-                        <Button
-                            onClick={() => setIsAdding(true)}
-                            className="bg-white text-black hover:bg-gray-200"
-                        >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Requirement
-                        </Button>
-                        <Button
-                            onClick={handleGenerateClick}
-                            disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            <Wand2 className="w-4 h-4 mr-2" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
+            <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="text-center lg:text-left">
+                            <h1 className="text-xl lg:text-2xl font-semibold text-white">Requirements</h1>
+                            <p className="text-sm text-gray-400 mt-1">{project.name}</p>
+                        </div>
+                        {!isAdding && !editingId && (
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                                <Button
+                                    onClick={() => setIsAdding(true)}
+                                    className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2"
+                                >
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">Add Requirement</span>
+                                    <span className="sm:hidden">Add</span>
+                                </Button>
+                                <Button
+                                    onClick={handleGenerateClick}
+                                    disabled={isGenerating}
+                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                >
+                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                </Button>
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-auto">
                 {/* Add/Edit Form */}
                 {(isAdding || editingId) && (
-                    <div className="p-6">
-                        <GlassCard className="p-6">
+                    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
+                        <GlassCard className="p-4 lg:p-6">
                             <h3 className="text-lg font-semibold text-white mb-4">
                                 {editingId ? "Edit Requirement" : "New Requirement"}
                             </h3>
@@ -195,7 +211,7 @@ export default function RequirementsPageClient({
                 {/* Requirements List */}
                 {requirements.length === 0 && !isAdding ? (
                     <div className="flex items-center justify-center h-96">
-                        <div className="text-center">
+                        <div className="text-center max-w-md mx-auto px-4">
                             <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Wand2 className="w-8 h-8 text-gray-400" />
                             </div>
@@ -204,31 +220,33 @@ export default function RequirementsPageClient({
                         </div>
                     </div>
                 ) : !isAdding && !editingId && (
-                    <div className="p-6 space-y-3">
+                    <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-3">
                         {requirements.map((req: any) => (
                             <GlassCard key={req.id} className="p-5">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <h3 className="text-base font-semibold text-white">{req.title}</h3>
-                                            <span
-                                                className={`text-xs px-2 py-1 rounded-full font-medium ${req.type === "functional"
-                                                        ? "bg-blue-500/20 text-blue-300"
-                                                        : "bg-purple-500/20 text-purple-300"
-                                                    }`}
-                                            >
-                                                {req.type === "functional" ? "Functional" : "Non-Functional"}
-                                            </span>
-                                            <span
-                                                className={`text-xs px-2 py-1 rounded-full font-medium ${req.priority === "must-have"
-                                                        ? "bg-red-500/20 text-red-300"
-                                                        : req.priority === "should-have"
-                                                            ? "bg-yellow-500/20 text-yellow-300"
-                                                            : "bg-green-500/20 text-green-300"
-                                                    }`}
-                                            >
-                                                {req.priority === "must-have" ? "Must Have" : req.priority === "should-have" ? "Should Have" : "Nice to Have"}
-                                            </span>
+                                        <div className="mb-2">
+                                            <h3 className="text-base font-semibold text-white mb-2">{req.title}</h3>
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${req.type === "functional"
+                                                            ? "bg-blue-500/20 text-blue-300"
+                                                            : "bg-purple-500/20 text-purple-300"
+                                                        }`}
+                                                >
+                                                    {req.type === "functional" ? "Functional" : "Non-Functional"}
+                                                </span>
+                                                <span
+                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${req.priority === "must-have"
+                                                            ? "bg-red-500/20 text-red-300"
+                                                            : req.priority === "should-have"
+                                                                ? "bg-yellow-500/20 text-yellow-300"
+                                                                : "bg-green-500/20 text-green-300"
+                                                        }`}
+                                                >
+                                                    {req.priority === "must-have" ? "Must Have" : req.priority === "should-have" ? "Should Have" : "Nice to Have"}
+                                                </span>
+                                            </div>
                                         </div>
                                         <p className="text-sm text-gray-300">{req.content}</p>
                                     </div>
@@ -258,6 +276,16 @@ export default function RequirementsPageClient({
                 projectId={project.id}
                 type="requirements"
                 onGenerate={handleAIGenerate}
+            />
+
+            {/* Delete Confirmation Modal */}
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Requirement"
+                description="Are you sure you want to delete this requirement? This action cannot be undone and will permanently remove the requirement from your project."
+                confirmText="Delete Requirement"
             />
         </div >
     );

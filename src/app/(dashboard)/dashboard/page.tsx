@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Plus, FolderKanban, Search, Filter, ArrowUpRight, Clock, MoreVertical } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+import { DeleteProjectButton } from "@/components/projects/DeleteProjectButton";
 
 export default async function DashboardPage() {
     const session = await auth();
@@ -152,12 +153,13 @@ export default async function DashboardPage() {
 
                             {projects.map((project: any) => (
                                 <Link key={project.id} href={`/projects/${project.id}`} className="group">
-                                    <GlassCard className="h-full min-h-[280px] p-6 flex flex-col relative overflow-hidden hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
-                                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
-                                                <MoreVertical className="w-4 h-4" />
-                                            </Button>
-                                        </div>
+                                     <GlassCard className="h-full min-h-[280px] p-6 flex flex-col relative overflow-hidden hover:-translate-y-1 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300">
+                                         <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                             <DeleteProjectButton projectId={project.id} projectName={project.name} />
+                                             <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-white/10">
+                                                 <MoreVertical className="w-4 h-4" />
+                                             </Button>
+                                         </div>
 
                                         <div className="mb-6">
                                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 border border-white/10 flex items-center justify-center mb-4">

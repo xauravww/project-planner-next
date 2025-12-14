@@ -13,6 +13,7 @@ import {
     Code,
     ArrowLeft,
     Settings,
+    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -21,9 +22,10 @@ interface ProjectSidebarProps {
     projectId: string;
     projectName: string;
     projectType?: string;
+    onClose?: () => void;
 }
 
-export default function ProjectSidebar({ projectId, projectName, projectType }: ProjectSidebarProps) {
+export default function ProjectSidebar({ projectId, projectName, projectType, onClose }: ProjectSidebarProps) {
     const pathname = usePathname();
     const [openCategories, setOpenCategories] = useState<string[]>(["planning"]);
 
@@ -78,7 +80,22 @@ export default function ProjectSidebar({ projectId, projectName, projectType }: 
     ];
 
     return (
-        <aside className="w-64 border-r border-white/10 bg-black/20 flex flex-col h-full">
+        <aside className="w-64 border-r border-white/10 bg-black/80 backdrop-blur-xl flex flex-col h-full">
+            {/* Mobile close button */}
+            {onClose && (
+                <div className="flex items-center justify-between p-4 border-b border-white/10 lg:hidden">
+                    <h2 className="text-lg font-semibold text-white truncate">{projectName}</h2>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={onClose}
+                        className="text-white hover:bg-white/10"
+                    >
+                        <X className="w-5 h-5" />
+                    </Button>
+                </div>
+            )}
+
             <div className="flex-1 overflow-y-auto p-4">
                 {/* Navigation */}
                 <nav className="space-y-1">

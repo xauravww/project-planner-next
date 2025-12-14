@@ -45,7 +45,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             projectName={project.name}
             projectType={project.description || undefined}
         >
-            <div className="p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="p-4 lg:p-6 space-y-6 max-w-7xl mx-auto">
                 {/* Breadcrumb */}
                 <Breadcrumb items={[
                     { label: project.name }

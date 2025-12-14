@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateArchitecture } from "@/actions/project";
@@ -24,6 +25,7 @@ export default function ArchitecturePageClient({
 }) {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [activeView, setActiveView] = useState<"overview" | "highLevel" | "lowLevel" | "functional" | "diagram">("overview");
     const [formData, setFormData] = useState({
         content: architecture?.content || "",
@@ -54,12 +56,15 @@ export default function ArchitecturePageClient({
         }
     };
 
-    const handleDelete = async () => {
-        if (confirm("Are you sure you want to delete this architecture documentation? This action cannot be undone.")) {
-            if (architecture?.id) {
-                await deleteArchitecture(architecture.id);
-                window.location.reload();
-            }
+    const handleDelete = () => {
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (architecture?.id) {
+            await deleteArchitecture(architecture.id);
+            setDeleteModalOpen(false);
+            window.location.reload();
         }
     };
 
@@ -181,6 +186,15 @@ export default function ArchitecturePageClient({
                 projectId={project.id}
                 type="architecture"
                 onGenerate={handleAIGenerate}
+            />
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Architecture"
+                description="Are you sure you want to delete this architecture documentation? This action cannot be undone and will permanently remove all architecture data from your project."
+                confirmText="Delete Architecture"
             />
         </div >
     );

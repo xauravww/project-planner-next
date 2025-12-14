@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, LayoutGrid, List as ListIcon, Calendar, User, MoreHorizontal, Trash2, CheckCircle2, Circle, Clock, Wand2 } from "lucide-react";
 import { createTask, updateTask, deleteTask } from "@/actions/crud";
 import { generateTasks } from "@/actions/project";
@@ -47,9 +48,19 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
         window.location.reload();
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this task?")) {
-            await deleteTask(id);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState<string | null>(null);
+
+    const handleDelete = (id: string) => {
+        setTaskToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (taskToDelete) {
+            await deleteTask(taskToDelete);
+            setDeleteModalOpen(false);
+            setTaskToDelete(null);
             window.location.reload();
         }
     };
@@ -313,6 +324,15 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                 projectId={params.id}
                 type="tasks"
                 onGenerate={handleAIGenerate}
+            />
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Task"
+                description="Are you sure you want to delete this task? This action cannot be undone."
+                confirmText="Delete Task"
             />
         </ProjectLayout>
     );

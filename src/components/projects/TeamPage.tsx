@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Users, Trash2, Pencil, Mail, User, Wand2, Shield } from "lucide-react";
 import { createMember, updateMember, deleteMember } from "@/actions/crud";
 import { generateTeamMembers } from "@/actions/project";
@@ -13,6 +14,8 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 export default function TeamPage({ params, members, projectName }: { params: { id: string }; members: any[]; projectName: string }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
         role: "",
@@ -45,9 +48,16 @@ export default function TeamPage({ params, members, projectName }: { params: { i
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Remove this member from the team?")) {
-            await deleteMember(id);
+    const handleDelete = (id: string) => {
+        setMemberToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (memberToDelete) {
+            await deleteMember(memberToDelete);
+            setDeleteModalOpen(false);
+            setMemberToDelete(null);
             window.location.reload();
         }
     };
@@ -173,6 +183,15 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                     </div>
                 )}
             </div>
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Remove Team Member"
+                description="Are you sure you want to remove this member from the team?"
+                confirmText="Remove Member"
+            />
         </ProjectLayout>
     );
 }

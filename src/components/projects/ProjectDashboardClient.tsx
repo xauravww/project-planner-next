@@ -180,13 +180,13 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
             />
 
             {/* Project Header with Export Button */}
-            <div className="flex items-start justify-between">
-                <div className="space-y-2 flex-1">
-                    <h1 className="text-3xl font-bold text-white">{project.name}</h1>
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                <div className="space-y-3 flex-1 text-center lg:text-left">
+                    <h1 className="text-2xl lg:text-3xl font-bold text-white">{project.name}</h1>
                     {project.description && (
-                        <p className="text-gray-400">{project.description}</p>
+                        <p className="text-gray-300 text-base lg:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">{project.description}</p>
                     )}
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex flex-wrap justify-center lg:justify-start items-center gap-4 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>

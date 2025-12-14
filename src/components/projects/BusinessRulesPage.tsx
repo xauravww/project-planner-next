@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Scale, Trash2, Pencil, AlertCircle, Wand2 } from "lucide-react";
 import { createBusinessRule, updateBusinessRule, deleteBusinessRule } from "@/actions/crud";
 import { generateBusinessRules } from "@/actions/project";
@@ -14,6 +15,8 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: "",
@@ -49,9 +52,16 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this rule?")) {
-            await deleteBusinessRule(id);
+    const handleDelete = (id: string) => {
+        setRuleToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (ruleToDelete) {
+            await deleteBusinessRule(ruleToDelete);
+            setDeleteModalOpen(false);
+            setRuleToDelete(null);
             window.location.reload();
         }
     };
@@ -215,6 +225,15 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
                 projectId={params.id}
                 type="business-rules"
                 onGenerate={handleAIGenerate}
+            />
+
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Business Rule"
+                description="Are you sure you want to delete this business rule? This action cannot be undone."
+                confirmText="Delete Rule"
             />
         </ProjectLayout>
     );
