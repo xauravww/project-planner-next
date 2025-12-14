@@ -65,17 +65,34 @@ export default function TeamPage({ params, members, projectName }: { params: { i
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
-                    <div>
-                        <Breadcrumb
-                            items={[
-                                { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/ projects / ${params.id} ` },
-                                { label: "Team" },
-                            ]}
-                        />
-                        <h1 className="text-2xl font-semibold text-white mt-2">Team Members</h1>
+                {/* Header */}
+                <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="text-center lg:text-left">
+                                <Breadcrumb
+                                    items={[
+                                        { label: "Projects", href: "/dashboard" },
+                                        { label: projectName, href: `/projects/${params.id}` },
+                                        { label: "Team Members" },
+                                    ]}
+                                />
+                                <h1 className="text-xl lg:text-2xl font-semibold text-white mt-2">Team Members</h1>
+                            </div>
+                            <div className="flex justify-center lg:justify-end">
+                                <Button onClick={() => {
+                                    setEditingId(null);
+                                    setFormData({ name: "", role: "", email: "" });
+                                    setIsModalOpen(true);
+                                }} className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">Add Member</span>
+                                    <span className="sm:hidden">Add</span>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
+                </div>
                     <Button onClick={() => {
                         setEditingId(null);
                         setFormData({ name: "", role: "", email: "" });
@@ -86,7 +103,9 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                     </Button>
                 </div>
 
-                <div className="flex-1 overflow-auto p-6">
+                {/* Content */}
+                <div className="flex-1 overflow-auto">
+                    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
                     {members.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
@@ -182,7 +201,8 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                         </GlassCard>
                     </div>
                 )}
-            </div>
+                    </div>
+                </div>
 
             <DeleteModal
                 isOpen={deleteModalOpen}

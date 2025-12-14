@@ -75,65 +75,72 @@ export default function ArchitecturePageClient({
             <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-blue-500/5 blur-[128px] -z-10" />
 
             {/* Header */}
-            <div className="border-b border-white/10 px-6 py-6 flex items-center justify-between bg-black/40 backdrop-blur-sm">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
-                        <Network className="w-6 h-6 text-purple-400" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-white">Architecture</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">System design & component structure</p>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    {!architecture ? (
-                        <Button
-                            onClick={handleGenerateClick}
-                            disabled={isGenerating}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20"
-                        >
-                            <Sparkles className="w-4 h-4 mr-2" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
-                    ) : (
-                        <>
-                            {isEditing ? (
-                                <>
-                                    <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/20">
-                                        <Save className="w-4 h-4 mr-2" />
-                                        Save Changes
-                                    </Button>
-                                    <Button onClick={() => setIsEditing(false)} variant="ghost">
-                                        <X className="w-4 h-4 mr-2" />
-                                        Cancel
-                                    </Button>
-                                </>
+            <div className="border-b border-white/10 px-4 lg:px-6 py-4 lg:py-6 bg-black/40 backdrop-blur-sm">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <div className="flex items-center gap-4 justify-center lg:justify-start">
+                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
+                                <Network className="w-5 h-5 lg:w-6 lg:h-6 text-purple-400" />
+                            </div>
+                            <div className="text-center lg:text-left">
+                                <h1 className="text-xl lg:text-2xl font-bold text-white">Architecture</h1>
+                                <p className="text-sm text-muted-foreground mt-0.5">System design & component structure</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                            {!architecture ? (
+                                <Button
+                                    onClick={handleGenerateClick}
+                                    disabled={isGenerating}
+                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20 text-sm px-4 py-2"
+                                >
+                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                </Button>
                             ) : (
                                 <>
-                                    <Button variant="glass" className="gap-2">
-                                        <Share2 className="w-4 h-4" />
-                                        Share
-                                    </Button>
-                                    <Button variant="glass" className="gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Export
-                                    </Button>
-                                    <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700">
-                                        <Pencil className="w-4 h-4 mr-2" />
-                                        Edit
-                                    </Button>
-                                    <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
-                                        <Trash2 className="w-4 h-4" />
-                                    </Button>
+                                    {isEditing ? (
+                                        <>
+                                            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 shadow-lg shadow-green-500/20 text-sm px-4 py-2">
+                                                <Save className="w-4 h-4 mr-2" />
+                                                <span className="hidden sm:inline">Save Changes</span>
+                                                <span className="sm:hidden">Save</span>
+                                            </Button>
+                                            <Button onClick={() => setIsEditing(false)} variant="ghost" className="text-sm px-4 py-2">
+                                                <X className="w-4 h-4 mr-2" />
+                                                Cancel
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button variant="glass" className="gap-2 text-sm px-4 py-2">
+                                                <Share2 className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Share</span>
+                                            </Button>
+                                            <Button variant="glass" className="gap-2 text-sm px-4 py-2">
+                                                <Download className="w-4 h-4" />
+                                                <span className="hidden sm:inline">Export</span>
+                                            </Button>
+                                            <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2">
+                                                <Pencil className="w-4 h-4 mr-2" />
+                                                <span className="hidden sm:inline">Edit</span>
+                                            </Button>
+                                            <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
+                                        </>
+                                    )}
                                 </>
                             )}
-                        </>
-                    )}
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 overflow-auto">
+                <div className="p-4 lg:p-6 max-w-6xl mx-auto">
                 {!architecture && !isGenerating ? (
                     <div className="flex items-center justify-center h-full p-8">
                         <div className="max-w-md text-center">
@@ -187,6 +194,7 @@ export default function ArchitecturePageClient({
                 type="architecture"
                 onGenerate={handleAIGenerate}
             />
+            </div>
 
             <DeleteModal
                 isOpen={deleteModalOpen}

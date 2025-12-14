@@ -80,48 +80,60 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
-                    <div>
-                        <Breadcrumb
-                            items={[
-                                { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/projects/${params.id}` },
-                                { label: "Tasks" },
-                            ]}
-                        />
-                        <h1 className="text-2xl font-semibold text-white mt-2">Tasks</h1>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <div className="bg-white/5 p-1 rounded-lg flex items-center">
-                            <button
-                                onClick={() => setViewMode("board")}
-                                className={`p-2 rounded-md transition-colors ${viewMode === "board" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
-                            >
-                                <LayoutGrid className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => setViewMode("list")}
-                                className={`p-2 rounded-md transition-colors ${viewMode === "list" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
-                            >
-                                <ListIcon className="w-4 h-4" />
-                            </button>
+                {/* Header */}
+                <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="text-center lg:text-left">
+                                <Breadcrumb
+                                    items={[
+                                        { label: "Projects", href: "/dashboard" },
+                                        { label: projectName, href: `/projects/${params.id}` },
+                                        { label: "Tasks" },
+                                    ]}
+                                />
+                                <h1 className="text-xl lg:text-2xl font-semibold text-white mt-2">Tasks</h1>
+                            </div>
+                            <div className="flex flex-col sm:flex-row items-center gap-3 justify-center lg:justify-end">
+                                <div className="bg-white/5 p-1 rounded-lg flex items-center">
+                                    <button
+                                        onClick={() => setViewMode("board")}
+                                        className={`p-2 rounded-md transition-colors ${viewMode === "board" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
+                                    >
+                                        <LayoutGrid className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode("list")}
+                                        className={`p-2 rounded-md transition-colors ${viewMode === "list" ? "bg-white/10 text-white" : "text-gray-400 hover:text-white"}`}
+                                    >
+                                        <ListIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                                <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2">
+                                    <Plus className="w-4 h-4 mr-2" />
+                                    <span className="hidden sm:inline">New Task</span>
+                                    <span className="sm:hidden">New</span>
+                                </Button>
+                            </div>
                         </div>
-                        <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200">
-                            <Plus className="w-4 h-4 mr-2" />
-                            New Task
-                        </Button>
-                        <Button
-                            onClick={() => setIsAIModalOpen(true)}
-                            disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
-                        >
-                            <Wand2 className="w-4 h-4 mr-2" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
                     </div>
+                 </div>
+
+                <div className="px-4 lg:px-6 py-4">
+                    <Button
+                        onClick={() => setIsAIModalOpen(true)}
+                        disabled={isGenerating}
+                        className="bg-blue-600 hover:bg-blue-700"
+                    >
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        {isGenerating ? "Generating..." : "Generate with AI"}
+                    </Button>
+                </div>
                 </div>
 
-                <div className="flex-1 overflow-auto p-6">
+                {/* Content */}
+                <div className="flex-1 overflow-auto">
+                    <div className="p-4 lg:p-6 max-w-7xl mx-auto">
                     {viewMode === "board" ? (
                         <div className="flex gap-6 h-full min-w-[1000px]">
                             {STATUS_COLS.map((col) => (
@@ -167,8 +179,41 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                                                 <Calendar className="w-3 h-3" />
                                                                 <span>{new Date(task.dueDate).toLocaleDateString()}</span>
                                                             </div>
-                                                        )}
-                                                    </div>
+                 ) : (
+                     <div className="space-y-4">
+                         {tasks.map((task) => (
+                             <GlassCard key={task.id} className="p-4">
+                                 <div className="flex justify-between items-start mb-2">
+                                     <h4 className="text-white font-medium">{task.title}</h4>
+                                     <span className={`text-[10px] px-2 py-0.5 rounded border ${PRIORITY_COLORS[task.priority]}`}>
+                                         {task.priority}
+                                     </span>
+                                 </div>
+                                 {task.description && (
+                                     <p className="text-xs text-gray-400 mb-3">{task.description}</p>
+                                 )}
+                                 <div className="flex items-center justify-between text-xs text-gray-500">
+                                     <span className={`px-2 py-1 rounded ${STATUS_COLS.find(col => col.id === task.status)?.color} text-white`}>
+                                         {STATUS_COLS.find(col => col.id === task.status)?.label}
+                                     </span>
+                                     {task.assignee && (
+                                         <div className="flex items-center gap-1">
+                                             <User className="w-3 h-3" />
+                                             <span>{task.assignee}</span>
+                                         </div>
+                                     )}
+                                     {task.dueDate && (
+                                         <div className="flex items-center gap-1">
+                                             <Calendar className="w-3 h-3" />
+                                             <span>{new Date(task.dueDate).toLocaleDateString()}</span>
+                                         </div>
+                                     )}
+                                 </div>
+                             </GlassCard>
+                         ))}
+                     </div>
+                 )}
+                    </div>
 
                                                     {/* Quick status change for demo */}
                                                     <div className="mt-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -317,7 +362,8 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                         </GlassCard>
                     </div>
                 )}
-            </div>
+                    </div>
+                </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}
