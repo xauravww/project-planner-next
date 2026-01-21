@@ -96,8 +96,12 @@ export default function WorkflowsPageClient({
             if (parsed.steps && Array.isArray(parsed.steps)) {
                 return (
                     <ol className="list-decimal list-inside space-y-1 text-sm text-gray-300">
-                        {parsed.steps.map((step: string, idx: number) => (
-                            <li key={idx}>{step}</li>
+                        {parsed.steps.map((step: any, idx: number) => (
+                            <li key={idx}>
+                                {typeof step === 'object'
+                                    ? (step.description || step.text || step.content || JSON.stringify(step))
+                                    : step}
+                            </li>
                         ))}
                     </ol>
                 );

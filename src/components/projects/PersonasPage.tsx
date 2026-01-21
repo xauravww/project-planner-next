@@ -41,11 +41,26 @@ export default function PersonasPage({ params, personas, projectName }: { params
 
     const handleEdit = (persona: any) => {
         setEditingId(persona.id);
+
+        // Helper to format JSON strings for textarea
+        const formatForEdit = (val: any) => {
+            try {
+                if (typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))) {
+                    const parsed = JSON.parse(val);
+                    if (Array.isArray(parsed)) return parsed.join('\n');
+                    return val;
+                }
+                return val;
+            } catch {
+                return val;
+            }
+        };
+
         setFormData({
             name: persona.name,
             role: persona.role,
-            goals: persona.goals,
-            frustrations: persona.frustrations,
+            goals: formatForEdit(persona.goals),
+            frustrations: formatForEdit(persona.frustrations),
             bio: persona.bio,
         });
         setIsModalOpen(true);
@@ -129,7 +144,7 @@ export default function PersonasPage({ params, personas, projectName }: { params
                                     </div>
 
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-2xl font-bold text-white">
+                                        <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-2xl font-bold text-indigo-400">
                                             {persona.name.charAt(0)}
                                         </div>
                                         <div>
@@ -143,13 +158,49 @@ export default function PersonasPage({ params, personas, projectName }: { params
                                             <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
                                                 <Target className="w-4 h-4" /> Goals
                                             </h4>
-                                            <p className="text-sm text-gray-300">{persona.goals}</p>
+                                            <div className="text-sm text-gray-300">
+                                                {(() => {
+                                                    try {
+                                                        const goals = typeof persona.goals === 'string' ? JSON.parse(persona.goals) : persona.goals;
+                                                        if (Array.isArray(goals)) {
+                                                            return (
+                                                                <ul className="list-disc list-inside space-y-1">
+                                                                    {goals.map((goal: string, i: number) => (
+                                                                        <li key={i}>{goal}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            );
+                                                        }
+                                                        return <p>{persona.goals}</p>;
+                                                    } catch {
+                                                        return <p>{persona.goals}</p>;
+                                                    }
+                                                })()}
+                                            </div>
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
                                                 <Frown className="w-4 h-4" /> Frustrations
                                             </h4>
-                                            <p className="text-sm text-gray-300">{persona.frustrations}</p>
+                                            <div className="text-sm text-gray-300">
+                                                {(() => {
+                                                    try {
+                                                        const frustrations = typeof persona.frustrations === 'string' ? JSON.parse(persona.frustrations) : persona.frustrations;
+                                                        if (Array.isArray(frustrations)) {
+                                                            return (
+                                                                <ul className="list-disc list-inside space-y-1">
+                                                                    {frustrations.map((f: string, i: number) => (
+                                                                        <li key={i}>{f}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            );
+                                                        }
+                                                        return <p>{persona.frustrations}</p>;
+                                                    } catch {
+                                                        return <p>{persona.frustrations}</p>;
+                                                    }
+                                                })()}
+                                            </div>
                                         </div>
                                         <div>
                                             <h4 className="text-sm font-medium text-gray-400 mb-2">Bio</h4>

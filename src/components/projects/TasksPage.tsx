@@ -175,6 +175,15 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                                                     const desc = task.description;
                                                                     if (typeof desc === 'string' && (desc.startsWith('{') || desc.startsWith('['))) {
                                                                         const parsed = JSON.parse(desc);
+                                                                        if (Array.isArray(parsed)) {
+                                                                            return (
+                                                                                <ul className="list-disc list-inside space-y-0.5">
+                                                                                    {parsed.map((item: any, i: number) => (
+                                                                                        <li key={i}>{typeof item === 'object' ? JSON.stringify(item) : item}</li>
+                                                                                    ))}
+                                                                                </ul>
+                                                                            );
+                                                                        }
                                                                         return typeof parsed === 'object' ? JSON.stringify(parsed) : desc;
                                                                     }
                                                                     return desc;

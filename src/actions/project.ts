@@ -395,7 +395,7 @@ export async function generateWorkflows(projectId: string, qaPairs?: Array<{ que
                 {
                     role: "system",
                     content:
-                        "Generate 2-3 key workflows for this project. Return ONLY a valid JSON array with objects containing: title, content (JSON with steps array), diagram (optional mermaid code). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
+                        "Generate 2-3 key workflows for this project. Return ONLY a valid JSON array with objects containing: title, content (JSON with a 'steps' field containing an ARRAY OF STRINGS), diagram (optional mermaid code). STRICT RULE: The 'steps' must be simple strings, not objects. Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
