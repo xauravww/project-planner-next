@@ -27,7 +27,7 @@ export type AetherHeroProps = {
     ariaLabel?: string;
 };
 
-/* Default fragment shader (your original) */
+/* Default fragment shader (modified for monochrome/light effect) */
 const DEFAULT_FRAG = `#version 300 es
 precision highp float;
 out vec4 O;
@@ -50,8 +50,9 @@ vec3 scene(vec2 uv) {
   vec3 col=vec3(0);
   uv=vec2(atan(uv.x,uv.y)*2./6.28318,-log(length(uv))+T);
   for (float i=.0; i<3.; i++) {
-    int k=int(mod(i,3.));
-    col[k]+=pattern(uv+i*6./MN);
+    // Monochrome spread (white/light blue tint)
+    float p = pattern(uv+i*6./MN);
+    col += vec3(p) * 0.4; // Reduced intensity, monochrome
   }
   return col;
 }
@@ -62,6 +63,10 @@ void main() {
   col+=e/(sin(uv.x*s)*cos(uv.y*s));
   uv.y+=R.x>R.y?.5:.5*(R.y/R.x);
   col+=scene(uv);
+  
+  // Apply a subtle blue/zinc tint to the white light for "Aether" feel, or keep pure white
+  col *= vec3(0.9, 0.95, 1.0); 
+  
   O=vec4(col,1.);
 }`;
 

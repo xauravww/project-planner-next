@@ -44,30 +44,30 @@ export default function LoginPage() {
     }
 
     return (
-        <div>
-            <Link href="/" className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-white transition-colors">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-black">
+            <Link href="/" className="mb-8 inline-flex items-center text-sm text-zinc-400 hover:text-white transition-colors">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Home
             </Link>
 
-            <GlassCard className="border-white/10">
+            <GlassCard className="border-white/10 bg-black w-full max-w-md p-8">
                 <div className="mb-8 text-center">
-                    <h1 className="mb-2 text-2xl font-bold text-white">Welcome Back</h1>
-                    <p className="text-sm text-muted-foreground">Sign in to continue planning your masterpiece.</p>
+                    <h1 className="mb-2 text-2xl font-bold text-white tracking-tight">Welcome Back</h1>
+                    <p className="text-sm text-zinc-400">Sign in to continue planning your masterpiece.</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300" htmlFor="email">
+                        <label className="text-sm font-medium text-zinc-300" htmlFor="email">
                             Email
                         </label>
-                        <Input id="email" name="email" type="email" placeholder="name@example.com" required />
+                        <Input id="email" name="email" type="email" placeholder="name@example.com" required className="bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all" />
                     </div>
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-300" htmlFor="password">
+                        <label className="text-sm font-medium text-zinc-300" htmlFor="password">
                             Password
                         </label>
-                        <Input id="password" name="password" type="password" placeholder="••••••••" required />
+                        <Input id="password" name="password" type="password" placeholder="••••••••" required className="bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus:border-white/20 focus:ring-1 focus:ring-white/20 transition-all" />
                     </div>
 
                     {error && (
@@ -77,15 +77,15 @@ export default function LoginPage() {
                     <Button
                         type="submit"
                         disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0"
+                        className="w-full bg-white text-black hover:bg-zinc-200 border-0 h-10 font-bold"
                     >
                         {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Sign In"}
                     </Button>
                 </form>
 
-                <div className="mt-6 text-center text-sm text-muted-foreground">
+                <div className="mt-6 text-center text-sm text-zinc-500">
                     Don&apos;t have an account?{" "}
-                    <Link href="/signup" className="text-blue-400 hover:text-blue-300 hover:underline">
+                    <Link href="/signup" className="text-white hover:text-zinc-300 hover:underline font-medium">
                         Sign up
                     </Link>
                 </div>

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Layers, Zap, Shield, Globe, Cpu, GitBranch } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AetherBackground from "@/components/ui/aether-background";
 
 const features = [
     {
@@ -46,7 +47,12 @@ const features = [
 export function Features() {
     return (
         <section id="features" className="py-24 md:py-32 bg-black relative overflow-hidden">
-            <div className="container mx-auto px-4">
+            <AetherBackground
+                overlayGradient="linear-gradient(180deg, #000000 0%, #000000bb 20%, #000000bb 80%, #000000 100%)"
+                className="opacity-40"
+            />
+
+            <div className="container mx-auto px-4 relative z-10">
                 <div className="mb-16 md:mb-24 max-w-3xl mx-auto text-center">
                     <h2 className="mb-6 text-3xl font-bold text-white sm:text-5xl md:text-6xl tracking-tight">
                         Everything you need to <span className="text-white">ship faster</span>

@@ -3,14 +3,17 @@
 import { Button } from "@/components/ui/Button";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import AetherBackground from "@/components/ui/aether-background";
 
 export function CTA() {
     return (
         <section className="py-24 relative overflow-hidden bg-black">
-            {/* Background Glow - REMOVED for clean minimal aesthetic */}
-            {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-blue-600/30 to-purple-600/30 rounded-full blur-[120px] -z-10" /> */}
+            <AetherBackground
+                overlayGradient="linear-gradient(0deg, #000000 0%, #000000 20%, #000000bb 50%, #000000 100%)"
+                className="opacity-60"
+            />
 
-            <div className="container mx-auto px-4 text-center">
+            <div className="container mx-auto px-4 text-center relative z-10">
                 <h2 className="text-4xl font-bold text-white sm:text-5xl mb-6 tracking-tight">
                     Ready to build the <br />
                     <span className="text-white">next big thing?</span>

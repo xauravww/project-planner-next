@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Check } from "lucide-react";
+import AetherBackground from "@/components/ui/aether-background";
 
 const plans = [
     {
@@ -33,8 +34,13 @@ const plans = [
 
 export function Pricing() {
     return (
-        <section id="pricing" className="py-24 relative bg-black">
-            <div className="container mx-auto px-4">
+        <section id="pricing" className="py-24 relative bg-black overflow-hidden">
+            <AetherBackground
+                variant="default"
+                overlayGradient="linear-gradient(180deg, #000000 0%, #000000aa 50%, #000000 100%)"
+                className="opacity-30"
+            />
+            <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4 tracking-tight">
                         Simple, Transparent <span className="text-white">Pricing</span>

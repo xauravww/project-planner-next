@@ -3,6 +3,7 @@
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Star } from "lucide-react";
 import { motion } from "framer-motion";
+import AetherBackground from "@/components/ui/aether-background";
 
 const testimonials = [
     {
@@ -44,8 +45,13 @@ const testimonials = [
 
 export function Testimonials() {
     return (
-        <section className="py-24 bg-black">
-            <div className="container mx-auto px-4">
+        <section className="py-24 bg-black relative overflow-hidden">
+            <AetherBackground
+                variant="orb"
+                overlayGradient="radial-gradient(circle at center, transparent 0%, #000000 80%)"
+                className="opacity-40"
+            />
+            <div className="container mx-auto px-4 relative z-10">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl font-bold text-white sm:text-5xl mb-4 tracking-tight">
                         Loved by <span className="text-white">Builders</span>

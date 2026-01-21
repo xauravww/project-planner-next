@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Lightbulb, PenTool, Rocket, ArrowDown } from "lucide-react";
+import AetherBackground from "@/components/ui/aether-background";
 
 const steps = [
     {
@@ -24,6 +25,12 @@ const steps = [
 export function HowItWorks() {
     return (
         <section className="py-24 md:py-32 relative overflow-hidden bg-black">
+            <AetherBackground
+                variant="grid"
+                overlayGradient="linear-gradient(180deg, #000000 0%, #000000e0 20%, #000000e0 80%, #000000 100%)"
+                className="opacity-30"
+            />
+
             {/* Connecting Line (Desktop) */}
             <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 hidden md:block -z-10" />
 
