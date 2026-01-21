@@ -5,13 +5,14 @@ import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Plus, Trash2, Image as ImageIcon, Wand2, Code2 } from "lucide-react";
-import { createMockup, deleteMockup } from "@/actions/crud";
-import { generateMockups, generateSingleMockup, generateMockupImage } from "@/actions/project";
+import { createMockup, deleteMockup, deleteAllMockups } from "@/actions/crud";
+import { generateMockups, generateSingleMockup, generateMockupImage, saveProjectContext } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
-import { toast } from "sonner"; // Assuming toast is available or I should add it
+import { toast } from "sonner";
+import { AestheticLoader } from "@/components/ui/AestheticLoader";
 
 export default function MockupsPage({ params, mockups, projectName }: { params: { id: string }; mockups: any[]; projectName: string }) {
     const router = useRouter();
@@ -20,12 +21,15 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     const [prompt, setPrompt] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [isDeleteAllDialogOpen, setIsDeleteAllDialogOpen] = useState(false);
     const [mockupToDelete, setMockupToDelete] = useState<string | null>(null);
 
     const handleGenerateImage = async (mockupId: string, e: React.MouseEvent) => {
+        console.log("handleGenerateImage clicked for mockup:", mockupId);
         e.stopPropagation();
         toast.info("Generating image...");
         const result = await generateMockupImage(mockupId);
+        console.log("generateMockupImage result:", result);
         if (result.error) {
             toast.error(result.error);
         } else {
@@ -38,29 +42,64 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
     // Manual generation
     const handleGenerate = async () => {
-        if (!prompt) return;
-        setIsGenerating(true);
-
-        const result = await generateSingleMockup(params.id, prompt);
-
-        if (result.error) {
-            toast.error(result.error); // Assuming toast exists, otherwise console.error or alert
-        } else {
-            toast.success("Mockup generated successfully");
-            setIsModalOpen(false);
-            setPrompt("");
-            // window.location.reload(); // Revalidation should handle it, but reload is safe if revalidation is slow
-            router.refresh();
+        if (!prompt.trim()) {
+            toast.error("Please enter a mockup description");
+            return;
         }
 
-        setIsGenerating(false);
+        setIsGenerating(true);
+        toast.info("Generating mockup...");
+
+        try {
+            const result = await generateSingleMockup(params.id, prompt);
+
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Mockup generated successfully!");
+                setIsModalOpen(false);
+                setPrompt("");
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("Manual mockup generation error:", error);
+            toast.error("Failed to generate mockup. Please try again.");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
         setIsGenerating(true);
-        await generateMockups(params.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        setIsAIModalOpen(false);
+        toast.info("AI is analyzing your requirements...");
+
+        try {
+            // Save context for each answer
+            for (const answer of answers) {
+                await saveProjectContext(
+                    params.id,
+                    answer.question,
+                    answer.question,
+                    answer.selected,
+                    "mockups"
+                );
+            }
+
+            const result = await generateMockups(params.id, answers);
+
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success("Mockups generated! Click 'Generate Image' on each card to create visuals.");
+                router.refresh();
+            }
+        } catch (error) {
+            console.error("AI mockup generation error:", error);
+            toast.error("Failed to generate mockups. Please try again.");
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const handleDeleteClick = (id: string, e: React.MouseEvent) => {
@@ -70,10 +109,24 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     };
 
     const handleDeleteConfirm = async () => {
-        if (mockupToDelete) {
+        if (!mockupToDelete) return;
+
+        try {
             await deleteMockup(mockupToDelete);
-            window.location.reload();
+            toast.success("Mockup deleted");
+            setIsDeleteDialogOpen(false);
+            setMockupToDelete(null);
+            router.refresh();
+        } catch (error) {
+            console.error("Delete mockup error:", error);
+            toast.error("Failed to delete mockup");
         }
+    };
+
+    const handleDeleteAllConfirm = async () => {
+        await deleteAllMockups(params.id);
+        setIsDeleteAllDialogOpen(false);
+        router.refresh(); // Or window.location.reload()
     };
 
     return (
@@ -91,6 +144,16 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                         <h1 className="text-2xl font-semibold text-white mt-2">Visual Mockups</h1>
                     </div>
                     <div className="flex gap-3">
+                        {mockups.length > 0 && (
+                            <Button
+                                variant="destructive"
+                                onClick={() => setIsDeleteAllDialogOpen(true)}
+                                className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete All
+                            </Button>
+                        )}
                         <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200">
                             <Plus className="w-4 h-4 mr-2" />
                             Add Mockup
@@ -109,6 +172,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
                 <div className="p-6">
                     {mockups.length === 0 ? (
+                        // ... empty state ...
                         <div className="flex flex-col items-center justify-center h-[60vh] text-center">
                             <div className="relative group">
                                 <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -136,7 +200,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     size="lg"
                                     className="border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
                                 >
-                                    <Plus className="w-5 h-5 mr-2" />
+                                    <Plus className="w-5 h-4 mr-2" />
                                     Manual Entry
                                 </Button>
                             </div>
@@ -201,7 +265,8 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     </div>
                                     <div className="p-3 bg-black/20">
                                         <p className="text-xs text-gray-400">
-                                            {new Date(mockup.createdAt).toLocaleDateString()}
+                                            {/* Use absolute date format to avoid hydration mismatch */}
+                                            {new Date(mockup.createdAt).toISOString().split('T')[0]}
                                         </p>
                                     </div>
                                 </GlassCard>
@@ -277,6 +342,27 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 confirmText="Delete"
                 intent="danger"
             />
+            <ConfirmDialog
+                isOpen={isDeleteAllDialogOpen}
+                onClose={() => setIsDeleteAllDialogOpen(false)}
+                onConfirm={handleDeleteAllConfirm}
+                title="Delete All Mockups"
+                description="Are you sure you want to delete ALL mockups in this project? This action acts on ALL mockups and cannot be undone."
+                confirmText="Delete All"
+                intent="danger"
+            />
+
+            {/* Global Loader Overlay */}
+            {isGenerating && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                    <div className="relative">
+                        <div className="absolute -inset-8 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-3xl" />
+                        <div className="relative bg-black/40 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
+                            <AestheticLoader message="Generating your mockups..." />
+                        </div>
+                    </div>
+                </div>
+            )}
         </ProjectLayout>
     );
 }

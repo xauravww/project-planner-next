@@ -648,6 +648,21 @@ export async function deleteMockup(id: string) {
     }
 }
 
+export async function deleteAllMockups(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.mockup.deleteMany({
+            where: { projectId }
+        });
+        revalidatePath(`/projects/${projectId}/mockups`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all mockups" };
+    }
+}
+
 // BUSINESS RULES CRUD
 export async function createBusinessRule(
     projectId: string,

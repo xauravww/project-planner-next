@@ -808,8 +808,12 @@ export async function generateMockups(
     projectId: string,
     qaPairs?: Array<{ question: string; selected: string[] }>
 ) {
+    console.log("Starting generateMockups for project:", projectId);
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user) {
+        console.error("Unauthorized access in generateMockups");
+        return { error: "Unauthorized" };
+    }
 
     try {
         const { serverOpenai } = await import("@/lib/ai-client");
@@ -821,7 +825,12 @@ export async function generateMockups(
             },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) {
+            console.error("Project not found:", projectId);
+            return { error: "Project not found" };
+        }
+
+        console.log("Generating prompts for project:", project.name);
 
         // 1. Generate Prompts using LLM
         const response = await serverOpenai.chat.completions.create({
@@ -851,10 +860,13 @@ Return ONLY the JSON array. Generate 2 distinct screens.`
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
+        console.log("AI Response received:", aiResponse);
         const mockups = parseAIResponse(aiResponse, [{ prompt: "Modern dashboard UI with dark mode and analytics charts" }]);
+        console.log("Parsed mockups:", mockups);
 
         // 2. Create Pending Mockups (Prompt only)
         for (const mockup of mockups) {
+            console.log("Creating pending mockup for prompt:", mockup.prompt);
             await prisma.mockup.create({
                 data: {
                     projectId,
@@ -873,17 +885,26 @@ Return ONLY the JSON array. Generate 2 distinct screens.`
 }
 
 // GENERATE IMAGE FOR EXISTING MOCKUP
+// GENERATE IMAGE FOR EXISTING MOCKUP
 export async function generateMockupImage(mockupId: string) {
+    console.log("Starting generateMockupImage for mockup:", mockupId);
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user) {
+        console.error("Unauthorized access in generateMockupImage");
+        return { error: "Unauthorized" };
+    }
 
     try {
         const mockup = await prisma.mockup.findUnique({
             where: { id: mockupId },
         });
 
-        if (!mockup) return { error: "Mockup not found" };
+        if (!mockup) {
+            console.error("Mockup not found:", mockupId);
+            return { error: "Mockup not found" };
+        }
 
+        console.log("Calling AI API for mockup image...");
         const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/v1/images/generations`, {
             method: 'POST',
             headers: {
@@ -899,17 +920,26 @@ export async function generateMockupImage(mockupId: string) {
         });
 
         if (!imageResponse.ok) {
+            const errText = await imageResponse.text();
+            console.error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText}`, errText);
             return { error: `Image generation failed: ${imageResponse.statusText}` };
         }
 
         const imageData = await imageResponse.json();
         const b64Json = imageData.data?.[0]?.b64_json;
 
-        if (!b64Json) return { error: "No image data returned" };
+        if (!b64Json) {
+            console.error("No base64 data returned from AI API");
+            return { error: "No image data returned" };
+        }
 
+        console.log("Uploading to ImgBB...");
         // Upload to ImgBB
-        const imgbbApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
-        if (!imgbbApiKey) return { error: "ImgBB API Key missing" };
+        const imgbbApiKey = process.env.IMGBB_API_KEY;
+        if (!imgbbApiKey) {
+            console.error("ImgBB API Key missing (IMGBB_API_KEY)");
+            return { error: "ImgBB API Key missing" };
+        }
 
         const formData = new FormData();
         formData.append("image", b64Json);
@@ -920,14 +950,20 @@ export async function generateMockupImage(mockupId: string) {
         });
 
         if (!uploadResponse.ok) {
+            const errText = await uploadResponse.text();
+            console.error(`ImgBB upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
             return { error: `ImgBB upload failed: ${uploadResponse.statusText}` };
         }
 
         const uploadData = await uploadResponse.json();
         const imageUrl = uploadData.data?.url;
 
-        if (!imageUrl) return { error: "No URL returned from ImgBB" };
+        if (!imageUrl) {
+            console.error("No URL returned from ImgBB");
+            return { error: "No URL returned from ImgBB" };
+        }
 
+        console.log("Saving new image URL:", imageUrl);
         await prisma.mockup.update({
             where: { id: mockupId },
             data: { imageUrl },
@@ -1053,11 +1089,17 @@ export async function generateTeamMembers(
 }
 
 // GENERATE SINGLE MOCKUP (Manual)
+// GENERATE SINGLE MOCKUP (Manual)
 export async function generateSingleMockup(projectId: string, prompt: string) {
+    console.log("Starting generateSingleMockup for project:", projectId);
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user) {
+        console.error("Unauthorized access in generateSingleMockup");
+        return { error: "Unauthorized" };
+    }
 
     try {
+        console.log("Calling AI API for single mockup...");
         const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/v1/images/generations`, {
             method: 'POST',
             headers: {
@@ -1073,7 +1115,8 @@ export async function generateSingleMockup(projectId: string, prompt: string) {
         });
 
         if (!imageResponse.ok) {
-            console.error(`Image generation failed: ${imageResponse.statusText}`);
+            const errText = await imageResponse.text();
+            console.error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText}`, errText);
             return { error: `Image generation failed: ${imageResponse.statusText}` };
         }
 
@@ -1081,12 +1124,17 @@ export async function generateSingleMockup(projectId: string, prompt: string) {
         const b64Json = imageData.data?.[0]?.b64_json;
 
         if (!b64Json) {
+            console.error("No base64 data returned from AI API");
             return { error: "No image data returned from API" };
         }
 
+        console.log("Uploading to ImgBB...");
         // Upload to ImgBB
         const imgbbApiKey = process.env.IMGBB_API_KEY;
-        if (!imgbbApiKey) return { error: "ImgBB API Key missing" };
+        if (!imgbbApiKey) {
+            console.error("ImgBB API Key missing (IMGBB_API_KEY)");
+            return { error: "ImgBB API Key missing" };
+        }
 
         const formData = new FormData();
         formData.append("image", b64Json);
@@ -1097,14 +1145,20 @@ export async function generateSingleMockup(projectId: string, prompt: string) {
         });
 
         if (!uploadResponse.ok) {
+            const errText = await uploadResponse.text();
+            console.error(`Image storage failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
             return { error: `Image storage failed: ${uploadResponse.statusText}` };
         }
 
         const uploadData = await uploadResponse.json();
         const publicUrl = uploadData.data?.url;
 
-        if (!publicUrl) return { error: "Failed to get public URL from storage" };
+        if (!publicUrl) {
+            console.error("Failed to get public URL from storage");
+            return { error: "Failed to get public URL from storage" };
+        }
 
+        console.log("Creating new mockup with URL:", publicUrl);
         await prisma.mockup.create({
             data: {
                 projectId,
