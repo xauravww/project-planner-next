@@ -336,7 +336,7 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                 {
                     role: "system",
                     content:
-                        "You are a software architect. Generate a comprehensive system architecture document. Return ONLY a valid JSON object with the following fields:\n- 'content': Overview and design decisions (markdown).\n- 'highLevel': High-level architecture description (markdown).\n- 'lowLevel': Low-level component details (markdown).\n- 'functionalDecomposition': Functional decomposition of the system (markdown).\n- 'diagram': Mermaid diagram code. \nSTRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
+                        "You are a software architect. Generate a comprehensive system architecture document. Return ONLY a valid JSON object with the following fields:\n- 'content': Overview and design decisions (markdown).\n- 'highLevel': High-level architecture description (markdown).\n- 'lowLevel': Low-level component details (markdown).\n- 'functionalDecomposition': Functional decomposition of the system (markdown).\n- 'diagram': Mermaid diagram code.\n\nSTRICT MERMAID RULES:\n1. Wrap ALL node labels in double quotes (e.g., id[\"Label Text\"]).\n2. Use standard arrow syntax: A -->|Label| B. NEVER use A -->|Label|> B.\n3. Do not use special characters or spaces in node IDs (use alphanumeric CamelCase).\n4. Do not wrap the diagram in markdown code blocks.\n\nSTRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",

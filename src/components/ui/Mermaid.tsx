@@ -9,50 +9,50 @@ mermaid.initialize({
     startOnLoad: false,
     theme: "base",
     themeVariables: {
-        // High contrast theme with dark text on light backgrounds
-        background: "#ffffff",
-        primaryColor: "#2563eb",
-        primaryTextColor: "#ffffff",
-        primaryBorderColor: "#1e40af",
-        lineColor: "#374151",
-        secondaryColor: "#7c3aed",
-        tertiaryColor: "#059669",
+        // Void/System Dark Theme
+        background: "#09090b", // zinc-950
+        primaryColor: "#3b82f6", // blue-500
+        primaryTextColor: "#e4e4e7", // zinc-200
+        primaryBorderColor: "#3f3f46", // zinc-700
+        lineColor: "#52525b", // zinc-600
+        secondaryColor: "#8b5cf6", // violet-500
+        tertiaryColor: "#10b981", // emerald-500
 
-        // Light backgrounds with dark text for contrast
-        textColor: "#111827",
-        mainBkg: "#f9fafb",
-        secondBkg: "#ffffff",
-        tertiaryBkg: "#f3f4f6",
-        nodeBorder: "#d1d5db",
-        clusterBkg: "#f3f4f6",
-        clusterBorder: "#9ca3af",
-        titleColor: "#111827",
-        edgeLabelBackground: "#ffffff",
-        gridColor: "#e5e7eb",
+        // Dark backgrounds with light text
+        textColor: "#e4e4e7",
+        mainBkg: "#09090b",
+        secondBkg: "#18181b", // zinc-900
+        tertiaryBkg: "#27272a", // zinc-800
+        nodeBorder: "#3f3f46",
+        clusterBkg: "#18181b",
+        clusterBorder: "#3f3f46",
+        titleColor: "#fafafa",
+        edgeLabelBackground: "#18181b",
+        gridColor: "#27272a",
 
-        // All text elements use dark colors for readability
-        nodeTextColor: "#111827",
-        edgeTextColor: "#374151",
-        actorTextColor: "#111827",
-        noteTextColor: "#374151",
-        labelTextColor: "#111827",
-        signalTextColor: "#111827",
-        stateTextColor: "#111827",
-        stateLabelColor: "#111827",
-        classTextColor: "#111827",
-        attributeTextColor: "#111827",
+        // Text elements
+        nodeTextColor: "#e4e4e7",
+        edgeTextColor: "#a1a1aa", // zinc-400
+        actorTextColor: "#e4e4e7",
+        noteTextColor: "#a1a1aa",
+        labelTextColor: "#e4e4e7",
+        signalTextColor: "#e4e4e7",
+        stateTextColor: "#e4e4e7",
+        stateLabelColor: "#e4e4e7",
+        classTextColor: "#e4e4e7",
+        attributeTextColor: "#e4e4e7",
 
-        // Background colors for different diagram elements
-        actorBkg: "#f3f4f6",
-        actorBorder: "#9ca3af",
-        actorLineColor: "#6b7280",
-        signalColor: "#374151",
-        stateBkg: "#f3f4f6",
-        stateBorder: "#9ca3af",
-        attributeBkgColorMain: "#f3f4f6",
-        fillType0: "#f3f4f6",
-        fillType1: "#ffffff",
-        fillType2: "#f9fafb",
+        // Element backgrounds
+        actorBkg: "#18181b",
+        actorBorder: "#3f3f46",
+        actorLineColor: "#a1a1aa",
+        signalColor: "#a1a1aa",
+        stateBkg: "#18181b",
+        stateBorder: "#3f3f46",
+        attributeBkgColorMain: "#18181b",
+        fillType0: "#18181b",
+        fillType1: "#18181b",
+        fillType2: "#27272a",
     },
     securityLevel: "loose",
     fontFamily: "inherit",
@@ -159,10 +159,12 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
 
     if (error) {
         return (
-            <div className={`flex flex-col items-center justify-center p-8 bg-red-50 border border-red-200 rounded-lg min-h-[200px] ${className}`}>
-                <AlertTriangle className="w-8 h-8 text-red-500 mb-2" />
-                <p className="text-red-700 font-medium mb-1">Failed to render diagram</p>
-                <p className="text-xs text-red-600 font-mono text-center max-w-md overflow-hidden text-ellipsis mb-4">
+            <div className={`flex flex-col items-center justify-center p-8 bg-black/40 border border-red-500/20 rounded-lg min-h-[200px] backdrop-blur-sm ${className}`}>
+                <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mb-4 border border-red-500/20">
+                    <AlertTriangle className="w-6 h-6 text-red-400" />
+                </div>
+                <p className="text-red-400 font-medium mb-2">Failed to render diagram</p>
+                <p className="text-xs text-red-400/70 font-mono text-center max-w-md overflow-hidden text-ellipsis mb-6">
                     {error}
                 </p>
 
@@ -170,12 +172,12 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
                     <button
                         onClick={handleFix}
                         disabled={isFixing}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition-all border border-red-500/20 hover:border-red-500/40 disabled:opacity-50"
                     >
                         {isFixing ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Fixing with AI...
+                                Fixing...
                             </>
                         ) : (
                             <>
@@ -186,18 +188,23 @@ export default function Mermaid({ chart, className = "", onFix }: MermaidProps) 
                     </button>
                 )}
 
-                <pre className="mt-4 p-2 bg-gray-100 rounded text-xs text-gray-700 w-full overflow-x-auto border">
-                    {chart}
-                </pre>
+                <div className="mt-6 w-full max-w-2xl bg-black/50 rounded-lg border border-white/5 overflow-hidden">
+                    <div className="px-3 py-1.5 border-b border-white/5 bg-white/5 text-[10px] text-gray-400 font-mono">
+                        Source
+                    </div>
+                    <pre className="p-3 text-[10px] text-gray-400 overflow-x-auto font-mono custom-scrollbar">
+                        {chart}
+                    </pre>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className={`h-[300px] sm:h-[400px] lg:h-[500px] w-full bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm ${className}`}>
+        <div className={`h-[300px] sm:h-[400px] lg:h-[500px] w-full bg-black/20 rounded-xl overflow-hidden border border-white/5 backdrop-blur-sm ${className}`}>
             <CanvasViewer>
                 <div
-                    className="mermaid-container w-full h-full flex items-center justify-center p-2 sm:p-4 lg:p-8 overflow-x-auto max-w-full"
+                    className="mermaid-container w-full h-full flex items-center justify-center p-2 sm:p-4 lg:p-8 overflow-x-auto max-w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']"
                     dangerouslySetInnerHTML={{ __html: svg }}
                 />
             </CanvasViewer>

@@ -39,7 +39,19 @@ interface APIEndpoint {
     responseErrors: Array<{ code: number; message: string }>;
 }
 
-export function ArchitectureTabs({ projectId, architecture }: { projectId: string; architecture: any }) {
+export function ArchitectureTabs({
+    projectId,
+    architecture,
+    isEditing = false,
+    formData,
+    onFormChange
+}: {
+    projectId: string;
+    architecture: any;
+    isEditing?: boolean;
+    formData?: any;
+    onFormChange?: (field: string, value: string) => void;
+}) {
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [isGenerating, setIsGenerating] = useState<string | null>(null);
 
@@ -107,9 +119,9 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
         : [];
 
     return (
-        <div className="space-y-6 overflow-x-hidden">
+        <div className="space-y-6 overflow-x-hidden w-full h-full p-4 sm:p-6">
             {/* Tab Navigation */}
-            <div className="flex gap-1 sm:gap-2 border-b border-white/10 pb-4 overflow-x-auto">
+            <div className="flex gap-1 sm:gap-2 border-b border-white/10 pb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
@@ -134,28 +146,54 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
                 {activeTab === "overview" && (
                     <div className="space-y-6">
                         <GlassCard>
-                            <h3 className="text-lg font-semibold mb-4">System Architecture</h3>
-                            {architecture?.content ? (
-                                <MessageContent content={architecture.content} />
+                            <h3 className="text-lg font-semibold mb-4 text-white">System Architecture</h3>
+                            {isEditing ? (
+                                <textarea
+                                    className="w-full h-64 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y"
+                                    value={formData?.content || ""}
+                                    onChange={(e) => onFormChange?.("content", e.target.value)}
+                                    placeholder="Enter system architecture overview..."
+                                />
                             ) : (
-                                <p className="text-gray-400">No architecture generated yet</p>
+                                architecture?.content ? (
+                                    <MessageContent content={architecture.content} />
+                                ) : (
+                                    <p className="text-gray-400">No architecture generated yet</p>
+                                )
                             )}
                         </GlassCard>
 
                         {architecture?.systemDiagram && (
                             <GlassCard>
-                                <h3 className="text-lg font-semibold mb-4">System Diagram</h3>
+                                <h3 className="text-lg font-semibold mb-4 text-white">System Diagram</h3>
+                                {isEditing ? (
+                                    <textarea
+                                        className="w-full h-64 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y mb-4"
+                                        value={formData?.diagram || ""}
+                                        onChange={(e) => onFormChange?.("diagram", e.target.value)}
+                                        placeholder="Enter Mermaid diagram code..."
+                                    />
+                                ) : null}
                                 <Mermaid
-                                    chart={architecture.systemDiagram}
-                                    onFix={(error: string) => handleFixDiagram(error, "systemDiagram", architecture.systemDiagram)}
+                                    chart={isEditing ? formData?.diagram : architecture.systemDiagram}
+                                    onFix={(error: string) => handleFixDiagram(error, "systemDiagram", isEditing ? formData?.diagram : architecture.systemDiagram)}
                                 />
                             </GlassCard>
                         )}
 
-                        {architecture?.highLevel && (
+                        {(architecture?.highLevel || isEditing) && (
                             <GlassCard>
-                                <h3 className="text-lg font-semibold mb-4">High-Level Architecture</h3>
-                                <MessageContent content={architecture.highLevel} />
+                                <h3 className="text-lg font-semibold mb-4 text-white">High-Level Architecture</h3>
+                                {isEditing ? (
+                                    <textarea
+                                        className="w-full h-48 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y"
+                                        value={formData?.highLevel || ""}
+                                        onChange={(e) => onFormChange?.("highLevel", e.target.value)}
+                                        placeholder="Enter high-level architecture details..."
+                                    />
+                                ) : (
+                                    <MessageContent content={architecture?.highLevel || ""} />
+                                )}
                             </GlassCard>
                         )}
                     </div>
@@ -206,23 +244,23 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
                                             <h4 className="text-md font-semibold text-blue-400 mb-2">{table.name}</h4>
                                             <p className="text-sm text-gray-400 mb-4">{table.description}</p>
 
-                                             <div className="overflow-x-auto max-w-full">
-                                                 <table className="w-full text-sm min-w-[600px]">
+                                            <div className="overflow-x-auto max-w-full">
+                                                <table className="w-full text-sm min-w-[600px] border-collapse">
                                                     <thead>
-                                                        <tr className="border-b border-white/10">
-                                                            <th className="text-left py-2 px-2">Field</th>
-                                                            <th className="text-left py-2 px-2">Type</th>
-                                                            <th className="text-left py-2 px-2">Constraints</th>
-                                                            <th className="text-left py-2 px-2">Description</th>
+                                                        <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-gray-500 font-mono">
+                                                            <th className="text-left py-3 px-3 font-medium">Field</th>
+                                                            <th className="text-left py-3 px-3 font-medium">Type</th>
+                                                            <th className="text-left py-3 px-3 font-medium">Constraints</th>
+                                                            <th className="text-left py-3 px-3 font-medium">Description</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody className="font-mono text-xs">
                                                         {table.fields.map((field) => (
-                                                            <tr key={field.name} className="border-b border-white/5">
-                                                                <td className="py-2 px-2 font-mono text-blue-300">{field.name}</td>
-                                                                <td className="py-2 px-2 text-gray-400">{field.type}</td>
-                                                                <td className="py-2 px-2 text-xs text-gray-500">{field.constraints}</td>
-                                                                <td className="py-2 px-2 text-gray-400">{field.description}</td>
+                                                            <tr key={field.name} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                                                                <td className="py-3 px-3 text-indigo-300 font-semibold">{field.name}</td>
+                                                                <td className="py-3 px-3 text-emerald-400/80">{field.type}</td>
+                                                                <td className="py-3 px-3 text-amber-400/80">{field.constraints}</td>
+                                                                <td className="py-3 px-3 text-gray-400 font-sans">{field.description}</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -311,15 +349,15 @@ export function ArchitectureTabs({ projectId, architecture }: { projectId: strin
                                                         <div className="mt-3 space-y-2 pl-4 border-l-2 border-white/10">
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 mb-1">Request Body:</p>
-                                                                 <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
-                                                                     {JSON.stringify(endpoint.requestBody, null, 2)}
-                                                                 </pre>
+                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                    {JSON.stringify(endpoint.requestBody, null, 2)}
+                                                                </pre>
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-semibold text-gray-500 mb-1">Success Response ({endpoint.responseSuccess.code}):</p>
-                                                                 <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
-                                                                     {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
-                                                                 </pre>
+                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                    {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
+                                                                </pre>
                                                             </div>
                                                             {endpoint.responseErrors.length > 0 && (
                                                                 <div>

@@ -48,6 +48,7 @@ ${project.requirements.map(r => `- ${r.title}: ${r.content.substring(0, 200)}`).
 1. **ER Diagram** (Mermaid format with relationships)
    - Use "quotes" for all node labels if they contain spaces or special characters.
    - Avoid special characters in node IDs (use CamelCase or snake_case).
+   - Ensure valid attribute definitions (e.g., string email, int age).
 2. **Table Specifications** (JSON format with complete field definitions)
 
 Return ONLY a valid JSON object with this structure. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
@@ -129,8 +130,9 @@ User Stories: ${project.userStories.map(s => s.title).join(", ")}
 
 1. **Endpoint Specifications** - RESTful API endpoints with full details
 2. **Sequence Diagrams** - Mermaid diagrams showing API flow for key operations
-   - Use "quotes" for all participant names and messages.
+   - Use "quotes" for all participant names and messages (e.g., Client->>"API": "Request").
    - Avoid special characters in participant IDs.
+   - Use standard arrow syntax (->> for solid, -->> for dotted).
 
 Return ONLY a valid JSON object. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
 {
@@ -223,6 +225,7 @@ Architecture: ${project.architecture.highLevel}
 1. **Deployment Diagram** (Mermaid) - Infrastructure layout with components
    - Use "quotes" for all node labels (e.g., id["Label Text"]).
    - Avoid special characters in node IDs.
+   - Use standard arrow syntax: A --> B. NEVER use A -->|> B.
 2. **Scaling Strategy** (Text) - How to scale horizontally/vertically
 3. **Security Design** (Text) - Security layers and measures
 
@@ -280,6 +283,7 @@ IMPORTANT FIXING RULES:
 2. Remove special characters from node IDs (keep them alphanumeric).
 3. Escape special characters inside quotes if necessary.
 4. Ensure subgraph titles are quoted if they contain spaces or special characters.
+5. FIX INVALID ARROWS: Replace "-->|text|>" with "-->|text|". Replace "==>|text|>" with "==>|text|".
 
 Error: ${error}
 

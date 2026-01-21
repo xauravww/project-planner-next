@@ -172,8 +172,8 @@ export default function ArchitecturePageClient({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-auto overflow-x-hidden">
-                <div className="p-2 sm:p-4 lg:p-6 w-full max-w-full sm:max-w-4xl lg:max-w-6xl mx-auto box-border">
+            <div className="flex-1 overflow-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                <div className="p-0 w-full mx-auto box-border">
                     {!architecture && !isGenerating ? (
                         <div className="flex items-center justify-center h-full p-4 sm:p-8">
                             <div className="max-w-sm sm:max-w-md text-center px-4">
@@ -205,8 +205,7 @@ export default function ArchitecturePageClient({
                             </div>
                         </div>
                     ) : (
-                        <div className="p-4 sm:p-6 space-y-6 overflow-x-hidden">
-                            {/* Stale Module Notification */}
+                        <div className="space-y-6 w-full h-full">
                             {staleStatus.architecture && (
                                 <StaleModuleBanner
                                     projectId={project.id}
@@ -218,7 +217,15 @@ export default function ArchitecturePageClient({
                                 />
                             )}
 
-                            <ArchitectureTabs projectId={project.id} architecture={architecture} />
+                            <ArchitectureTabs
+                                projectId={project.id}
+                                architecture={architecture}
+                                isEditing={isEditing}
+                                formData={formData}
+                                onFormChange={(field, value) => {
+                                    setFormData(prev => ({ ...prev, [field]: value }));
+                                }}
+                            />
                         </div>
                     )}
                 </div>

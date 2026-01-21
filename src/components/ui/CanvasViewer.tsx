@@ -26,12 +26,22 @@ export default function CanvasViewer({
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
     const handleWheel = (e: React.WheelEvent) => {
-        e.preventDefault();
-        e.stopPropagation(); // Prevent scroll from propagating outside the canvas
-        const delta = e.deltaY > 0 ? -0.1 : 0.1;
-        const newScale = Math.min(Math.max(scale + delta, minScale), maxScale);
-        setScale(newScale);
+        if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            e.stopPropagation();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            const newScale = Math.min(Math.max(scale + delta, minScale), maxScale);
+            setScale(newScale);
+        }
     };
+
+    // ... (rest of the file)
+
+    // ... inside return JSX
+    {/* Instructions */ }
+    <div className="absolute bottom-4 left-4 z-10 text-xs text-gray-400 bg-black/50 px-3 py-1.5 rounded pointer-events-none">
+        Drag to pan • Ctrl + Scroll to zoom
+    </div>
 
     const handleMouseDown = (e: React.MouseEvent) => {
         if (e.button === 0) { // Left click only
@@ -187,8 +197,8 @@ export default function CanvasViewer({
             </div>
 
             {/* Instructions */}
-            <div className="absolute bottom-4 left-4 z-10 text-xs text-gray-400 bg-black/50 px-3 py-1.5 rounded">
-                Drag to pan • Scroll to zoom
+            <div className="absolute bottom-4 left-4 z-10 text-xs text-gray-400 bg-black/50 px-3 py-1.5 rounded pointer-events-none">
+                Drag to pan • Ctrl + Scroll to zoom
             </div>
         </div>
     );
