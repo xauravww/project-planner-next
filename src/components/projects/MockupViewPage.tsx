@@ -10,7 +10,7 @@ import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { LoadingAnimation } from "@/components/ui/LoadingAnimation";
 
-type Tab = "preview" | "code" | "settings";
+type Tab = "preview" | "code" | "detail";
 
 export default function MockupViewPage({
     params,
@@ -121,7 +121,7 @@ export default function MockupViewPage({
     const tabs = [
         { id: "preview" as Tab, label: "Preview", icon: Eye },
         { id: "code" as Tab, label: "Code", icon: Code },
-        { id: "settings" as Tab, label: "Settings", icon: Settings2 },
+        { id: "detail" as Tab, label: "Detail", icon: Settings2 },
     ];
 
     return (
@@ -139,7 +139,7 @@ export default function MockupViewPage({
                         return (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
+                                onClick={() => setActiveTab(tab.id as Tab)}
                                 className={`flex items-center gap-2 px-4 py-3 font-medium transition-all relative ${activeTab === tab.id
                                     ? "text-white"
                                     : "text-gray-400 hover:text-gray-300"
@@ -254,33 +254,49 @@ export default function MockupViewPage({
                         </div>
                     )}
 
-                    {activeTab === "settings" && (
-                        <GlassCard className="space-y-6 p-6">
+                    {activeTab === "detail" && (
+                        <GlassCard className="space-y-8 p-6">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                    Prompt
-                                </label>
-                                <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                                    <p className="text-gray-300 text-sm leading-relaxed">
-                                        {mockup.prompt}
+                                <h3 className="text-lg font-semibold text-white mb-4">Design Mockup</h3>
+                                {mockup.imageUrl && mockup.imageUrl !== "PENDING" ? (
+                                    <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={mockup.imageUrl} alt="AI Generated Mockup" className="w-full h-auto max-h-[600px] object-contain bg-black/50" />
+                                    </div>
+                                ) : (
+                                    <div className="p-12 border border-dashed border-white/10 rounded-xl bg-white/5 text-center text-gray-400">
+                                        <p>No image generated for this mockup.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                        Prompt
+                                    </label>
+                                    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+                                        <p className="text-gray-300 text-sm leading-relaxed">
+                                            {mockup.prompt}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                        Created
+                                    </label>
+                                    <p className="text-gray-400 text-sm">
+                                        {new Date(mockup.createdAt).toLocaleString()}
                                     </p>
                                 </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                    Created
-                                </label>
-                                <p className="text-gray-400 text-sm">
-                                    {new Date(mockup.createdAt).toLocaleString()}
-                                </p>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-300 mb-2">
-                                    Last Updated
-                                </label>
-                                <p className="text-gray-400 text-sm">
-                                    {new Date(mockup.updatedAt).toLocaleString()}
-                                </p>
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                        Last Updated
+                                    </label>
+                                    <p className="text-gray-400 text-sm">
+                                        {new Date(mockup.updatedAt).toLocaleString()}
+                                    </p>
+                                </div>
                             </div>
                         </GlassCard>
                     )}

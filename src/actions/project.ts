@@ -823,73 +823,43 @@ export async function generateMockups(
 
         if (!project) return { error: "Project not found" };
 
+        // 1. Generate Prompts using LLM
         const response = await serverOpenai.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content: `You are a UI/UX expert creating ultra-specific mockup prompts for modern web interfaces.
+                    content: `You are a UI/UX expert creating specific image generation prompts for web interfaces.
+Your goal is to describe the UI so that an image generator (like DALL-E) can render it.
 
-Your prompts MUST be extremely detailed and structured. Each prompt should include ALL of these elements:
+Return a JSON array of objects with ONE field: "prompt".
+Each prompt should be a detailed visual description of a single screen.
+Include:
+- Layout and composition
+- Color scheme (Project specific)
+- Key components (Sidebar, Dashboard, Cards)
+- "High quality, professional UI design, dribbble style, vector aesthetics" keywords.
 
-1. **Page/Screen Purpose**: What is this screen for? (e.g., "User login page", "Project dashboard", "Settings panel")
+Example Prompt: "High quality UI design of a dashboard for a finance app. Dark mode, sleek sidebar on the left. Main content area shows a line chart with neon green accents. Modern typography, glassmorphism card effects. Professional, clean, 8k resolution."
 
-2. **Layout Structure**: Describe the layout precisely
-   - Container max-width (e.g., "max-w-md for forms", "max-w-7xl for dashboards")
-   - Positioning (e.g., "centered on page", "full-width with sidebar")
-   - Background (e.g., "white card on gradient background", "light gray page background")
-
-3. **Components List**: List EVERY component that should appear
-   - Headers, navigation, forms, buttons, cards, icons
-   - Be specific about component types (e.g., "text input with focus ring", "primary CTA button with hover scale")
-
-4. **Color Specifications**: Use EXACT hex codes from this palette
-   - Primary Blue: #3B82F6
-   - Purple: #8B5CF6  
-   - Green (Success): #10B981
-   - Red (Error): #EF4444
-   - Neutral 50: #F9FAFB (lightest)
-   - Neutral 200: #E5E7EB (borders)
-   - Neutral 700: #374151 (text)
-   - Neutral 900: #111827 (headings)
-
-5. **Typography Details**: Specify exact text sizes and weights
-   - Headings: text-3xl font-bold, text-2xl font-semibold, etc.
-   - Body: text-base, text-sm
-   - Font weight: font-bold, font-semibold, font-medium, font-normal
-
-6. **Spacing & Padding**: Use Tailwind scale
-   - Card/Container padding: p-8, p-6, p-4
-   - Element spacing: space-y-6, space-y-4, gap-6, gap-4
-   - Margin: mt-6, mb-4, etc.
-
-7. **Interactive States**: Describe hover/focus/active states
-   - Buttons: "hover:bg-blue-600, hover:scale-105, shadow-md transition"
-   - Inputs: "focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-   - Cards: "hover:shadow-lg transition-shadow"
-
-8. **Icons**: Mention specific Lucide icons if needed
-   - "mail icon for email field", "lock icon for password", "check icon for success"
-
-Return a JSON array with objects containing ONE field: "prompt" (the ultra-detailed description).
-                    Return ONLY a JSON array with objects containing ONE field: "prompt" (the ultra-detailed description). Do not include any other text.`
+Return ONLY the JSON array. Generate 2 distinct screens.`
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 ultra-detailed mockup prompts.`
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 2 distinct UI mockup prompts.`
                 }
             ],
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const mockups = parseAIResponse(aiResponse, [{ prompt: "Modern dashboard with charts and analytics" }]);
+        const mockups = parseAIResponse(aiResponse, [{ prompt: "Modern dashboard UI with dark mode and analytics charts" }]);
 
+        // 2. Create Pending Mockups (Prompt only)
         for (const mockup of mockups) {
-            const imageUrl = `https://placehold.co/800x600/1a1a2e/ffffff?text=${encodeURIComponent(mockup.prompt.slice(0, 50))}`;
             await prisma.mockup.create({
                 data: {
                     projectId,
                     prompt: mockup.prompt,
-                    imageUrl,
+                    imageUrl: "PENDING", // Marker for pending generation
                 },
             });
         }
@@ -899,6 +869,75 @@ Return a JSON array with objects containing ONE field: "prompt" (the ultra-detai
     } catch (_error) {
         console.error("Generate mockups error:", _error);
         return { error: "Failed to generate mockups" };
+    }
+}
+
+// GENERATE IMAGE FOR EXISTING MOCKUP
+export async function generateMockupImage(mockupId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const mockup = await prisma.mockup.findUnique({
+            where: { id: mockupId },
+        });
+
+        if (!mockup) return { error: "Mockup not found" };
+
+        const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/v1/images/generations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AI_TOKEN}`
+            },
+            body: JSON.stringify({
+                prompt: mockup.prompt + ", high quality UI design, clean, vector style, dribbble",
+                n: 1,
+                size: "1024x1024",
+                response_format: "b64_json"
+            })
+        });
+
+        if (!imageResponse.ok) {
+            return { error: `Image generation failed: ${imageResponse.statusText}` };
+        }
+
+        const imageData = await imageResponse.json();
+        const b64Json = imageData.data?.[0]?.b64_json;
+
+        if (!b64Json) return { error: "No image data returned" };
+
+        // Upload to ImgBB
+        const imgbbApiKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+        if (!imgbbApiKey) return { error: "ImgBB API Key missing" };
+
+        const formData = new FormData();
+        formData.append("image", b64Json);
+
+        const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+            return { error: `ImgBB upload failed: ${uploadResponse.statusText}` };
+        }
+
+        const uploadData = await uploadResponse.json();
+        const imageUrl = uploadData.data?.url;
+
+        if (!imageUrl) return { error: "No URL returned from ImgBB" };
+
+        await prisma.mockup.update({
+            where: { id: mockupId },
+            data: { imageUrl },
+        });
+
+        revalidatePath(`/projects/${mockup.projectId}/mockups`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate mockup image error:", error);
+        return { error: "Failed to generate image" };
     }
 }
 
@@ -1010,5 +1049,74 @@ export async function generateTeamMembers(
     } catch (_error) {
         console.error("Generate team members error:", _error);
         return { error: "Failed to generate team members" };
+    }
+}
+
+// GENERATE SINGLE MOCKUP (Manual)
+export async function generateSingleMockup(projectId: string, prompt: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/v1/images/generations`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AI_TOKEN}`
+            },
+            body: JSON.stringify({
+                prompt: prompt + ", high quality UI design, clean, vector style, dribbble",
+                n: 1,
+                size: "1024x1024",
+                response_format: "b64_json"
+            })
+        });
+
+        if (!imageResponse.ok) {
+            console.error(`Image generation failed: ${imageResponse.statusText}`);
+            return { error: `Image generation failed: ${imageResponse.statusText}` };
+        }
+
+        const imageData = await imageResponse.json();
+        const b64Json = imageData.data?.[0]?.b64_json;
+
+        if (!b64Json) {
+            return { error: "No image data returned from API" };
+        }
+
+        // Upload to ImgBB
+        const imgbbApiKey = process.env.IMGBB_API_KEY;
+        if (!imgbbApiKey) return { error: "ImgBB API Key missing" };
+
+        const formData = new FormData();
+        formData.append("image", b64Json);
+
+        const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+            return { error: `Image storage failed: ${uploadResponse.statusText}` };
+        }
+
+        const uploadData = await uploadResponse.json();
+        const publicUrl = uploadData.data?.url;
+
+        if (!publicUrl) return { error: "Failed to get public URL from storage" };
+
+        await prisma.mockup.create({
+            data: {
+                projectId,
+                prompt,
+                imageUrl: publicUrl,
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/mockups`);
+        return { success: true };
+    } catch (error) {
+        console.error("Generate single mockup error:", error);
+        return { error: "Failed to generate mockup" };
     }
 }

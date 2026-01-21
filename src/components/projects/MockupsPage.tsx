@@ -6,11 +6,12 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Plus, Trash2, Image as ImageIcon, Wand2, Code2 } from "lucide-react";
 import { createMockup, deleteMockup } from "@/actions/crud";
-import { generateMockups } from "@/actions/project";
+import { generateMockups, generateSingleMockup, generateMockupImage } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { toast } from "sonner"; // Assuming toast is available or I should add it
 
 export default function MockupsPage({ params, mockups, projectName }: { params: { id: string }; mockups: any[]; projectName: string }) {
     const router = useRouter();
@@ -21,25 +22,38 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [mockupToDelete, setMockupToDelete] = useState<string | null>(null);
 
-    // Dummy image generation
-    // Create mockup entry (generation happens in detail view)
+    const handleGenerateImage = async (mockupId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        toast.info("Generating image...");
+        const result = await generateMockupImage(mockupId);
+        if (result.error) {
+            toast.error(result.error);
+        } else {
+            toast.success("Image generated!");
+            router.refresh();
+        }
+    };
+
+    // ... params ...
+
+    // Manual generation
     const handleGenerate = async () => {
         if (!prompt) return;
         setIsGenerating(true);
 
-        // Create a mockup entry with a placeholder. The actual UI generation happens in the detail view.
-        // We use a generic placeholder for now.
-        const placeholderUrl = `https://placehold.co/1024x768/1e1e1e/FFF?text=${encodeURIComponent("Click to Generate UI")}`;
+        const result = await generateSingleMockup(params.id, prompt);
 
-        await createMockup(params.id, {
-            prompt,
-            imageUrl: placeholderUrl,
-        });
+        if (result.error) {
+            toast.error(result.error); // Assuming toast exists, otherwise console.error or alert
+        } else {
+            toast.success("Mockup generated successfully");
+            setIsModalOpen(false);
+            setPrompt("");
+            // window.location.reload(); // Revalidation should handle it, but reload is safe if revalidation is slow
+            router.refresh();
+        }
 
         setIsGenerating(false);
-        setIsModalOpen(false);
-        setPrompt("");
-        window.location.reload();
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
@@ -95,23 +109,37 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
                 <div className="p-6">
                     {mockups.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
-                                <ImageIcon className="w-10 h-10 text-gray-400" />
+                        <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+                            <div className="relative group">
+                                <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                                <div className="relative w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mb-6 backdrop-blur-sm group-hover:border-white/20 transition-colors">
+                                    <ImageIcon className="w-10 h-10 text-gray-400 group-hover:text-white transition-colors duration-300" />
+                                </div>
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Mockups Yet</h3>
-                            <p className="text-gray-400 max-w-md mb-6">
-                                Generate visual mockups for your project using AI. Describe what you want to see, and we&apos;ll create it.
+                            <h3 className="text-2xl font-bold text-white mb-3">No Mockups Yet</h3>
+                            <p className="text-gray-400 max-w-md mb-8 text-lg">
+                                Transform your ideas into visuals. Use our AI to generate high-fidelity UI mockups for your project instantly.
                             </p>
-                            <Button
-                                variant="glass"
-                                onClick={() => setIsModalOpen(true)}
-                                size="lg"
-                                className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                            >
-                                <Wand2 className="w-5 h-5 mr-2 text-indigo-400" />
-                                Generate First Mockup
-                            </Button>
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                <Button
+                                    variant="glass"
+                                    onClick={() => setIsAIModalOpen(true)}
+                                    size="lg"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,0.15)] group"
+                                >
+                                    <Wand2 className="w-5 h-5 mr-2 text-indigo-400 group-hover:animate-pulse" />
+                                    Generate with AI
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsModalOpen(true)}
+                                    size="lg"
+                                    className="border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
+                                >
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Manual Entry
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -122,6 +150,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
                                 >
                                     <div className="aspect-[4/3] bg-black/40 relative">
+
                                         {mockup.code ? (
                                             // Show live iframe preview if code exists
                                             <iframe
@@ -130,8 +159,8 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                                 className="w-full h-full border-0 pointer-events-none"
                                                 sandbox="allow-scripts allow-same-origin"
                                             />
-                                        ) : mockup.imageUrl ? (
-                                            // Show image if available but no code
+                                        ) : mockup.imageUrl && mockup.imageUrl !== "PENDING" ? (
+                                            // Show image if available and not pending
                                             // eslint-disable-next-line @next/next/no-img-element
                                             <img
                                                 src={mockup.imageUrl}
@@ -139,12 +168,19 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                                 className="w-full h-full object-cover"
                                             />
                                         ) : (
-                                            // Show placeholder if neither code nor image
-                                            <div className="w-full h-full flex items-center justify-center text-gray-500">
-                                                <div className="text-center">
-                                                    <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                                                    <p className="text-sm">Click to generate UI</p>
-                                                </div>
+                                            // Show placeholder or Generate Button if pending
+                                            <div className="w-full h-full flex flex-col items-center justify-center bg-black/50 p-4 text-center">
+                                                <ImageIcon className="w-8 h-8 text-indigo-400 mb-3 opacity-80" />
+                                                <p className="text-xs text-gray-400 mb-4 line-clamp-2 px-2">{mockup.prompt}</p>
+                                                <Button
+                                                    size="sm"
+                                                    variant="glass"
+                                                    onClick={(e) => handleGenerateImage(mockup.id, e)}
+                                                    className="border-indigo-500/30 hover:bg-indigo-500/20 relative z-20"
+                                                >
+                                                    <Wand2 className="w-3 h-3 mr-2" />
+                                                    Generate Image
+                                                </Button>
                                             </div>
                                         )}
                                         {/* Overlay on hover - minimal, just status and delete */}
