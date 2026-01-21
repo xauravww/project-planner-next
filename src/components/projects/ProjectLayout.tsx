@@ -61,7 +61,7 @@ export default function ProjectLayout({ projectId, projectName, projectType, chi
             )}
 
             {/* Desktop sidebar */}
-            <div className="hidden lg:block">
+            <div className="hidden lg:block relative z-20">
                 <ProjectSidebar projectId={projectId} projectName={projectName} projectType={projectType} />
             </div>
 

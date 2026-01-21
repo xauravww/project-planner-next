@@ -88,7 +88,7 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
     ];
 
     return (
-        <aside className="w-64 border-r border-white/10 bg-black/80 backdrop-blur-xl flex flex-col h-full">
+        <aside className="w-64 border-r-2 border-white/20 bg-black/90 backdrop-blur-xl flex flex-col h-full relative z-20 shadow-2xl">
             {/* Mobile close button */}
             {onClose && (
                 <div className="flex items-center justify-between p-4 border-b border-white/10 lg:hidden">
@@ -116,7 +116,7 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                                     className={`w-full justify-start text-sm ${isActive(item.href)
                                         ? "bg-white/10 text-white"
                                         : "text-gray-400 hover:text-white hover:bg-white/5"
-                                    }`}
+                                        }`}
                                 >
                                     <item.icon className="w-4 h-4 mr-2" />
                                     {item.name}

@@ -1,12 +1,13 @@
 "use client";
 
-import { GlassCard } from "@/components/ui/GlassCard";
+import { motion } from "framer-motion";
 import { Calendar, Users, FileText, Network, Database, Code, Workflow, Target, Download } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PDFExportProgress } from "./PDFExportProgress";
+import AetherBackground from "@/components/ui/aether-background";
 
 interface ProjectDashboardClientProps {
     project: any;
@@ -124,152 +125,207 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
             icon: FileText,
             href: `/projects/${project.id}/requirements`,
             count: stats.requirements,
-            color: "from-blue-500/20 to-blue-600/20 border-blue-500/30",
-            iconColor: "text-blue-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
         {
             name: "Architecture",
             icon: Network,
             href: `/projects/${project.id}/architecture`,
             count: project.architecture ? 1 : 0,
-            color: "from-purple-500/20 to-purple-600/20 border-purple-500/30",
-            iconColor: "text-purple-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
         {
             name: "Workflows",
             icon: Workflow,
             href: `/projects/${project.id}/workflows`,
             count: stats.workflows,
-            color: "from-green-500/20 to-green-600/20 border-green-500/30",
-            iconColor: "text-green-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
         {
             name: "User Stories",
             icon: Target,
             href: `/projects/${project.id}/stories`,
             count: stats.userStories,
-            color: "from-orange-500/20 to-orange-600/20 border-orange-500/30",
-            iconColor: "text-orange-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
         {
             name: "Tech Stack",
             icon: Code,
             href: `/projects/${project.id}/tech-stack`,
             count: project.techStack ? 1 : 0,
-            color: "from-pink-500/20 to-pink-600/20 border-pink-500/30",
-            iconColor: "text-pink-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
         {
             name: "Mockups",
             icon: Database,
             href: `/projects/${project.id}/mockups`,
             count: stats.mockups,
-            color: "from-cyan-500/20 to-cyan-600/20 border-cyan-500/30",
-            iconColor: "text-cyan-400",
+            color: "bg-white/5",
+            iconColor: "text-white",
         },
     ];
 
     return (
-        <div className="space-y-6">
-            {/* PDF Export Progress Modal */}
-            <PDFExportProgress
-                isOpen={showProgress}
-                onCancel={handleCancelExport}
-                projectStats={stats}
-                progressData={progressData}
-            />
+        <>
+            {/* Font import (Space Grotesk) */}
+            <style jsx global>{`
+                @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
+            `}</style>
 
-            {/* Project Header with Export Button */}
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                <div className="space-y-3 flex-1 text-center lg:text-left">
-                    <h1 className="text-2xl lg:text-3xl font-bold text-white">{project.name}</h1>
-                    {project.description && (
-                        <p className="text-gray-300 text-base lg:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">{project.description}</p>
-                    )}
-                    <div className="flex flex-wrap justify-center lg:justify-start items-center gap-4 text-sm text-gray-500">
-                        <div className="flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        {project.projectType && (
-                            <div className="flex items-center gap-1">
-                                <Users className="w-4 h-4" />
-                                <span>{project.projectType}</span>
+            <div className="relative min-h-screen" style={{ fontFamily: "'Space Grotesk', ui-sans-serif, system-ui, -apple-system" }}>
+                {/* WebGL Shader Background */}
+                <div className="fixed inset-0 z-0">
+                    <AetherBackground
+                        overlayGradient="linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)"
+                        className="opacity-60"
+                    />
+                </div>
+
+                {/* Content with proper padding */}
+                <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
+                    {/* PDF Export Progress Modal */}
+                    <PDFExportProgress
+                        isOpen={showProgress}
+                        onCancel={handleCancelExport}
+                        projectStats={stats}
+                        progressData={progressData}
+                    />
+
+                    {/* Project Header with Export Button */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6"
+                    >
+                        <div className="space-y-3 sm:space-y-4 flex-1 text-center lg:text-left">
+                            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tight leading-tight" style={{ letterSpacing: '-0.02em' }}>
+                                {project.name}
+                            </h1>
+                            {project.description && (
+                                <p className="text-zinc-200 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto lg:mx-0 leading-relaxed">
+                                    {project.description}
+                                </p>
+                            )}
+                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 text-xs sm:text-sm text-zinc-300">
+                                <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-md border border-white/20">
+                                    <Calendar className="w-4 h-4" />
+                                    <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                {project.projectType && (
+                                    <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-md border border-white/20">
+                                        <Users className="w-4 h-4" />
+                                        <span>{project.projectType}</span>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
+                        <Button
+                            onClick={handleExport}
+                            disabled={isExporting}
+                            className="bg-white/15 hover:bg-white/25 border-2 border-white/30 backdrop-blur-md transition-all duration-300 shadow-2xl text-white font-semibold w-full sm:w-auto"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            {isExporting ? 'Exporting...' : 'Export Project'}
+                        </Button>
+                    </motion.div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
+                        {modules.map((module, index) => (
+                            <motion.div
+                                key={module.name}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
+                                className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-4 sm:p-5 hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                            >
+                                <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
+                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${module.color} flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20`}>
+                                        <module.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${module.iconColor}`} />
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl sm:text-3xl font-bold text-white">{module.count}</div>
+                                        <div className="text-[10px] sm:text-xs text-zinc-200 uppercase tracking-wider font-medium">{module.name}</div>
+                                    </div>
+                                </div>
+                                {/* Decorative bottom bar */}
+                                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20 overflow-hidden">
+                                    <div className="h-full bg-white/60 w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
-                </div>
-                <Button
-                    onClick={handleExport}
-                    disabled={isExporting}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 shadow-lg shadow-green-500/20"
-                >
-                    <Download className="w-4 h-4 mr-2" />
-                    {isExporting ? 'Exporting...' : 'Export Project'}
-                </Button>
-            </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {modules.map((module) => (
-                    <GlassCard key={module.name} className="p-4">
-                        <div className="flex flex-col items-center text-center gap-2">
-                            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${module.color} flex items-center justify-center`}>
-                                <module.icon className={`w-6 h-6 ${module.iconColor}`} />
-                            </div>
-                            <div>
-                                <div className="text-2xl font-bold text-white">{module.count}</div>
-                                <div className="text-xs text-gray-400">{module.name}</div>
-                            </div>
+                    {/* Module Navigation Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
+                        {modules.map((module, index) => (
+                            <motion.div
+                                key={module.name}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: index * 0.1, duration: 0.5 }}
+                            >
+                                <Link href={module.href}>
+                                    <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-6 sm:p-7 lg:p-8 hover:bg-white/15 hover:border-white/30 transition-all duration-500 cursor-pointer h-full shadow-xl">
+                                        <div className="flex items-start gap-4 sm:gap-5">
+                                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg backdrop-blur-md border-2 border-white/20`}>
+                                                <module.icon className={`w-7 h-7 sm:w-8 sm:h-8 ${module.iconColor}`} />
+                                            </div>
+                                            <div className="flex-1">
+                                                <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">{module.name}</h3>
+                                                <p className="text-sm sm:text-base text-zinc-200 group-hover:text-white transition-colors">
+                                                    {module.count} {module.count === 1 ? "item" : "items"}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        {/* Decorative bottom bar */}
+                                        <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mt-5 sm:mt-6">
+                                            <div className="h-full bg-white/60 w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
+                                        </div>
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Project Overview */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5 }}
+                        className="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-6 sm:p-7 lg:p-8 shadow-xl"
+                    >
+                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Project Overview</h2>
+                        <div className="space-y-3 sm:space-y-4 text-zinc-200 text-base sm:text-lg leading-relaxed">
+                            <p>
+                                This project has <strong className="text-white font-bold">{stats.requirements}</strong> requirements,{" "}
+                                <strong className="text-white font-bold">{stats.workflows}</strong> workflows, and{" "}
+                                <strong className="text-white font-bold">{stats.userStories}</strong> user stories defined.
+                            </p>
+                            {project.architecture && (
+                                <p>Architecture documentation is available with system design and diagrams.</p>
+                            )}
+                            {project.techStack && (
+                                <p>Technology stack has been defined for this project.</p>
+                            )}
+                            {stats.mockups > 0 && (
+                                <p>
+                                    <strong className="text-white font-bold">{stats.mockups}</strong> UI mockup{stats.mockups > 1 ? "s are" : " is"}{" "}
+                                    ready for review.
+                                </p>
+                            )}
                         </div>
-                    </GlassCard>
-                ))}
-            </div>
-
-            {/* Module Navigation Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {modules.map((module) => (
-                    <Link key={module.name} href={module.href}>
-                        <GlassCard className="p-6 hover:scale-105 transition-transform cursor-pointer group">
-                            <div className="flex items-start gap-4">
-                                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                    <module.icon className={`w-7 h-7 ${module.iconColor}`} />
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-white mb-1">{module.name}</h3>
-                                    <p className="text-sm text-gray-400">
-                                        {module.count} {module.count === 1 ? "item" : "items"}
-                                    </p>
-                                </div>
-                            </div>
-                        </GlassCard>
-                    </Link>
-                ))}
-            </div>
-
-            {/* Recent Activity / Overview */}
-            <GlassCard className="p-6">
-                <h2 className="text-xl font-semibold text-white mb-4">Project Overview</h2>
-                <div className="space-y-3 text-gray-300">
-                    <p>
-                        This project has <strong>{stats.requirements}</strong> requirements,{" "}
-                        <strong>{stats.workflows}</strong> workflows, and{" "}
-                        <strong>{stats.userStories}</strong> user stories defined.
-                    </p>
-                    {project.architecture && (
-                        <p>Architecture documentation is available with system design and diagrams.</p>
-                    )}
-                    {project.techStack && (
-                        <p>Technology stack has been defined for this project.</p>
-                    )}
-                    {stats.mockups > 0 && (
-                        <p>
-                            <strong>{stats.mockups}</strong> UI mockup{stats.mockups > 1 ? "s are" : " is"}{" "}
-                            ready for review.
-                        </p>
-                    )}
+                    </motion.div>
                 </div>
-            </GlassCard>
-        </div>
+            </div>
+        </>
     );
 }
