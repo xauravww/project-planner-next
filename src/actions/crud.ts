@@ -777,7 +777,6 @@ export async function improveText(text: string, context?: string) {
         const { serverOpenai } = await import("@/lib/ai-client");
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -790,7 +789,6 @@ export async function improveText(text: string, context?: string) {
                         : `Text to improve:\n${text}`
                 }
             ],
-            temperature: 0.7,
         });
 
         const improvedText = response.choices[0]?.message?.content || text;

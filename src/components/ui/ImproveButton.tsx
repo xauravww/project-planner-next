@@ -46,13 +46,13 @@ export function ImproveButton({
     return (
         <Button
             type="button"
-            variant="ghost"
+            variant="glass"
             size="sm"
             onClick={handleImprove}
             disabled={!currentText.trim() || isImproving}
-            className={`text-xs text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 ${className}`}
+            className={`h-7 text-[10px] uppercase tracking-wider font-bold border-indigo-500/20 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 hover:border-indigo-500/40 px-2 py-0 ${className}`}
         >
-            <Sparkles className={`w-3 h-3 mr-1 ${isImproving ? "animate-spin" : ""}`} />
+            <Sparkles className={`w-3 h-3 mr-1 ${isImproving ? "animate-spin" : "text-indigo-500"}`} />
             {isImproving ? "Improving..." : "Improve"}
         </Button>
     );

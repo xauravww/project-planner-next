@@ -182,12 +182,10 @@ Now generate the requested interface following all these guidelines precisely.
     `;
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: prompt }
             ],
-            temperature: 0.7,
         });
 
         const text = response.choices[0]?.message?.content || "";

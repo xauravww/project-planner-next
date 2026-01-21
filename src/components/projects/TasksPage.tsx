@@ -122,11 +122,12 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                 {/* AI Toolbar */}
                 <div className="px-4 lg:px-6 py-4 max-w-7xl mx-auto w-full">
                     <Button
+                        variant="glass"
                         onClick={() => setIsAIModalOpen(true)}
                         disabled={isGenerating}
-                        className="bg-blue-600 hover:bg-blue-700"
+                        className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                     >
-                        <Wand2 className="w-4 h-4 mr-2" />
+                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                         {isGenerating ? "Generating..." : "Generate with AI"}
                     </Button>
                 </div>
@@ -168,9 +169,20 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                                                 {task.priority}
                                                             </span>
                                                         </div>
-                                                        {task.description && (
-                                                            <p className="text-xs text-gray-400 mb-3">{task.description}</p>
-                                                        )}
+                                                        <div className="text-xs text-gray-400 mb-3">
+                                                            {(() => {
+                                                                try {
+                                                                    const desc = task.description;
+                                                                    if (typeof desc === 'string' && (desc.startsWith('{') || desc.startsWith('['))) {
+                                                                        const parsed = JSON.parse(desc);
+                                                                        return typeof parsed === 'object' ? JSON.stringify(parsed) : desc;
+                                                                    }
+                                                                    return desc;
+                                                                } catch {
+                                                                    return task.description;
+                                                                }
+                                                            })()}
+                                                        </div>
                                                         <div className="flex items-center justify-between">
                                                             <div className="flex items-center gap-3 text-xs text-gray-500">
                                                                 {task.assignee && (
@@ -333,7 +345,7 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                                     <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                                         Cancel
                                     </Button>
-                                    <Button onClick={handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                                    <Button onClick={handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
                                         Create Task
                                     </Button>
                                 </div>

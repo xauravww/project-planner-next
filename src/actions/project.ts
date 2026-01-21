@@ -25,65 +25,63 @@ export async function getProjectContext(projectId: string) {
 }
 
 export async function createProjectWithAI(name: string, description?: string, messages?: any[]): Promise<{ success: true; projectId: string } | { success: false; error: string }> {
-  const session = await auth();
-  if (!session?.user) {
-    return { success: false, error: "Unauthorized" };
-  }
-
-  try {
-    // Generate project summary using AI if messages are provided
-    let projectDescription = description || "AI-generated project";
-    if (messages && messages.length > 0) {
-      const conversationText = messages.map((m: any) => `${m.role}: ${m.content}`).join('\n');
-
-      const response = await serverOpenai.chat.completions.create({
-        model: "grok-code",
-        messages: [
-          {
-            role: "system",
-            content: "You are a project summarizer. Create a concise 1-2 sentence summary of what this project is about based on the conversation. Focus on the main idea, target users, and key features mentioned."
-          },
-          {
-            role: "user",
-            content: `Conversation:\n${conversationText}\n\nCreate a brief project summary.`
-          }
-        ],
-        temperature: 0.3,
-        max_tokens: 100,
-      });
-
-      const aiSummary = response.choices[0]?.message?.content?.trim();
-      if (aiSummary) {
-        projectDescription = aiSummary;
-      }
+    const session = await auth();
+    if (!session?.user) {
+        return { success: false, error: "Unauthorized" };
     }
 
-    // Create the project
-    const project = await prisma.project.create({
-      data: {
-        name,
-        description: projectDescription,
-        userId: (session.user as any).id,
-      },
-    });
+    try {
+        // Generate project summary using AI if messages are provided
+        let projectDescription = description || "AI-generated project";
+        if (messages && messages.length > 0) {
+            const conversationText = messages.map((m: any) => `${m.role}: ${m.content}`).join('\n');
 
-    // Save chat messages if provided
-    if (messages && messages.length > 0) {
-      await prisma.chatMessage.createMany({
-        data: messages.map((msg: any) => ({
-          projectId: project.id,
-          module: "initial_chat",
-          role: msg.role,
-          content: msg.content,
-        })),
-      });
+            const response = await serverOpenai.chat.completions.create({
+                messages: [
+                    {
+                        role: "system",
+                        content: "You are a project summarizer. Create a concise 1-2 sentence summary of what this project is about based on the conversation. Focus on the main idea, target users, and key features mentioned."
+                    },
+                    {
+                        role: "user",
+                        content: `Conversation:\n${conversationText}\n\nCreate a brief project summary.`
+                    }
+                ],
+                max_tokens: 100,
+            });
+
+            const aiSummary = response.choices[0]?.message?.content?.trim();
+            if (aiSummary) {
+                projectDescription = aiSummary;
+            }
+        }
+
+        // Create the project
+        const project = await prisma.project.create({
+            data: {
+                name,
+                description: projectDescription,
+                userId: (session.user as any).id,
+            },
+        });
+
+        // Save chat messages if provided
+        if (messages && messages.length > 0) {
+            await prisma.chatMessage.createMany({
+                data: messages.map((msg: any) => ({
+                    projectId: project.id,
+                    module: "initial_chat",
+                    role: msg.role,
+                    content: msg.content,
+                })),
+            });
+        }
+
+        return { success: true, projectId: project.id };
+    } catch (error: any) {
+        console.error("Create project error:", error);
+        return { success: false, error: error.message || "Failed to create project" };
     }
-
-    return { success: true, projectId: project.id };
-  } catch (error: any) {
-    console.error("Create project error:", error);
-    return { success: false, error: error.message || "Failed to create project" };
-  }
 }
 
 export async function generateGenerationQuestions(projectId: string, type?: string) {
@@ -110,123 +108,52 @@ export async function generateGenerationQuestions(projectId: string, type?: stri
             where: { projectId, module: type || "general" },
         });
 
-        let questions: Array<{
-            id: string;
-            text: string;
-            type: "single" | "multiple";
-            options: string[];
-        }> = [];
+        // Use AI to generate dynamic, project-aware questions
+        const response = await serverOpenai.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a project scoping expert. Generate 3-4 relevant, high-impact questions to help refine the generation of ${type || "project details"} for this specific project.
 
-        // Generate questions based on module type
-        switch (type) {
-            case "architecture":
-                questions = [
-                    {
-                        id: "scale",
-                        text: "What is the expected scale of your application?",
-                        type: "single",
-                        options: ["Small (1-10 users)", "Medium (10-100 users)", "Large (100-1000 users)", "Enterprise (1000+ users)"],
-                    },
-                    {
-                        id: "complexity",
-                        text: "How complex is your business logic?",
-                        type: "single",
-                        options: ["Simple CRUD operations", "Moderate complexity", "High complexity with workflows", "Very complex with integrations"],
-                    },
-                    {
-                        id: "performance",
-                        text: "What are your performance requirements?",
-                        type: "multiple",
-                        options: ["High throughput", "Low latency", "Real-time updates", "Batch processing", "Data analytics"],
-                    },
-                    {
-                        id: "scalability",
-                        text: "How important is horizontal scalability?",
-                        type: "single",
-                        options: ["Not important", "Somewhat important", "Very important", "Critical requirement"],
-                    },
-                    {
-                        id: "security",
-                        text: "What security level do you need?",
-                        type: "multiple",
-                        options: ["Basic authentication", "Role-based access", "Data encryption", "Audit logging", "Compliance (GDPR/HIPAA)"],
-                    },
-                    {
-                        id: "deployment",
-                        text: "What deployment environment do you prefer?",
-                        type: "single",
-                        options: ["Cloud (AWS/GCP/Azure)", "On-premises", "Hybrid", "Serverless"],
-                    },
-                ];
-                break;
+                    Each question should have a unique ID, a clear text, a type ("single" or "multiple"), and 4 distinct options.
+                    Return ONLY a JSON array of objects with this structure. Do not include any conversational text, markdown code blocks, or introductory remarks.
+                    [
+                      {
+                        "id": "string",
+                        "text": "string",
+                        "type": "single" | "multiple",
+                        "options": ["string", "string", "string", "string"]
+                      }
+                    ]
+                    
+                    Ensure the questions are specific to the project description and the requested module type (${type}). Strictly return valid JSON only.`
+                },
+                {
+                    role: "user",
+                    content: `Project Name: ${project.name}\nProject Description: ${project.description || "No description provided"}\nModule Type: ${type || "general"}`
+                }
+            ],
+        });
 
-            case "requirements":
-                questions = [
-                    {
-                        id: "user_types",
-                        text: "What types of users will use your system?",
-                        type: "multiple",
-                        options: ["End users", "Administrators", "API consumers", "System integrators"],
-                    },
-                    {
-                        id: "functionality",
-                        text: "What is the primary functionality?",
-                        type: "multiple",
-                        options: ["Data management", "User interactions", "Reporting/Analytics", "Workflow automation", "Integration with other systems"],
-                    },
-                    {
-                        id: "constraints",
-                        text: "What are your key constraints?",
-                        type: "multiple",
-                        options: ["Budget limitations", "Time constraints", "Existing systems integration", "Regulatory compliance", "Performance requirements"],
-                    },
-                ];
-                break;
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        let questions = parseAIResponse(aiResponse, []);
 
-            case "tech-stack":
-                questions = [
-                    {
-                        id: "experience",
-                        text: "What is your team's experience level?",
-                        type: "single",
-                        options: ["Beginners", "Intermediate", "Advanced", "Mixed team"],
-                    },
-                    {
-                        id: "timeline",
-                        text: "What is your project timeline?",
-                        type: "single",
-                        options: ["Flexible", "3-6 months", "6-12 months", "ASAP"],
-                    },
-                    {
-                        id: "maintenance",
-                        text: "How important is long-term maintainability?",
-                        type: "single",
-                        options: ["Not important", "Somewhat important", "Very important", "Critical"],
-                    },
-                    {
-                        id: "innovation",
-                        text: "How important is using cutting-edge technologies?",
-                        type: "single",
-                        options: ["Prefer stable/proven tech", "Open to new technologies", "Must use latest tech"],
-                    },
-                ];
-                break;
-
-            default:
-                questions = [
-                    {
-                        id: "project_type",
-                        text: "What type of project is this?",
-                        type: "single",
-                        options: ["Web Application", "Mobile App", "API/Service", "Desktop Software", "IoT System"],
-                    },
-                    {
-                        id: "team_size",
-                        text: "What is your team size?",
-                        type: "single",
-                        options: ["Solo developer", "Small team (2-5)", "Medium team (6-15)", "Large team (15+)"],
-                    },
-                ];
+        // Fallback to basic questions if AI fails
+        if (!questions || questions.length === 0) {
+            questions = [
+                {
+                    id: "target_audience",
+                    text: "Who is the primary target audience?",
+                    type: "multiple",
+                    options: ["Consumer (B2C)", "Business (B2B)", "Internal Staff", "Developers"],
+                },
+                {
+                    id: "complexity",
+                    text: "What is the intended scale/complexity?",
+                    type: "single",
+                    options: ["MVP / Prototype", "Small business tool", "Large enterprise system", "Global scale consumer app"],
+                }
+            ];
         }
 
         return {
@@ -245,6 +172,43 @@ export async function generateGenerationQuestions(projectId: string, type?: stri
     }
 }
 
+
+// Helper to clean and parse AI JSON responses
+function parseAIResponse(content: string, fallback: any = []) {
+    try {
+        // Find the first occurrence of { or [ and the last occurrence of } or ]
+        const firstBracket = content.indexOf('{');
+        const firstSquareBracket = content.indexOf('[');
+
+        let startIndex = -1;
+        let isArray = false;
+
+        if (firstBracket !== -1 && (firstSquareBracket === -1 || firstBracket < firstSquareBracket)) {
+            startIndex = firstBracket;
+            isArray = false;
+        } else if (firstSquareBracket !== -1) {
+            startIndex = firstSquareBracket;
+            isArray = true;
+        }
+
+        if (startIndex === -1) {
+            // No JSON found, try standard parsing as fallback
+            return JSON.parse(content.replace(/```json\n?|```\n?/g, "").trim());
+        }
+
+        const lastIndex = isArray ? content.lastIndexOf(']') : content.lastIndexOf('}');
+        if (lastIndex === -1 || lastIndex < startIndex) {
+            return JSON.parse(content.replace(/```json\n?|```\n?/g, "").trim());
+        }
+
+        const jsonStr = content.substring(startIndex, lastIndex + 1);
+        return JSON.parse(jsonStr);
+    } catch (error) {
+        console.error("Failed to parse AI response:", error);
+        return fallback;
+    }
+}
+
 export async function generateRequirements(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -259,11 +223,10 @@ export async function generateRequirements(projectId: string, qaPairs?: Array<{ 
         }
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a requirements analyst. Generate comprehensive functional and non-functional requirements. Return a JSON array of requirement objects with fields: title, content, type (functional/non-functional), priority (must-have/should-have/nice-to-have).",
+                    content: "You are a requirements analyst. Generate comprehensive functional and non-functional requirements. Return ONLY a valid JSON array of requirement objects with fields: title, content, type (functional/non-functional), priority (must-have/should-have/nice-to-have). STRICT RULE: Do not include any conversational text, markdown code blocks, or explanations. Return pure JSON output.",
                 },
                 {
                     role: "user",
@@ -271,29 +234,22 @@ export async function generateRequirements(projectId: string, qaPairs?: Array<{ 
                         }Generate requirements.`,
                 },
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let requirements = [];
-
-        try {
-            requirements = JSON.parse(aiResponse);
-        } catch {
-            requirements = [{
-                title: "Sample Requirement",
-                content: aiResponse,
-                type: "functional",
-                priority: "must-have",
-            }];
-        }
+        const requirements = parseAIResponse(aiResponse, [{
+            title: "Analysis Results",
+            content: aiResponse,
+            type: "functional",
+            priority: "must-have",
+        }]);
 
         for (const req of requirements) {
             await prisma.requirement.create({
                 data: {
                     projectId,
                     title: req.title,
-                    content: req.content,
+                    content: typeof req.content === 'object' ? JSON.stringify(req.content) : req.content,
                     type: req.type || "functional",
                     priority: req.priority || "should-have",
                 },
@@ -376,12 +332,11 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
         }
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
                     content:
-                        "You are a software architect. Generate a comprehensive system architecture document. Return a JSON object with the following fields:\n- 'content': Overview and design decisions (markdown).\n- 'highLevel': High-level architecture description (markdown).\n- 'lowLevel': Low-level component details (markdown).\n- 'functionalDecomposition': Functional decomposition of the system (markdown).\n- 'diagram': Mermaid diagram code.",
+                        "You are a software architect. Generate a comprehensive system architecture document. Return ONLY a valid JSON object with the following fields:\n- 'content': Overview and design decisions (markdown).\n- 'highLevel': High-level architecture description (markdown).\n- 'lowLevel': Low-level component details (markdown).\n- 'functionalDecomposition': Functional decomposition of the system (markdown).\n- 'diagram': Mermaid diagram code. \nSTRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
@@ -389,23 +344,16 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                         }Generate architecture.`,
                 },
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "{}";
-        let archData = { content: "", highLevel: "", lowLevel: "", functionalDecomposition: "", diagram: "" };
-
-        try {
-            archData = JSON.parse(aiResponse);
-        } catch {
-            archData = {
-                content: aiResponse,
-                highLevel: "High level architecture generation failed.",
-                lowLevel: "Low level architecture generation failed.",
-                functionalDecomposition: "Functional decomposition generation failed.",
-                diagram: "graph TD\nA[Frontend] --> B[Backend]\nB --> C[Database]",
-            };
-        }
+        const archData = parseAIResponse(aiResponse, {
+            content: aiResponse,
+            highLevel: "High level architecture generation failed.",
+            lowLevel: "Low level architecture generation failed.",
+            functionalDecomposition: "Functional decomposition generation failed.",
+            diagram: "graph TD\nA[Frontend] --> B[Backend]\nB --> C[Database]",
+        });
 
         const architecture = await prisma.architecture.create({
             data: {
@@ -443,12 +391,11 @@ export async function generateWorkflows(projectId: string, qaPairs?: Array<{ que
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
                     content:
-                        "Generate 2-3 key workflows for this project. Return JSON array with: title, content (JSON with steps array), diagram (optional mermaid code).",
+                        "Generate 2-3 key workflows for this project. Return ONLY a valid JSON array with objects containing: title, content (JSON with steps array), diagram (optional mermaid code). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
@@ -458,7 +405,7 @@ export async function generateWorkflows(projectId: string, qaPairs?: Array<{ que
             ],
         });
 
-        const workflows = JSON.parse(response.choices[0]?.message?.content || "[]");
+        const workflows = parseAIResponse(response.choices[0]?.message?.content || "[]");
 
         for (const wf of workflows) {
             const workflow = await prisma.workflow.create({
@@ -493,12 +440,11 @@ export async function generateUserStories(projectId: string, qaPairs?: Array<{ q
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
                     content:
-                        "Generate 4-6 user stories. Return JSON array with: title, content, acceptanceCriteria, priority, storyPoints.",
+                        "Generate 4-6 user stories. Return ONLY a valid JSON array with objects containing: title, content, acceptanceCriteria, priority, storyPoints. STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
@@ -508,7 +454,7 @@ export async function generateUserStories(projectId: string, qaPairs?: Array<{ q
             ],
         });
 
-        const stories = JSON.parse(response.choices[0]?.message?.content || "[]");
+        const stories = parseAIResponse(response.choices[0]?.message?.content || "[]");
 
         for (const story of stories) {
             // Handle acceptanceCriteria - convert array to string if needed
@@ -564,12 +510,11 @@ export async function generateTechStack(projectId: string, qaPairs?: Array<{ que
             : "";
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
                     content:
-                        "You are a technical architect. Recommend a comprehensive tech stack based on the project requirements and architecture. For each technology category, provide an array of objects with 'name' and 'reason' fields explaining why it's chosen and how it addresses specific requirements or architectural needs. Return JSON with: frontend (array of {name, reason}), backend (array of {name, reason}), database (array of {name, reason}), devops (array of {name, reason}), other (array of {name, reason}), and rationale (overall explanation of how the stack works together).",
+                        "You are a technical architect. Recommend a comprehensive tech stack based on the project requirements and architecture. For each technology category, provide an array of objects with 'name' and 'reason' fields explaining why it's chosen and how it addresses specific requirements or architectural needs. Return ONLY a valid JSON with: frontend (array of {name, reason}), backend (array of {name, reason}), database (array of {name, reason}), devops (array of {name, reason}), other (array of {name, reason}), and rationale (overall explanation of how the stack works together). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
@@ -579,7 +524,7 @@ export async function generateTechStack(projectId: string, qaPairs?: Array<{ que
             ],
         });
 
-        const stack = JSON.parse(response.choices[0]?.message?.content || "{}");
+        const stack = parseAIResponse(response.choices[0]?.message?.content || "{}", {});
 
         const techStack = await prisma.techStack.create({
             data: {
@@ -711,27 +656,20 @@ export async function generateTasks(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a project manager. Generate tasks for the project. Return a JSON array with objects containing: title, description, status ('TODO'), priority ('LOW', 'MEDIUM', or 'HIGH'), assignee (can be empty string or suggested role)."
+                    content: "You are a project manager. Generate tasks for the project. Return ONLY a valid JSON array with objects containing: title, description, status ('TODO'), priority ('LOW', 'MEDIUM', or 'HIGH'), assignee (can be empty string or suggested role). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output."
                 },
                 {
                     role: "user",
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 8-12 project tasks.`
                 }
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let tasks = [];
-        try {
-            tasks = JSON.parse(aiResponse);
-        } catch {
-            tasks = [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }];
-        }
+        const tasks = parseAIResponse(aiResponse, [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }]);
 
         for (const task of tasks) {
             await prisma.task.create({
@@ -775,27 +713,20 @@ export async function generatePersonas(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a UX researcher. Generate user personas for the project. Return a JSON array with objects containing: name, role, bio (brief description), goals (array of strings), frustrations (array of strings)."
+                    content: "You are a UX researcher. Generate user personas for the project. Return ONLY a valid JSON array with objects containing: name, role, bio (brief description), goals (array of strings), frustrations (array of strings). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output."
                 },
                 {
                     role: "user",
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user personas.`
                 }
             ],
-            temperature: 0.8,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let personas = [];
-        try {
-            personas = JSON.parse(aiResponse);
-        } catch {
-            personas = [{ name: "Primary User", role: "End User", bio: "Main user of the system", goals: ["Achieve efficiency"], frustrations: ["Slow processes"] }];
-        }
+        const personas = parseAIResponse(aiResponse, [{ name: "Primary User", role: "End User", bio: "Main user of the system", goals: ["Achieve efficiency"], frustrations: ["Slow processes"] }]);
 
         for (const persona of personas) {
             await prisma.persona.create({
@@ -839,27 +770,20 @@ export async function generateUserJourneys(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a UX designer. Generate user journey maps for the project. Return a JSON array with objects containing: title, steps (markdown formatted text describing the journey steps)."
+                    content: "You are a UX designer. Generate user journey maps for the project. Return ONLY a valid JSON array with objects containing: title, steps (markdown formatted text describing the journey steps). STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output."
                 },
                 {
                     role: "user",
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user journeys.`
                 }
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let journeys = [];
-        try {
-            journeys = JSON.parse(aiResponse);
-        } catch {
-            journeys = [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }];
-        }
+        const journeys = parseAIResponse(aiResponse, [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }]);
 
         for (const journey of journeys) {
             await prisma.userJourney.create({
@@ -900,7 +824,6 @@ export async function generateMockups(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -948,30 +871,17 @@ Your prompts MUST be extremely detailed and structured. Each prompt should inclu
    - "mail icon for email field", "lock icon for password", "check icon for success"
 
 Return a JSON array with objects containing ONE field: "prompt" (the ultra-detailed description).
-
-EXAMPLE PERFECT PROMPT:
-"Create a modern user login page for a SaaS project management application. Layout: Center a white card (max-w-md, rounded-2xl, shadow-2xl, p-8) on a full-height page with blue-to-purple gradient background (#3B82F6 to #8B5CF6). Components: (1) Company logo/name at top (text-2xl font-bold tracking-tight #111827), (2) 'Welcome Back' heading (text-3xl font-bold tracking-tight #111827 mb-2 text-center), (3) 'Sign in to your account' subtext (text-neutral-500 text-center mb-8), (4) Email input field with label (block text-sm font-semibold #374151 mb-2, input: w-full px-4 py-3 border border-neutral-300 rounded-lg, focus:ring-2 focus:ring-blue-500), (5) Password input with label (same styling as email), (6) 'Sign In' button (w-full bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 shadow-sm hover:shadow-md transition-all duration-200), (7) 'Forgot password?' link (text-blue-600 text-sm mt-4 text-center), (8) 'Create account' link at bottom (text-neutral-600 text-sm). Spacing: space-y-6 between form fields, p-8 card padding. Use smooth transitions (transition-all duration-200) on all interactive elements."
-
-ANOTHER EXAMPLE:
-"Create a modern analytics dashboard overview page. Layout: Full-width container (max-w-7xl mx-auto px-6 py-12) on light gray background (#F9FAFB). Components: (1) Page header with 'Analytics' title (text-4xl font-bold tracking-tight #111827) and 'Last 30 days' subtitle (text-neutral-500), (2) 4-column grid (grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6) of metric cards, (3) Each card: white background (bg-white rounded-2xl shadow-sm border border-neutral-200 p-6 hover:shadow-md transition-shadow), contains metric label (text-xs font-medium uppercase tracking-wide text-neutral-500), large number (text-3xl font-bold #111827), growth indicator (text-sm text-green-500 for positive), and colored icon in top-right (Lucide icon, w-5 h-5). Card examples: 'Total Users' with users icon (#3B82F6), 'Revenue' with dollar-sign icon (#10B981), 'Active Projects' with folder icon (#8B5CF6), 'Pending Tasks' with clipboard icon (#F59E0B). Below cards: 2-column grid (grid-cols-1 lg:grid-cols-2 gap-8 mt-8) with chart placeholders."
-
-Now generate 4-6 ultra-specific prompts like these examples for the given project context.`
+                    Return ONLY a JSON array with objects containing ONE field: "prompt" (the ultra-detailed description). Do not include any other text.`
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 ultra-detailed mockup prompts for the most important screens in this project. Each prompt should be as detailed as the examples provided, with exact specifications for layout, colors (using hex codes), components, typography, spacing, and interactions.`
+                    content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-6 ultra-detailed mockup prompts.`
                 }
             ],
-            temperature: 0.8,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let mockups = [];
-        try {
-            mockups = JSON.parse(aiResponse);
-        } catch {
-            mockups = [{ prompt: "Modern dashboard with charts and analytics" }];
-        }
+        const mockups = parseAIResponse(aiResponse, [{ prompt: "Modern dashboard with charts and analytics" }]);
 
         for (const mockup of mockups) {
             const imageUrl = `https://placehold.co/800x600/1a1a2e/ffffff?text=${encodeURIComponent(mockup.prompt.slice(0, 50))}`;
@@ -1013,27 +923,20 @@ export async function generateBusinessRules(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a business analyst. Generate business rules and validation logic. Return a JSON array with objects containing: title, description, condition, action."
+                    content: "You are a business analyst. Generate business rules and validation logic. Return ONLY a JSON array with objects containing: title, description, condition, action. Do not include any other text."
                 },
                 {
                     role: "user",
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 5-8 business rules.`
                 }
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let rules = [];
-        try {
-            rules = JSON.parse(aiResponse);
-        } catch {
-            rules = [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }];
-        }
+        const rules = parseAIResponse(aiResponse, [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }]);
 
         for (const rule of rules) {
             await prisma.businessRule.create({
@@ -1076,27 +979,20 @@ export async function generateTeamMembers(
         if (!project) return { error: "Project not found" };
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
-                    content: "You are a project manager. Suggest team structure and roles needed. Return a JSON array with objects containing: name (suggested role name like 'Senior Developer' or 'UX Designer'), email (placeholder like 'developer@project.com'), role (job title)."
+                    content: "You are a project manager. Suggest team structure and roles needed. Return ONLY a JSON array with objects containing: name (suggested role name like 'Senior Developer' or 'UX Designer'), email (placeholder like 'developer@project.com'), role (job title). Do not include any other text."
                 },
                 {
                     role: "user",
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-7 team roles needed.`
                 }
             ],
-            temperature: 0.7,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        let members = [];
-        try {
-            members = JSON.parse(aiResponse);
-        } catch {
-            members = [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }];
-        }
+        const members = parseAIResponse(aiResponse, [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }]);
 
         for (const member of members) {
             await prisma.member.create({

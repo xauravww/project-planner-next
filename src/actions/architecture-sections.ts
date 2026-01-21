@@ -40,7 +40,6 @@ ${project.requirements.map(r => `- ${r.title}: ${r.content.substring(0, 200)}`).
         `.trim();
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -51,7 +50,7 @@ ${project.requirements.map(r => `- ${r.title}: ${r.content.substring(0, 200)}`).
    - Avoid special characters in node IDs (use CamelCase or snake_case).
 2. **Table Specifications** (JSON format with complete field definitions)
 
-Return JSON with this structure:
+Return ONLY a valid JSON object with this structure. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
 {
   "erDiagram": "erDiagram\\n  USER ||--o{ POST : creates\\n...",
   "tables": [
@@ -77,7 +76,6 @@ Be thorough - include all necessary tables, fields, types, constraints, indexes,
                     content: context
                 }
             ],
-            temperature: 0.3,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "{}";
@@ -124,7 +122,6 @@ User Stories: ${project.userStories.map(s => s.title).join(", ")}
         `.trim();
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -135,7 +132,7 @@ User Stories: ${project.userStories.map(s => s.title).join(", ")}
    - Use "quotes" for all participant names and messages.
    - Avoid special characters in participant IDs.
 
-Return JSON:
+Return ONLY a valid JSON object. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
 {
   "endpoints": [
     {
@@ -173,7 +170,6 @@ Include all CRUD operations and important workflows.`
                     content: context
                 }
             ],
-            temperature: 0.3,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "{}";
@@ -219,7 +215,6 @@ Architecture: ${project.architecture.highLevel}
         `.trim();
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -231,7 +226,7 @@ Architecture: ${project.architecture.highLevel}
 2. **Scaling Strategy** (Text) - How to scale horizontally/vertically
 3. **Security Design** (Text) - Security layers and measures
 
-Return JSON:
+Return ONLY a valid JSON object. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
 {
   "deploymentDiagram": "graph TB\\n  LoadBalancer-->App1\\n  LoadBalancer-->App2\\n...",
   "scalingStrategy": "Detailed scaling approach...",
@@ -243,7 +238,6 @@ Return JSON:
                     content: context
                 }
             ],
-            temperature: 0.3,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "{}";
@@ -275,7 +269,6 @@ export async function fixMermaidDiagram(diagram: string, error: string) {
 
     try {
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -294,7 +287,6 @@ Invalid Diagram:
 ${diagram}`
                 }
             ],
-            temperature: 0.1,
         });
 
         let fixedCode = response.choices[0]?.message?.content || diagram;

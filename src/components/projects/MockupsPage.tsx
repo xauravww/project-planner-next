@@ -82,11 +82,12 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                             Add Mockup
                         </Button>
                         <Button
+                            variant="glass"
                             onClick={() => setIsAIModalOpen(true)}
                             disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                         >
-                            <Wand2 className="w-4 h-4 mr-2" />
+                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                             {isGenerating ? "Generating..." : "Generate with AI"}
                         </Button>
                     </div>
@@ -102,8 +103,13 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                             <p className="text-gray-400 max-w-md mb-6">
                                 Generate visual mockups for your project using AI. Describe what you want to see, and we&apos;ll create it.
                             </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
-                                <Wand2 className="w-5 h-5 mr-2" />
+                            <Button
+                                variant="glass"
+                                onClick={() => setIsModalOpen(true)}
+                                size="lg"
+                                className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
+                            >
+                                <Wand2 className="w-5 h-5 mr-2 text-indigo-400" />
                                 Generate First Mockup
                             </Button>
                         </div>
@@ -196,16 +202,16 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     <Button
                                         onClick={handleGenerate}
                                         disabled={!prompt || isGenerating}
-                                        className="bg-blue-600 hover:bg-blue-700"
+                                        className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all"
                                     >
                                         {isGenerating ? (
                                             <>
-                                                <Wand2 className="w-4 h-4 mr-2 animate-spin" />
+                                                <Wand2 className="w-4 h-4 mr-2 animate-spin text-white/70" />
                                                 Generating...
                                             </>
                                         ) : (
                                             <>
-                                                <Wand2 className="w-4 h-4 mr-2" />
+                                                <Wand2 className="w-4 h-4 mr-2 text-white/90" />
                                                 Generate
                                             </>
                                         )}

@@ -14,7 +14,6 @@ export async function POST(req: Request) {
         }
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -32,7 +31,6 @@ Return ONLY the improved text, nothing else.`,
                     content: text,
                 },
             ],
-            temperature: 0.7,
             max_tokens: 1000,
         });
 

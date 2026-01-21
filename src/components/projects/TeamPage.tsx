@@ -85,7 +85,7 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                                         setEditingId(null);
                                         setFormData({ name: "", role: "", email: "" });
                                         setIsModalOpen(true);
-                                    }} className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2">
+                                    }} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all text-sm px-4 py-2">
                                         <Plus className="w-4 h-4 mr-2" />
                                         <span className="hidden sm:inline">Add Member</span>
                                         <span className="sm:hidden">Add</span>
@@ -107,7 +107,7 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                                     <p className="text-gray-400 max-w-md mb-6">
                                         Add team members to collaborate on this project.
                                     </p>
-                                    <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                                    <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
                                         <Plus className="w-5 h-5 mr-2" />
                                         Add First Member
                                     </Button>
@@ -185,7 +185,7 @@ export default function TeamPage({ params, members, projectName }: { params: { i
                                         </div>
                                         <div className="flex justify-end gap-3 mt-6">
                                             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                            <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                                            <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
                                                 {editingId ? "Save Changes" : "Add Member"}
                                             </Button>
                                         </div>

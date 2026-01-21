@@ -122,11 +122,12 @@ export default function ArchitecturePageClient({
                         <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                             {!architecture ? (
                                 <Button
+                                    variant="glass"
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating}
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20 text-sm px-4 py-2"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -154,13 +155,13 @@ export default function ArchitecturePageClient({
                                                 <Download className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Export</span>
                                             </Button>
-                                            <Button onClick={() => setIsEditing(true)} className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2">
+                                            <Button onClick={() => setIsEditing(true)} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all text-sm px-4 py-2">
                                                 <Pencil className="w-4 h-4 mr-2" />
                                                 <span className="hidden sm:inline">Edit</span>
                                             </Button>
-                                             <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20 border border-transparent hover:border-red-500/40 p-2 transition-all duration-200">
-                                                  <Trash2 className="w-4 h-4" />
-                                              </Button>
+                                            <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20 border border-transparent hover:border-red-500/40 p-2 transition-all duration-200">
+                                                <Trash2 className="w-4 h-4" />
+                                            </Button>
                                         </>
                                     )}
                                 </>
@@ -184,11 +185,12 @@ export default function ArchitecturePageClient({
                                     Define your system architecture with AI assistance. We&apos;ll help you create a comprehensive design including components, data flow, and infrastructure.
                                 </p>
                                 <Button
+                                    variant="glass"
                                     onClick={handleGenerateClick}
                                     size="lg"
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/20 text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
                                 >
-                                    <Sparkles className="w-4 h-4 mr-2" />
+                                    <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
                                     <span className="hidden xs:inline">Generate with AI</span>
                                     <span className="xs:hidden">Generate</span>
                                 </Button>

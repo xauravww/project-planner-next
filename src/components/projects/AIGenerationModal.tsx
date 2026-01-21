@@ -126,8 +126,10 @@ export function AIGenerationModal({
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="sm:max-w-[700px] bg-zinc-900 border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Wand2 className="w-5 h-5 text-blue-400" />
+                    <DialogTitle className="flex items-center gap-2 text-indigo-100">
+                        <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
+                            <Wand2 className="w-4 h-4 text-indigo-400" />
+                        </div>
                         AI Generation Setup
                     </DialogTitle>
                 </DialogHeader>
@@ -195,7 +197,7 @@ export function AIGenerationModal({
                                                 className={`
                                                     flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all
                                                     ${answers[q.id]?.includes(option)
-                                                        ? "bg-blue-500/20 border-blue-500/50"
+                                                        ? "bg-indigo-500/20 border-indigo-500/50"
                                                         : "bg-white/5 border-white/10 hover:bg-white/10"}
                                                 `}
                                                 onClick={() => handleAnswerToggle(q.id, option)}
@@ -228,9 +230,10 @@ export function AIGenerationModal({
                     {step === "questions" && (
                         <Button
                             onClick={handleGenerateClick}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_4_20px_rgba(79,70,229,0.3)] border border-indigo-500/30 transition-all duration-300"
                         >
-                            Generate
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            Generate Content
                         </Button>
                     )}
                 </DialogFooter>

@@ -101,11 +101,12 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                                 <Button
+                                    variant="glass"
                                     onClick={() => setIsAIModalOpen(true)}
                                     disabled={isGenerating}
-                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -117,118 +118,131 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
                 {/* Content */}
                 <div className="flex-1 overflow-auto">
                     <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                    {rules.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
-                                <Scale className="w-10 h-10 text-gray-400" />
+                        {rules.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center h-full text-center">
+                                <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+                                    <Scale className="w-10 h-10 text-gray-400" />
+                                </div>
+                                <h3 className="text-xl font-semibold text-white mb-2">No Business Rules Yet</h3>
+                                <p className="text-gray-400 max-w-md mb-6">
+                                    Define the logic and constraints that govern your application&apos;s behavior.
+                                </p>
+                                <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                    <Plus className="w-5 h-5 mr-2" />
+                                    Create First Rule
+                                </Button>
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Business Rules Yet</h3>
-                            <p className="text-gray-400 max-w-md mb-6">
-                                Define the logic and constraints that govern your application&apos;s behavior.
-                            </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create First Rule
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {rules.map((rule) => (
-                                <GlassCard key={rule.id} className="p-6 relative group">
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(rule)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white">
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(rule.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
+                        ) : (
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {rules.map((rule) => (
+                                    <GlassCard key={rule.id} className="p-6 relative group">
+                                        <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button onClick={() => handleEdit(rule)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white">
+                                                <Pencil className="w-4 h-4" />
+                                            </button>
+                                            <button onClick={() => handleDelete(rule.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
 
-                                    <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
-                                        <AlertCircle className="w-5 h-5 text-blue-400" />
-                                        {rule.title}
-                                    </h3>
-                                    <p className="text-gray-400 text-sm mb-4">{rule.description}</p>
+                                        <h3 className="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                                            <AlertCircle className="w-5 h-5 text-blue-400" />
+                                            {rule.title}
+                                        </h3>
+                                        <div className="text-gray-400 text-sm mb-4">
+                                            {(() => {
+                                                try {
+                                                    const desc = rule.description;
+                                                    if (typeof desc === 'string' && (desc.startsWith('{') || desc.startsWith('['))) {
+                                                        const parsed = JSON.parse(desc);
+                                                        return typeof parsed === 'object' ? JSON.stringify(parsed) : desc;
+                                                    }
+                                                    return desc;
+                                                } catch {
+                                                    return rule.description;
+                                                }
+                                            })()}
+                                        </div>
 
-                                    <div className="space-y-3">
-                                        {rule.condition && (
-                                            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
-                                                <span className="text-xs font-medium text-blue-400 uppercase tracking-wider block mb-1">Condition</span>
-                                                <code className="text-sm text-gray-300 font-mono">{rule.condition}</code>
-                                            </div>
-                                        )}
-                                        {rule.action && (
-                                            <div className="bg-white/5 rounded-lg p-3 border border-white/5">
-                                                <span className="text-xs font-medium text-green-400 uppercase tracking-wider block mb-1">Action</span>
-                                                <code className="text-sm text-gray-300 font-mono">{rule.action}</code>
-                                            </div>
-                                        )}
+                                        <div className="space-y-3">
+                                            {rule.condition && (
+                                                <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                                                    <span className="text-xs font-medium text-blue-400 uppercase tracking-wider block mb-1">Condition</span>
+                                                    <code className="text-sm text-gray-300 font-mono">{rule.condition}</code>
+                                                </div>
+                                            )}
+                                            {rule.action && (
+                                                <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                                                    <span className="text-xs font-medium text-green-400 uppercase tracking-wider block mb-1">Action</span>
+                                                    <code className="text-sm text-gray-300 font-mono">{rule.action}</code>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </GlassCard>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Create/Edit Modal */}
+                    {isModalOpen && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                            <GlassCard className="w-full max-w-lg p-6">
+                                <h2 className="text-xl font-bold text-white mb-6">
+                                    {editingId ? "Edit Rule" : "New Business Rule"}
+                                </h2>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Title</label>
+                                        <input
+                                            type="text"
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            placeholder="e.g. Password Complexity"
+                                        />
                                     </div>
-                                </GlassCard>
-                            ))}
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Description</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            placeholder="Explain the rule..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Condition (Optional)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.condition}
+                                            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            placeholder="IF user.password.length < 8"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm text-gray-400 mb-1 block">Action (Optional)</label>
+                                        <input
+                                            type="text"
+                                            value={formData.action}
+                                            onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            placeholder="THEN reject_registration()"
+                                        />
+                                    </div>
+                                    <div className="flex justify-end gap-3 mt-6">
+                                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                        <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                            {editingId ? "Save Changes" : "Create Rule"}
+                                        </Button>
+                                    </div>
+                                </div>
+                            </GlassCard>
                         </div>
                     )}
                 </div>
-
-                {/* Create/Edit Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                        <GlassCard className="w-full max-w-lg p-6">
-                            <h2 className="text-xl font-bold text-white mb-6">
-                                {editingId ? "Edit Rule" : "New Business Rule"}
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Title</label>
-                                    <input
-                                        type="text"
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                        placeholder="e.g. Password Complexity"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Description</label>
-                                    <textarea
-                                        value={formData.description}
-                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                        placeholder="Explain the rule..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Condition (Optional)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.condition}
-                                        onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                        placeholder="IF user.password.length < 8"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Action (Optional)</label>
-                                    <input
-                                        type="text"
-                                        value={formData.action}
-                                        onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                                        placeholder="THEN reject_registration()"
-                                    />
-                                </div>
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-blue-600 hover:bg-blue-700">
-                                        {editingId ? "Save Changes" : "Create Rule"}
-                                    </Button>
-                                </div>
-                            </div>
-                        </GlassCard>
-                    </div>
-                )}
-                    </div>
-                </div>
+            </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
                 onClose={() => setIsAIModalOpen(false)}

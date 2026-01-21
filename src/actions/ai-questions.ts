@@ -10,12 +10,14 @@ export async function generateProjectQuestions(topic?: string) {
                     role: "system",
                     content: `You are an expert project planner. Generate 4-5 relevant project scoping questions to help clarify the requirements for a new project. 
                     
-                    Return a JSON array of objects with the following structure:
-                    {
+                    Return ONLY a JSON array of objects with the following structure. STRICT RULE: Do not include any conversational text, introductory remarks, or markdown code blocks around the JSON. Return pure JSON output.
+                    [
+                      {
                         "id": "unique_string_id",
                         "text": "The question text",
                         "options": ["Option 1", "Option 2", "Option 3", "Option 4"]
-                    }
+                      }
+                    ]
                     
                     Focus on questions that help distinguish complexity, tech stack needs, and target audience.
                     Ensure the output is valid JSON.`
@@ -27,7 +29,6 @@ export async function generateProjectQuestions(topic?: string) {
                         : "Generate general scoping questions for a new software project to understand its nature (web, mobile, detailed type, etc.)."
                 }
             ],
-            temperature: 0.7,
         });
 
         const content = response.choices[0]?.message?.content || "[]";

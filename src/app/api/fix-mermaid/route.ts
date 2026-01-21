@@ -13,7 +13,6 @@ export async function POST(request: NextRequest) {
         }
 
         const response = await serverOpenai.chat.completions.create({
-            model: "grok-code",
             messages: [
                 {
                     role: "system",
@@ -30,7 +29,8 @@ IMPORTANT RULES:
    - Incorrect arrow syntax
    - Missing semicolons or separators
 5. Use quotes around labels that contain special characters or spaces
-6. Ensure all node IDs are valid (alphanumeric and underscores)`
+6. Ensure all node IDs are valid (alphanumeric and underscores)
+7. STRICT RULE: Return ONLY the fixed Mermaid code. Do not include introductory text, conversational remarks, or markdown code blocks (fences). Return pure Mermaid syntax.`
                 },
                 {
                     role: "user",
@@ -45,7 +45,6 @@ Error message: ${error || "Unknown error"}
 Return ONLY the fixed Mermaid code without any markdown code fences or explanations.`
                 }
             ],
-            temperature: 0.3,
         });
 
         const fixedDiagram = response.choices[0]?.message?.content || "";

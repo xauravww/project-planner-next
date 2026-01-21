@@ -85,11 +85,12 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
                             Add Journey
                         </Button>
                         <Button
+                            variant="glass"
                             onClick={() => setIsAIModalOpen(true)}
                             disabled={isGenerating}
-                            className="bg-blue-600 hover:bg-blue-700"
+                            className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                         >
-                            <Wand2 className="w-4 h-4 mr-2" />
+                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                             {isGenerating ? "Generating..." : "Generate with AI"}
                         </Button>
                     </div>
@@ -105,7 +106,7 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
                             <p className="text-gray-400 max-w-md mb-6">
                                 Map out user flows and experiences to ensure a smooth user journey.
                             </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-blue-600 hover:bg-blue-700">
+                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
                                 <Plus className="w-5 h-5 mr-2" />
                                 Create First Journey
                             </Button>
@@ -181,7 +182,7 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
                                 </div>
                                 <div className="flex justify-end gap-3 mt-6">
                                     <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-blue-600 hover:bg-blue-700">
+                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
                                         {editingId ? "Save Changes" : "Create Journey"}
                                     </Button>
                                 </div>

@@ -151,11 +151,12 @@ export default function TechStackPageClient({
                         <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                             {!techStack ? (
                                 <Button
+                                    variant="glass"
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating}
-                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -163,7 +164,7 @@ export default function TechStackPageClient({
                                 <>
                                     {isEditing ? (
                                         <>
-                                            <Button onClick={handleSave} className="bg-green-600 hover:bg-green-700 text-sm px-4 py-2">
+                                            <Button onClick={handleSave} className="bg-green-600/90 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.2)] transition-all text-sm px-4 py-2">
                                                 <Save className="w-4 h-4 mr-2" />
                                                 <span className="hidden sm:inline">Save</span>
                                             </Button>

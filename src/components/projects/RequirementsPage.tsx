@@ -103,11 +103,12 @@ export default function RequirementsPageClient({
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                                 <Button
+                                    variant="glass"
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating}
-                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400 group-hover:rotate-12 transition-transform" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -187,8 +188,8 @@ export default function RequirementsPageClient({
                                     </div>
                                 </div>
                                 <div className="flex gap-3">
-                                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                                        {editingId ? "Update" : "Create"}
+                                    <Button type="submit" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                        {editingId ? "Update Requirement" : "Create Requirement"}
                                     </Button>
                                     <Button
                                         type="button"
@@ -229,25 +230,55 @@ export default function RequirementsPageClient({
                                             <div className="flex items-center gap-2">
                                                 <span
                                                     className={`text-xs px-2 py-1 rounded-full font-medium ${req.type === "functional"
-                                                            ? "bg-blue-500/20 text-blue-300"
-                                                            : "bg-purple-500/20 text-purple-300"
+                                                        ? "bg-blue-500/20 text-blue-300"
+                                                        : "bg-purple-500/20 text-purple-300"
                                                         }`}
                                                 >
                                                     {req.type === "functional" ? "Functional" : "Non-Functional"}
                                                 </span>
                                                 <span
                                                     className={`text-xs px-2 py-1 rounded-full font-medium ${req.priority === "must-have"
-                                                            ? "bg-red-500/20 text-red-300"
-                                                            : req.priority === "should-have"
-                                                                ? "bg-yellow-500/20 text-yellow-300"
-                                                                : "bg-green-500/20 text-green-300"
+                                                        ? "bg-red-500/20 text-red-300"
+                                                        : req.priority === "should-have"
+                                                            ? "bg-yellow-500/20 text-yellow-300"
+                                                            : "bg-green-500/20 text-green-300"
                                                         }`}
                                                 >
                                                     {req.priority === "must-have" ? "Must Have" : req.priority === "should-have" ? "Should Have" : "Nice to Have"}
                                                 </span>
                                             </div>
                                         </div>
-                                        <p className="text-sm text-gray-300">{req.content}</p>
+                                        <div className="text-sm text-gray-300">
+                                            {(() => {
+                                                try {
+                                                    const content = req.content;
+                                                    if (typeof content === 'string' && (content.startsWith('{') || content.startsWith('['))) {
+                                                        const parsed = JSON.parse(content);
+                                                        if (Array.isArray(parsed)) {
+                                                            return (
+                                                                <ul className="list-disc pl-4 space-y-1">
+                                                                    {parsed.map((item: any, i: number) => (
+                                                                        <li key={i}>{typeof item === 'object' ? (item.title || item.content || JSON.stringify(item)) : item}</li>
+                                                                    ))}
+                                                                </ul>
+                                                            );
+                                                        }
+                                                        if (typeof parsed === 'object') {
+                                                            return (
+                                                                <div className="space-y-1">
+                                                                    {Object.entries(parsed).map(([key, value]) => (
+                                                                        <div key={key}><span className="font-semibold capitalize">{key}:</span> {String(value)}</div>
+                                                                    ))}
+                                                                </div>
+                                                            );
+                                                        }
+                                                    }
+                                                    return content;
+                                                } catch {
+                                                    return req.content;
+                                                }
+                                            })()}
+                                        </div>
                                     </div>
                                     <div className="flex gap-1 ml-4">
                                         <button

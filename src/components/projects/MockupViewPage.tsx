@@ -148,7 +148,7 @@ export default function MockupViewPage({
                                 <Icon className="w-4 h-4" />
                                 {tab.label}
                                 {activeTab === tab.id && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />
                                 )}
                             </button>
                         );
@@ -166,17 +166,18 @@ export default function MockupViewPage({
                             ) : !currentCode ? (
                                 <GlassCard className="flex flex-col items-center justify-center py-16 text-center">
                                     <div className="flex flex-col items-center gap-4 max-w-md">
-                                        <div className="w-16 h-16 rounded-full bg-blue-500/20 flex items-center justify-center">
-                                            <Wand2 className="w-8 h-8 text-blue-400" />
+                                        <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center">
+                                            <Wand2 className="w-8 h-8 text-indigo-400" />
                                         </div>
                                         <h3 className="text-xl font-semibold text-white">No UI Generated Yet</h3>
                                         <p className="text-gray-400">
                                             Generate a fully functional HTML/CSS/JS user interface based on your prompt.
                                         </p>
                                         <Button
+                                            variant="glass"
                                             onClick={handleGenerateCode}
                                             disabled={isGenerating}
-                                            className="mt-4 bg-blue-500 hover:bg-blue-600"
+                                            className="mt-4 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                                         >
                                             <Wand2 className="w-4 h-4 mr-2" />
                                             Generate UI
@@ -285,6 +286,6 @@ export default function MockupViewPage({
                     )}
                 </div>
             </div>
-        </ProjectLayout>
+        </ProjectLayout >
     );
 }

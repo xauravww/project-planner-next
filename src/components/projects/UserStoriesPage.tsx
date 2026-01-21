@@ -116,11 +116,12 @@ export default function UserStoriesPageClient({
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                                 <Button
+                                    variant="glass"
                                     onClick={handleGenerateClick}
                                     disabled={isGenerating}
-                                    className="bg-blue-600 hover:bg-blue-700 text-sm px-4 py-2"
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2" />
+                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -136,174 +137,192 @@ export default function UserStoriesPageClient({
                     {/* Add/Edit Form */}
                     {(isAdding || editingId) && (
                         <div className="mb-6">
-                        <GlassCard className="p-6">
-                            <h3 className="text-lg font-semibold text-white mb-4">
-                                {editingId ? "Edit User Story" : "New User Story"}
-                            </h3>
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="text-sm font-medium text-gray-300 mb-2 block">Title</label>
-                                    <Input
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        required
-                                        placeholder="As a user, I want to..."
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-gray-300 mb-2 block">Description</label>
-                                    <textarea
-                                        value={formData.content}
-                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
-                                        rows={3}
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium text-gray-300 mb-2 block">
-                                        Acceptance Criteria
-                                    </label>
-                                    <textarea
-                                        value={formData.acceptanceCriteria}
-                                        onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
-                                        className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
-                                        rows={4}
-                                        placeholder="- User can see login button&#10;- User gets error on invalid input"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
+                            <GlassCard className="p-6">
+                                <h3 className="text-lg font-semibold text-white mb-4">
+                                    {editingId ? "Edit User Story" : "New User Story"}
+                                </h3>
+                                <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Priority</label>
-                                        <select
-                                            value={formData.priority}
-                                            onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white"
-                                        >
-                                            <option value="must-have">Must Have</option>
-                                            <option value="should-have">Should Have</option>
-                                            <option value="nice-to-have">Nice to Have</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Story Points</label>
+                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Title</label>
                                         <Input
-                                            type="number"
-                                            value={formData.storyPoints}
-                                            onChange={(e) => setFormData({ ...formData, storyPoints: Number(e.target.value) })}
-                                            min={1}
-                                            max={13}
+                                            value={formData.title}
+                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                            required
+                                            placeholder="As a user, I want to..."
                                         />
                                     </div>
-                                </div>
-                                <div className="flex gap-3">
-                                    <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-                                        {editingId ? "Update" : "Create"}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        onClick={() => {
-                                            setIsAdding(false);
-                                            setEditingId(null);
-                                            setFormData({
-                                                title: "",
-                                                content: "",
-                                                acceptanceCriteria: "",
-                                                priority: "must-have",
-                                                storyPoints: 1,
-                                            });
-                                        }}
-                                        variant="ghost"
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </form>
-                        </GlassCard>
-                    </div>
-                )}
-
-                {/* Stories List */}
-                {stories.length === 0 && !isAdding ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Wand2 className="w-8 h-8 text-gray-400" />
-                            </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No User Stories Yet</h3>
-                            <p className="text-gray-400">Add manually or let AI generate them</p>
-                        </div>
-                    </div>
-                ) : !isAdding && !editingId && (
-                    <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {stories.map((story: any) => (
-                            <GlassCard key={story.id} className="p-5 flex flex-col">
-                                <div className="flex items-start justify-between mb-3">
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <Target className="w-4 h-4 text-orange-400" />
-                                            <h3 className="text-base font-semibold text-white">{story.title}</h3>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Description</label>
+                                        <textarea
+                                            value={formData.content}
+                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                                            rows={3}
+                                            required
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-sm font-medium text-gray-300 mb-2 block">
+                                            Acceptance Criteria
+                                        </label>
+                                        <textarea
+                                            value={formData.acceptanceCriteria}
+                                            onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                                            rows={4}
+                                            placeholder="- User can see login button&#10;- User gets error on invalid input"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-sm font-medium text-gray-300 mb-2 block">Priority</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={formData.priority}
+                                                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all cursor-pointer"
+                                                >
+                                                    <option value="must-have" className="bg-zinc-900">Must Have</option>
+                                                    <option value="should-have" className="bg-zinc-900">Should Have</option>
+                                                    <option value="nice-to-have" className="bg-zinc-900">Nice to Have</option>
+                                                </select>
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <p className="text-sm text-gray-300 italic mb-3">{story.content}</p>
-                                    </div>
-                                    <div className="flex gap-1 ml-4">
-                                        <button
-                                            onClick={() => handleEdit(story)}
-                                            className="p-2 hover:bg-white/10 rounded transition-colors"
-                                        >
-                                            <Pencil className="w-4 h-4 text-gray-400 hover:text-white" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(story.id)}
-                                            className="p-2 hover:bg-white/10 rounded transition-colors"
-                                        >
-                                            <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-400" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Acceptance Criteria */}
-                                {story.acceptanceCriteria && (
-                                    <div className="mb-3">
-                                        <h4 className="text-xs font-semibold text-gray-400 mb-1">Acceptance Criteria:</h4>
-                                        <div className="bg-white/5 rounded p-2 border border-white/10">
-                                            <pre className="text-xs text-gray-300 whitespace-pre-wrap font-sans">
-                                                {story.acceptanceCriteria}
-                                            </pre>
+                                        <div>
+                                            <label className="text-sm font-medium text-gray-300 mb-2 block">Story Points</label>
+                                            <Input
+                                                type="number"
+                                                value={formData.storyPoints}
+                                                onChange={(e) => setFormData({ ...formData, storyPoints: Number(e.target.value) })}
+                                                min={1}
+                                                max={13}
+                                            />
                                         </div>
                                     </div>
-                                )}
-
-                                {/* Meta Info */}
-                                <div className="flex items-center gap-2 mt-auto pt-3 border-t border-white/10">
-                                    <span
-                                        className={`text-xs px-2 py-0.5 rounded-full ${story.priority === "must-have"
-                                            ? "bg-red-500/20 text-red-300 border border-red-500/30"
-                                            : story.priority === "should-have"
-                                                ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                                                : "bg-green-500/20 text-green-300 border border-green-500/30"
-                                            }`}
-                                    >
-                                        {story.priority}
-                                    </span>
-                                    {story.storyPoints && (
-                                        <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                                            {story.storyPoints} pts
-                                        </span>
-                                    )}
-                                </div>
+                                    <div className="flex gap-3">
+                                        <Button type="submit" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                            {editingId ? "Update User Story" : "Create User Story"}
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsAdding(false);
+                                                setEditingId(null);
+                                                setFormData({
+                                                    title: "",
+                                                    content: "",
+                                                    acceptanceCriteria: "",
+                                                    priority: "must-have",
+                                                    storyPoints: 1,
+                                                });
+                                            }}
+                                            variant="ghost"
+                                        >
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </form>
                             </GlassCard>
-                        ))}
-                    </div>
-                )}
-            </div>
-            <AIGenerationModal
-                isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
-                projectId={project.id}
-                type="stories"
-                onGenerate={handleAIGenerate}
-            />
+                        </div>
+                    )}
+
+                    {/* Stories List */}
+                    {stories.length === 0 && !isAdding ? (
+                        <div className="flex items-center justify-center h-96">
+                            <div className="text-center">
+                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Wand2 className="w-8 h-8 text-gray-400" />
+                                </div>
+                                <h3 className="text-xl font-semibold text-white mb-2">No User Stories Yet</h3>
+                                <p className="text-gray-400">Add manually or let AI generate them</p>
+                            </div>
+                        </div>
+                    ) : !isAdding && !editingId && (
+                        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {stories.map((story: any) => (
+                                <GlassCard key={story.id} className="p-5 flex flex-col">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Target className="w-4 h-4 text-orange-400" />
+                                                <h3 className="text-base font-semibold text-white">{story.title}</h3>
+                                            </div>
+                                            <div className="text-sm text-gray-300 italic mb-3">
+                                                {(() => {
+                                                    try {
+                                                        const content = story.content;
+                                                        if (typeof content === 'string' && (content.startsWith('{') || content.startsWith('['))) {
+                                                            const parsed = JSON.parse(content);
+                                                            return typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : content;
+                                                        }
+                                                        return content;
+                                                    } catch {
+                                                        return story.content;
+                                                    }
+                                                })()}
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1 ml-4">
+                                            <button
+                                                onClick={() => handleEdit(story)}
+                                                className="p-2 hover:bg-white/10 rounded transition-colors"
+                                            >
+                                                <Pencil className="w-4 h-4 text-gray-400 hover:text-white" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(story.id)}
+                                                className="p-2 hover:bg-white/10 rounded transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-400" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Acceptance Criteria */}
+                                    {story.acceptanceCriteria && (
+                                        <div className="mb-3">
+                                            <h4 className="text-xs font-semibold text-gray-400 mb-1">Acceptance Criteria:</h4>
+                                            <div className="bg-white/5 rounded p-2 border border-white/10">
+                                                <pre className="text-xs text-gray-300 whitespace-pre-wrap font-sans">
+                                                    {story.acceptanceCriteria}
+                                                </pre>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Meta Info */}
+                                    <div className="flex items-center gap-2 mt-auto pt-3 border-t border-white/10">
+                                        <span
+                                            className={`text-xs px-2 py-0.5 rounded-full ${story.priority === "must-have"
+                                                ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                                : story.priority === "should-have"
+                                                    ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
+                                                    : "bg-green-500/20 text-green-300 border border-green-500/30"
+                                                }`}
+                                        >
+                                            {story.priority}
+                                        </span>
+                                        {story.storyPoints && (
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                                {story.storyPoints} pts
+                                            </span>
+                                        )}
+                                    </div>
+                                </GlassCard>
+                            ))}
+                        </div>
+                    )}
+                </div>
+                <AIGenerationModal
+                    isOpen={isAIModalOpen}
+                    onClose={() => setIsAIModalOpen(false)}
+                    projectId={project.id}
+                    type="stories"
+                    onGenerate={handleAIGenerate}
+                />
             </div>
 
             <DeleteModal
