@@ -33,13 +33,13 @@ const plans = [
 
 export function Pricing() {
     return (
-        <section id="pricing" className="py-24 relative">
+        <section id="pricing" className="py-24 relative bg-black">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4">
-                        Simple, Transparent <span className="text-gradient">Pricing</span>
+                    <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4 tracking-tight">
+                        Simple, Transparent <span className="text-white">Pricing</span>
                     </h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-zinc-400 max-w-2xl mx-auto">
                         Choose the plan that fits your ambition. No hidden fees.
                     </p>
                 </div>
@@ -48,10 +48,10 @@ export function Pricing() {
                     {plans.map((plan, index) => (
                         <GlassCard
                             key={index}
-                            className={`relative flex flex-col p-8 ${plan.popular ? 'border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.15)]' : ''}`}
+                            className={`relative flex flex-col p-8 transition-colors ${plan.popular ? 'bg-zinc-900 border-zinc-700' : 'bg-black border-zinc-800 hover:border-zinc-700'}`}
                         >
                             {plan.popular && (
-                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-white text-black text-xs font-bold px-3 py-1 rounded-full border border-white">
                                     MOST POPULAR
                                 </div>
                             )}
@@ -60,16 +60,16 @@ export function Pricing() {
                                 <h3 className="text-xl font-semibold text-white mb-2">{plan.name}</h3>
                                 <div className="flex items-baseline gap-1">
                                     <span className="text-4xl font-bold text-white">{plan.price}</span>
-                                    {plan.price !== "Custom" && <span className="text-muted-foreground">/month</span>}
+                                    {plan.price !== "Custom" && <span className="text-zinc-500">/month</span>}
                                 </div>
-                                <p className="text-sm text-muted-foreground mt-4">{plan.description}</p>
+                                <p className="text-sm text-zinc-400 mt-4">{plan.description}</p>
                             </div>
 
                             <div className="flex-1 mb-8">
                                 <ul className="space-y-4">
                                     {plan.features.map((feature, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-sm text-gray-300">
-                                            <Check className="w-5 h-5 text-blue-400 shrink-0" />
+                                        <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
+                                            <Check className="w-5 h-5 text-zinc-100 shrink-0" />
                                             {feature}
                                         </li>
                                     ))}
@@ -77,7 +77,7 @@ export function Pricing() {
                             </div>
 
                             <Button
-                                className={`w-full ${plan.popular ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 border-0' : 'bg-white/10 hover:bg-white/20 text-white border-0'}`}
+                                className={`w-full ${plan.popular ? 'bg-white hover:bg-zinc-200 text-black border-0' : 'bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-700'}`}
                             >
                                 {plan.cta}
                             </Button>

@@ -44,13 +44,13 @@ const testimonials = [
 
 export function Testimonials() {
     return (
-        <section className="py-24 bg-white/5">
+        <section className="py-24 bg-black">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white sm:text-5xl mb-4">
-                        Loved by <span className="text-gradient">Builders</span>
+                    <h2 className="text-3xl font-bold text-white sm:text-5xl mb-4 tracking-tight">
+                        Loved by <span className="text-white">Builders</span>
                     </h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto">
+                    <p className="text-zinc-400 max-w-2xl mx-auto">
                         Join thousands of teams who are shipping faster and better with NebulaPlan.
                     </p>
                 </div>
@@ -65,23 +65,23 @@ export function Testimonials() {
                             transition={{ delay: index * 0.1 }}
                             className={testimonial.className}
                         >
-                            <GlassCard className="h-full flex flex-col justify-between hover:bg-white/10 transition-colors">
+                            <GlassCard className="h-full flex flex-col justify-between hover:bg-zinc-900 transition-colors bg-zinc-950 border-zinc-800">
                                 <div className="mb-6">
                                     <div className="flex gap-1 mb-4">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                                            <Star key={i} className="w-4 h-4 fill-white text-white" />
                                         ))}
                                     </div>
-                                    <p className="text-gray-300 italic leading-relaxed">&quot;{testimonial.content}&quot;</p>
+                                    <p className="text-zinc-300 italic leading-relaxed">&quot;{testimonial.content}&quot;</p>
                                 </div>
 
-                                <div className="flex items-center gap-4 pt-4 border-t border-white/10">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                                <div className="flex items-center gap-4 pt-4 border-t border-zinc-800">
+                                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-white font-bold text-sm border border-zinc-700">
                                         {testimonial.avatar}
                                     </div>
                                     <div>
                                         <h4 className="text-white font-semibold text-sm">{testimonial.name}</h4>
-                                        <p className="text-xs text-muted-foreground">{testimonial.role}</p>
+                                        <p className="text-xs text-zinc-500">{testimonial.role}</p>
                                     </div>
                                 </div>
                             </GlassCard>

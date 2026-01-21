@@ -28,11 +28,11 @@ export function FAQ() {
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     return (
-        <section className="py-24">
+        <section className="py-24 bg-black">
             <div className="container mx-auto px-4 max-w-3xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4">
-                        Frequently Asked <span className="text-gradient">Questions</span>
+                    <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4 tracking-tight">
+                        Frequently Asked <span className="text-white">Questions</span>
                     </h2>
                 </div>
 
@@ -40,12 +40,12 @@ export function FAQ() {
                     {faqs.map((faq, index) => (
                         <GlassCard
                             key={index}
-                            className="p-0 overflow-hidden cursor-pointer"
+                            className="p-0 overflow-hidden cursor-pointer bg-zinc-900 border-zinc-800 hover:border-zinc-700"
                             onClick={() => setOpenIndex(openIndex === index ? null : index)}
                         >
                             <div className="p-6 flex items-center justify-between">
                                 <h3 className="text-lg font-medium text-white">{faq.question}</h3>
-                                <div className="text-blue-400">
+                                <div className="text-white">
                                     {openIndex === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
                                 </div>
                             </div>
@@ -58,7 +58,7 @@ export function FAQ() {
                                         exit={{ height: 0, opacity: 0 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className="px-6 pb-6 text-muted-foreground border-t border-white/5 pt-4">
+                                        <div className="px-6 pb-6 text-zinc-400 border-t border-zinc-800 pt-4">
                                             {faq.answer}
                                         </div>
                                     </motion.div>
