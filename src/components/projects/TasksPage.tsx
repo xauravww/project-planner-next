@@ -8,12 +8,13 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, LayoutGrid, List as ListIcon, Calendar, User, CheckCircle2, Circle, Trash2, Wand2, Clock, Loader2 } from "lucide-react";
-import { createTask, updateTask, deleteTask } from "@/actions/crud";
+import { createTask, updateTask, deleteTask, deleteAllTasks } from "@/actions/crud";
 import { generateTasks } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 const STATUS_COLS = [
     { id: "TODO", label: "To Do", color: "bg-[var(--color-ash)]" },
@@ -79,6 +80,16 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
         onError: () => toast.error("Failed to delete task"),
     });
 
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllTasks(projectId),
+        onSuccess: () => {
+            toast.success("All tasks deleted");
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(params.id) });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete all tasks"),
+    });
+
     const aiGenerateMutation = useMutation({
         mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateTasks(params.id, answers),
         onSuccess: async (result) => {
@@ -111,8 +122,14 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
     };
 
     const confirmDelete = async () => {
-        if (taskToDelete) {
+        if (taskToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(params.id);
+            setDeleteModalOpen(false);
+            setTaskToDelete(null);
+        } else if (taskToDelete) {
             await deleteMutation.mutateAsync(taskToDelete);
+            setDeleteModalOpen(false);
+            setTaskToDelete(null);
         }
     };
 
@@ -168,19 +185,32 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
 
                 {/* AI Toolbar */}
                 <div className="px-4 lg:px-6 py-4 max-w-7xl mx-auto w-full">
-                    <Button
-                        variant="nebula-ghost"
-                        onClick={() => setIsAIModalOpen(true)}
-                        disabled={aiGenerateMutation.isPending}
-                        className="transition-all duration-300"
-                    >
-                        {aiGenerateMutation.isPending ? (
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        ) : (
-                            <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
+                    <div className="flex gap-3">
+                        <Button
+                            variant="nebula-ghost"
+                            onClick={() => setIsAIModalOpen(true)}
+                            disabled={aiGenerateMutation.isPending}
+                            className="transition-all duration-300"
+                        >
+                            {aiGenerateMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                                <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
+                            )}
+                            {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
+                        </Button>
+                        {tasks.length > 0 && (
+                            <Button
+                                variant="nebula-ghost"
+                                onClick={() => handleDelete("ALL")}
+                                className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                <span className="hidden sm:inline">Delete All</span>
+                                <span className="sm:hidden">Clear</span>
+                            </Button>
                         )}
-                        {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
-                    </Button>
+                    </div>
                 </div>
 
                 {/* Content */}
@@ -330,89 +360,91 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
                 </div>
 
                 {/* New Task Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
-                        <GlassCard className="w-full max-w-lg p-6">
-                            <h2 className="type-h4 mb-4">New Task</h2>
-                            <div className="space-y-4">
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                            <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center">
+                                New Task
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="px-6 py-5 space-y-5">
+                            <div>
+                                <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Title</label>
+                                <input
+                                    type="text"
+                                    value={newTask.title}
+                                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                                    className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="Task title"
+                                />
+                            </div>
+                            <div>
+                                <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Description</label>
+                                <textarea
+                                    value={newTask.description}
+                                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="Task description"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Title</label>
-                                    <input
-                                        type="text"
-                                        value={newTask.title}
-                                        onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                        className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        placeholder="Task title"
-                                    />
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Status</label>
+                                    <select
+                                        value={newTask.status}
+                                        onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                    >
+                                        {STATUS_COLS.map(col => (
+                                            <option key={col.id} value={col.id}>{col.label}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Description</label>
-                                    <textarea
-                                        value={newTask.description}
-                                        onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        placeholder="Task description"
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Status</label>
-                                        <select
-                                            value={newTask.status}
-                                            onChange={(e) => setNewTask({ ...newTask, status: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        >
-                                            {STATUS_COLS.map(col => (
-                                                <option key={col.id} value={col.id}>{col.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Priority</label>
-                                        <select
-                                            value={newTask.priority}
-                                            onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        >
-                                            <option value="LOW">Low</option>
-                                            <option value="MEDIUM">Medium</option>
-                                            <option value="HIGH">High</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Assignee</label>
-                                        <input
-                                            type="text"
-                                            value={newTask.assignee}
-                                            onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                            placeholder="John Doe"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Due Date</label>
-                                        <input
-                                            type="date"
-                                            value={newTask.dueDate}
-                                            onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
-                                        Cancel
-                                    </Button>
-                                    <Button onClick={handleCreate} variant="nebula" className="transition-all">
-                                        Create Task
-                                    </Button>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Priority</label>
+                                    <select
+                                        value={newTask.priority}
+                                        onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                    >
+                                        <option value="LOW">Low</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="HIGH">High</option>
+                                    </select>
                                 </div>
                             </div>
-                        </GlassCard>
-                    </div>
-                )}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Assignee</label>
+                                    <input
+                                        type="text"
+                                        value={newTask.assignee}
+                                        onChange={(e) => setNewTask({ ...newTask, assignee: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="John Doe"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Due Date</label>
+                                    <input
+                                        type="date"
+                                        value={newTask.dueDate}
+                                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                            <div className="flex gap-3 justify-end w-full">
+                                <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                <Button onClick={handleCreate} variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                    Create Task
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
                 <AIGenerationModal
                     isOpen={isAIModalOpen}
@@ -430,9 +462,13 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
                     isOpen={deleteModalOpen}
                     onClose={() => setDeleteModalOpen(false)}
                     onConfirm={confirmDelete}
-                    title="Delete Task"
-                    description="Are you sure you want to delete this task? This action cannot be undone."
-                    confirmText="Delete Task"
+                    title={taskToDelete === "ALL" ? "Delete All Tasks" : "Delete Task"}
+                    description={
+                        taskToDelete === "ALL"
+                            ? "Are you sure you want to delete ALL tasks? This action cannot be undone and will permanently remove everything from this list."
+                            : "Are you sure you want to delete this task? This action cannot be undone."
+                    }
+                    confirmText={taskToDelete === "ALL" ? "Delete All" : "Delete Task"}
                 />
             </div>
         </ProjectLayout>

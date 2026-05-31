@@ -236,6 +236,21 @@ export async function deleteUserStory(id: string) {
     }
 }
 
+export async function deleteAllUserStories(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.userStory.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'stories' } });
+        await markDependentModulesStale(projectId, 'user_stories');
+        revalidatePath(`/projects/${projectId}/stories`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all user stories" };
+    }
+}
+
 // WORKFLOW CRUD
 export async function createWorkflow(
     projectId: string,
@@ -300,7 +315,22 @@ export async function deleteWorkflow(id: string) {
     }
 }
 
-// UPDATE ARCHITECTURE
+export async function deleteAllWorkflows(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.workflow.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'workflows' } });
+        await markDependentModulesStale(projectId, 'workflows');
+        revalidatePath(`/projects/${projectId}/workflows`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all workflows" };
+    }
+}
+
+// ARCHITECTURE CRUD
 export async function updateArchitecture(
     id: string,
     data: {
@@ -480,6 +510,21 @@ export async function deleteTask(id: string) {
     }
 }
 
+export async function deleteAllTasks(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.task.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'tasks' } });
+        await markDependentModulesStale(projectId, 'tasks');
+        revalidatePath(`/projects/${projectId}/tasks`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all tasks" };
+    }
+}
+
 // PERSONAS CRUD
 export async function createPersona(
     projectId: string,
@@ -546,6 +591,21 @@ export async function deletePersona(id: string) {
     }
 }
 
+export async function deleteAllPersonas(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.persona.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'personas' } });
+        await markDependentModulesStale(projectId, 'personas');
+        revalidatePath(`/projects/${projectId}/personas`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all personas" };
+    }
+}
+
 // USER JOURNEYS CRUD
 export async function createUserJourney(
     projectId: string,
@@ -564,6 +624,7 @@ export async function createUserJourney(
 
         generateEmbedding(`${data.title} ${data.steps}`, 'UserJourney', journey.id);
 
+        await markDependentModulesStale(projectId, 'user_journeys');
         revalidatePath(`/projects/${projectId}/journeys`);
         return { success: true, journey };
     } catch (_error) {
@@ -590,6 +651,7 @@ export async function updateUserJourney(
             generateEmbedding(`${data.title || ""} ${data.steps || ""}`, 'UserJourney', id);
         }
 
+        await markDependentModulesStale(journey.projectId, 'user_journeys');
         revalidatePath(`/projects/${journey.projectId}/journeys`);
         return { success: true, journey };
     } catch (_error) {
@@ -607,6 +669,21 @@ export async function deleteUserJourney(id: string) {
         return { success: true };
     } catch (_error) {
         return { error: "Failed to delete user journey" };
+    }
+}
+
+export async function deleteAllUserJourneys(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.userJourney.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'journeys' } });
+        await markDependentModulesStale(projectId, 'user_journeys');
+        revalidatePath(`/projects/${projectId}/journeys`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all user journeys" };
     }
 }
 
@@ -674,6 +751,7 @@ export async function deleteAllMockups(projectId: string) {
         await prisma.mockup.deleteMany({
             where: { projectId }
         });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'mockups' } });
         revalidatePath(`/projects/${projectId}/mockups`);
         return { success: true };
     } catch (_error) {
@@ -699,6 +777,7 @@ export async function createBusinessRule(
 
         generateEmbedding(`${data.title} ${data.description}`, 'BusinessRule', rule.id);
 
+        await markDependentModulesStale(projectId, 'business_rules');
         revalidatePath(`/projects/${projectId}/business-rules`);
         return { success: true, rule };
     } catch (_error) {
@@ -725,6 +804,7 @@ export async function updateBusinessRule(
             generateEmbedding(`${data.title || ""} ${data.description || ""}`, 'BusinessRule', id);
         }
 
+        await markDependentModulesStale(rule.projectId, 'business_rules');
         revalidatePath(`/projects/${rule.projectId}/business-rules`);
         return { success: true, rule };
     } catch (_error) {
@@ -742,6 +822,21 @@ export async function deleteBusinessRule(id: string) {
         return { success: true };
     } catch (_error) {
         return { error: "Failed to delete business rule" };
+    }
+}
+
+export async function deleteAllBusinessRules(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.businessRule.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'business-rules' } });
+        await markDependentModulesStale(projectId, 'business_rules');
+        revalidatePath(`/projects/${projectId}/business-rules`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all business rules" };
     }
 }
 

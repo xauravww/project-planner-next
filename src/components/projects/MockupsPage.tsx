@@ -8,7 +8,8 @@ import { Plus, Trash2, Image as ImageIcon, Wand2, Code2, Sparkles } from "lucide
 import { createMockup, deleteMockup, deleteAllMockups } from "@/actions/crud";
 import { generateMockups, generateSingleMockup, generateMockupImage, saveProjectContext } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
-import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { DeleteModal } from "@/components/ui/DeleteModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import { toast } from "sonner";
 import { AestheticLoader } from "@/components/ui/AestheticLoader";
@@ -271,52 +272,58 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 </div>
 
                 {/* Generation Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
-                        <GlassCard className="w-full max-w-lg p-6">
-                            <h2 className="type-h3 mb-4">Generate Mockup</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
-                                        Describe the screen or interface
-                                    </label>
-                                    <textarea
-                                        value={prompt}
-                                        onChange={(e) => setPrompt(e.target.value)}
-                                        placeholder="E.g., A dark mode dashboard with sales charts and a sidebar navigation..."
-                                        className="w-full h-32 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                    />
-                                </div>
-                                <div className="flex justify-end gap-3">
-                                    <Button
-                                        variant="nebula-ghost"
-                                        onClick={() => setIsModalOpen(false)}
-                                        disabled={isGenerating}
-                                    >
-                                        Cancel
-                                    </Button>
-                                    <Button
-                                        variant="nebula"
-                                        onClick={handleGenerate}
-                                        disabled={!prompt || isGenerating}
-                                    >
-                                        {isGenerating ? (
-                                            <>
-                                                <Wand2 className="w-4 h-4 mr-2 animate-spin" />
-                                                Generating...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Wand2 className="w-4 h-4 mr-2" />
-                                                Generate
-                                            </>
-                                        )}
-                                    </Button>
-                                </div>
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogContent className="sm:max-w-[500px]">
+                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                            <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center">
+                                Generate Mockup
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="px-6 py-5 space-y-4">
+                            <div>
+                                <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
+                                    Describe the screen or interface
+                                </label>
+                                <textarea
+                                    value={prompt}
+                                    onChange={(e) => setPrompt(e.target.value)}
+                                    placeholder="E.g., A dark mode dashboard with sales charts and a sidebar navigation..."
+                                    className="w-full h-32 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                />
                             </div>
-                        </GlassCard>
-                    </div>
-                )}
+                        </div>
+                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                            <div className="flex gap-3 justify-end w-full">
+                                <Button
+                                    variant="nebula-ghost"
+                                    onClick={() => setIsModalOpen(false)}
+                                    disabled={isGenerating}
+                                    className="px-6"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="nebula"
+                                    onClick={handleGenerate}
+                                    disabled={!prompt || isGenerating}
+                                    className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]"
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <Wand2 className="w-4 h-4 mr-2 animate-spin" />
+                                            Generating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Wand2 className="w-4 h-4 mr-2" />
+                                            Generate
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
@@ -325,7 +332,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 type="mockups"
                 onGenerate={handleAIGenerate}
             />
-            <ConfirmDialog
+            <DeleteModal
                 isOpen={isDeleteDialogOpen}
                 onClose={() => {
                     setIsDeleteDialogOpen(false);
@@ -335,16 +342,14 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                 title="Delete Mockup"
                 description="Are you sure you want to delete this mockup? This action cannot be undone."
                 confirmText="Delete"
-                intent="danger"
             />
-            <ConfirmDialog
+            <DeleteModal
                 isOpen={isDeleteAllDialogOpen}
                 onClose={() => setIsDeleteAllDialogOpen(false)}
                 onConfirm={handleDeleteAllConfirm}
                 title="Delete All Mockups"
                 description="Are you sure you want to delete ALL mockups in this project? This action acts on ALL mockups and cannot be undone."
                 confirmText="Delete All"
-                intent="danger"
             />
 
             {/* Global Loader Overlay */}

@@ -8,10 +8,11 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Users, Trash2, Pencil, Mail, Shield } from "lucide-react";
-import { createMember, updateMember, deleteMember } from "@/actions/crud";
+import { createMember, updateMember, deleteMember, deleteAllMembers } from "@/actions/crud";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: any[]; projectName: string }) {
     const router = useRouter();
@@ -65,6 +66,15 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
         onError: () => toast.error("Failed to remove member"),
     });
 
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllMembers(projectId),
+        onSuccess: () => {
+            toast.success("All team members removed");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to remove all members"),
+    });
+
     const handleCreate = async () => {
         if (!formData.name || !formData.email) return;
         await createMutation.mutateAsync(formData);
@@ -91,8 +101,14 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
     };
 
     const confirmDelete = async () => {
-        if (memberToDelete) {
+        if (memberToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(params.id);
+            setDeleteModalOpen(false);
+            setMemberToDelete(null);
+        } else if (memberToDelete) {
             await deleteMutation.mutateAsync(memberToDelete);
+            setDeleteModalOpen(false);
+            setMemberToDelete(null);
         }
     };
 
@@ -114,7 +130,18 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                                     />
                                     <h1 className="type-h3 mt-2">Team Members</h1>
                                 </div>
-                                <div className="flex justify-center lg:justify-end">
+                                <div className="flex gap-3 justify-center lg:justify-end">
+                                    {members.length > 0 && (
+                                        <Button
+                                            variant="nebula-ghost"
+                                            onClick={() => handleDelete("ALL")}
+                                            className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                                        >
+                                            <Trash2 className="w-4 h-4 mr-2" />
+                                            <span className="hidden sm:inline">Delete All</span>
+                                            <span className="sm:hidden">Clear</span>
+                                        </Button>
+                                    )}
                                     <Button variant="nebula" onClick={() => {
                                         setEditingId(null);
                                         setFormData({ name: "", role: "", email: "" });
@@ -180,53 +207,55 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                         </div>
 
                         {/* Create/Edit Modal */}
-                        {isModalOpen && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
-                                <GlassCard className="w-full max-w-md p-6">
-                                    <h2 className="type-h4 mb-6">
+                        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                            <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                                    <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center">
                                         {editingId ? "Edit Member" : "Add Team Member"}
-                                    </h2>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Name</label>
-                                            <input
-                                                type="text"
-                                                value={formData.name}
-                                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                                placeholder="John Doe"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Email</label>
-                                            <input
-                                                type="email"
-                                                value={formData.email}
-                                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                                className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                                placeholder="john@example.com"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Role</label>
-                                            <input
-                                                type="text"
-                                                value={formData.role}
-                                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                                className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                                placeholder="e.g. Developer"
-                                            />
-                                        </div>
-                                        <div className="flex justify-end gap-3 mt-6">
-                                            <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                            <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="transition-all">
-                                                {editingId ? "Save Changes" : "Add Member"}
-                                            </Button>
-                                        </div>
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <div className="px-6 py-5 space-y-5">
+                                    <div>
+                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Name</label>
+                                        <input
+                                            type="text"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            placeholder="John Doe"
+                                        />
                                     </div>
-                                </GlassCard>
-                            </div>
-                        )}
+                                    <div>
+                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Email</label>
+                                        <input
+                                            type="email"
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            placeholder="john@example.com"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Role</label>
+                                        <input
+                                            type="text"
+                                            value={formData.role}
+                                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            placeholder="e.g. Developer"
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                                    <div className="flex gap-3 justify-end w-full">
+                                        <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                        <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                            {editingId ? "Save Changes" : "Add Member"}
+                                        </Button>
+                                    </div>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </div>
                 </div>
 
@@ -234,9 +263,13 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                     isOpen={deleteModalOpen}
                     onClose={() => setDeleteModalOpen(false)}
                     onConfirm={confirmDelete}
-                    title="Remove Team Member"
-                    description="Are you sure you want to remove this member from the team?"
-                    confirmText="Remove Member"
+                    title={memberToDelete === "ALL" ? "Remove All Team Members" : "Remove Team Member"}
+                    description={
+                        memberToDelete === "ALL"
+                            ? "Are you sure you want to remove ALL members from the team? This action cannot be undone."
+                            : "Are you sure you want to remove this member from the team?"
+                    }
+                    confirmText={memberToDelete === "ALL" ? "Remove All" : "Remove Member"}
                 />
             </ProjectLayout>
         </>

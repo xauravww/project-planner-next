@@ -7,13 +7,15 @@ import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Pencil, Trash2, Wand2, Sparkles, Loader2 } from "lucide-react";
 import { generateWorkflows } from "@/actions/project";
-import { createWorkflow, updateWorkflow, deleteWorkflow } from "@/actions/crud";
+import { createWorkflow, updateWorkflow, deleteWorkflow, deleteAllWorkflows } from "@/actions/crud";
 import { MessageContent } from "@/components/chat/MessageContent";
 import CanvasViewer from "@/components/ui/CanvasViewer";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { queryKeys } from "@/lib/query-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 export default function WorkflowsPageClient({
     project,
@@ -65,6 +67,16 @@ export default function WorkflowsPageClient({
             router.refresh();
         },
         onError: () => toast.error("Failed to delete workflow"),
+    });
+
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllWorkflows(projectId),
+        onSuccess: () => {
+            toast.success("All workflows deleted");
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.workflows(project.id) });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete all workflows"),
     });
 
     const aiGenerateMutation = useMutation({
@@ -131,9 +143,23 @@ export default function WorkflowsPageClient({
         setIsAdding(false);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this workflow?")) {
-            await deleteMutation.mutateAsync(id);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [workflowToDelete, setWorkflowToDelete] = useState<string | null>(null);
+
+    const handleDelete = (id: string) => {
+        setWorkflowToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (workflowToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(project.id);
+            setDeleteModalOpen(false);
+            setWorkflowToDelete(null);
+        } else if (workflowToDelete) {
+            await deleteMutation.mutateAsync(workflowToDelete);
+            setDeleteModalOpen(false);
+            setWorkflowToDelete(null);
         }
     };
 
@@ -189,11 +215,22 @@ export default function WorkflowsPageClient({
                                     {aiGenerateMutation.isPending ? (
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                     ) : (
-                                        <Wand2 className="w-4 h-4 mr-2" />
+                                        <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
                                     )}
                                     <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
+                                {workflows.length > 0 && (
+                                    <Button
+                                        variant="nebula-ghost"
+                                        onClick={() => handleDelete("ALL")}
+                                        className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Delete All</span>
+                                        <span className="sm:hidden">Clear</span>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -203,51 +240,60 @@ export default function WorkflowsPageClient({
             {/* Content */}
             <div className="flex-1 overflow-auto">
                 <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                    {/* Add/Edit Form */}
-                    {(isAdding || editingId) && (
-                        <div className="mb-6">
-                            <GlassCard className="p-6">
-                                <h3 className="type-h4 mb-4">
+                    {/* Add/Edit Form Modal */}
+                    <Dialog
+                        open={isAdding || editingId !== null}
+                        onOpenChange={(open) => {
+                            if (!open) {
+                                setIsAdding(false);
+                                setEditingId(null);
+                                setFormData({ title: "", content: "", diagram: "" });
+                            }
+                        }}
+                    >
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                                <DialogTitle className="type-h4 text-[color:var(--color-nebula-fg)] text-center">
                                     {editingId ? "Edit Workflow" : "New Workflow"}
-                                </h3>
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">Title</label>
-                                        <Input
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
-                                            Steps (One per line)
-                                        </label>
-                                        <textarea
-                                            value={formData.content}
-                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] resize-none"
-                                            rows={6}
-                                            required
-                                            placeholder="Step 1: User logs in&#10;Step 2: User clicks dashboard..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
-                                            Diagram (Mermaid syntax - optional)
-                                        </label>
-                                        <textarea
-                                            value={formData.diagram}
-                                            onChange={(e) => setFormData({ ...formData, diagram: e.target.value })}
-                                            className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm resize-none"
-                                            rows={8}
-                                            placeholder="flowchart TD&#10;  A[Start] --> B[Process]&#10;  B --> C[End]"
-                                        />
-                                    </div>
-                                    <div className="flex gap-3">
-                                        <Button type="submit" variant="nebula">
-                                            {editingId ? "Update Workflow" : "Create Workflow"}
-                                        </Button>
+                                </DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">Title</label>
+                                    <Input
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
+                                        Steps (One per line)
+                                    </label>
+                                    <textarea
+                                        value={formData.content}
+                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        rows={6}
+                                        required
+                                        placeholder="Step 1: User logs in&#10;Step 2: User clicks dashboard..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
+                                        Diagram (Mermaid syntax - optional)
+                                    </label>
+                                    <textarea
+                                        value={formData.diagram}
+                                        onChange={(e) => setFormData({ ...formData, diagram: e.target.value })}
+                                        className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        rows={8}
+                                        placeholder="flowchart TD&#10;  A[Start] --> B[Process]&#10;  B --> C[End]"
+                                    />
+                                </div>
+                                <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                                    <div className="flex gap-3 justify-end w-full">
                                         <Button
                                             type="button"
                                             onClick={() => {
@@ -255,18 +301,22 @@ export default function WorkflowsPageClient({
                                                 setEditingId(null);
                                                 setFormData({ title: "", content: "", diagram: "" });
                                             }}
-                                            variant="ghost"
+                                            variant="nebula-ghost"
+                                            className="px-6"
                                         >
                                             Cancel
                                         </Button>
+                                        <Button type="submit" variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                            {editingId ? "Update Workflow" : "Create Workflow"}
+                                        </Button>
                                     </div>
-                                </form>
-                            </GlassCard>
-                        </div>
-                    )}
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Workflows List */}
-                    {workflows.length === 0 && !isAdding ? (
+                    {workflows.length === 0 ? (
                         <div className="flex items-center justify-center h-96">
                             <div className="text-center max-w-md mx-auto px-4">
                                 <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-6 border border-[var(--color-nebula-hairline-strong)]">
@@ -355,7 +405,18 @@ export default function WorkflowsPageClient({
                 onGenerate={handleAIGenerate}
                 isGenerating={aiGenerateMutation.isPending}
             />
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title={workflowToDelete === "ALL" ? "Delete All Workflows" : "Delete Workflow"}
+                description={
+                    workflowToDelete === "ALL"
+                        ? "Are you sure you want to delete ALL workflows? This action cannot be undone and will permanently remove everything from this list."
+                        : "Are you sure you want to delete this workflow? This action cannot be undone."
+                }
+                confirmText={workflowToDelete === "ALL" ? "Delete All" : "Delete Workflow"}
+            />
         </div>
     );
 }
-

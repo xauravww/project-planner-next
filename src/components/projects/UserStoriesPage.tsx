@@ -10,9 +10,10 @@ import { Input } from "@/components/ui/Input";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Pencil, Trash2, Target, Wand2, Sparkles, Loader2 } from "lucide-react";
 import { generateUserStories } from "@/actions/project";
-import { createUserStory, updateUserStory, deleteUserStory } from "@/actions/crud";
+import { createUserStory, updateUserStory, deleteUserStory, deleteAllUserStories } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { queryKeys } from "@/lib/query-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 export default function UserStoriesPageClient({
     project,
@@ -102,6 +103,24 @@ export default function UserStoriesPageClient({
         },
     });
 
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllUserStories(projectId),
+        onMutate: async (projectId) => {
+            await queryClient.cancelQueries({ queryKey: queryKeys.projects.userStories(projectId) });
+            const previousStories = queryClient.getQueryData<any[]>(queryKeys.projects.userStories(projectId)) || [];
+            queryClient.setQueryData(queryKeys.projects.userStories(projectId), []);
+            return { previousStories };
+        },
+        onError: (err, projectId, context) => {
+            queryClient.setQueryData(queryKeys.projects.userStories(projectId), context?.previousStories);
+            toast.error("Failed to delete all user stories");
+        },
+        onSuccess: () => {
+            toast.success("All user stories deleted");
+            router.refresh();
+        },
+    });
+
     const aiGenerateMutation = useMutation({
         mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateUserStories(project.id, answers),
         onSuccess: async (result) => {
@@ -172,7 +191,11 @@ export default function UserStoriesPageClient({
     };
 
     const confirmDelete = async () => {
-        if (storyToDelete) {
+        if (storyToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(project.id);
+            setDeleteModalOpen(false);
+            setStoryToDelete(null);
+        } else if (storyToDelete) {
             await deleteMutation.mutateAsync(storyToDelete);
             setDeleteModalOpen(false);
             setStoryToDelete(null);
@@ -213,6 +236,17 @@ export default function UserStoriesPageClient({
                                     <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
+                                {stories.length > 0 && (
+                                    <Button
+                                        variant="nebula-ghost"
+                                        onClick={() => handleDelete("ALL")}
+                                        className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Delete All</span>
+                                        <span className="sm:hidden">Clear</span>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -222,78 +256,94 @@ export default function UserStoriesPageClient({
             {/* Content - scrollable */}
             <div className="flex-1 overflow-auto">
                 <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                    {/* Add/Edit Form */}
-                    {(isAdding || editingId) && (
-                        <div className="mb-6">
-                            <GlassCard className="p-6">
-                                <h3 className="type-h4 mb-4">
+                    {/* Add/Edit Form Modal */}
+                    <Dialog 
+                        open={isAdding || editingId !== null} 
+                        onOpenChange={(open) => {
+                            if (!open) {
+                                setIsAdding(false);
+                                setEditingId(null);
+                                setFormData({
+                                    title: "",
+                                    content: "",
+                                    acceptanceCriteria: "",
+                                    priority: "must-have",
+                                    storyPoints: 1,
+                                });
+                            }
+                        }}
+                    >
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                                <DialogTitle className="type-h4 text-[color:var(--color-nebula-fg)] text-center">
                                     {editingId ? "Edit User Story" : "New User Story"}
-                                </h3>
-                                <form onSubmit={handleSubmit} className="space-y-4">
+                                </DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
+                                <div>
+                                    <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Title</label>
+                                    <Input
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        required
+                                        placeholder="As a user, I want to..."
+                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Description</label>
+                                    <textarea
+                                        value={formData.content}
+                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        rows={3}
+                                        required
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">
+                                        Acceptance Criteria
+                                    </label>
+                                    <textarea
+                                        value={formData.acceptanceCriteria}
+                                        onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        rows={4}
+                                        placeholder="- User can see login button&#10;- User gets error on invalid input"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Title</label>
-                                        <Input
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            required
-                                            placeholder="As a user, I want to..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Description</label>
-                                        <textarea
-                                            value={formData.content}
-                                            onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none"
-                                            rows={3}
-                                            required
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">
-                                            Acceptance Criteria
-                                        </label>
-                                        <textarea
-                                            value={formData.acceptanceCriteria}
-                                            onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none"
-                                            rows={4}
-                                            placeholder="- User can see login button&#10;- User gets error on invalid input"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Priority</label>
-                                            <div className="relative">
-                                                <select
-                                                    value={formData.priority}
-                                                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                                    className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] appearance-none focus:outline-none focus:border-[color:var(--color-nebula-fg)] transition-all cursor-pointer"
-                                                >
-                                                    <option value="must-have" className="bg-[var(--color-nebula-surface)]">Must Have</option>
-                                                    <option value="should-have" className="bg-[var(--color-nebula-surface)]">Should Have</option>
-                                                    <option value="nice-to-have" className="bg-[var(--color-nebula-surface)]">Nice to Have</option>
-                                                </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[color:var(--color-ash)]">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
-                                                </div>
+                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Priority</label>
+                                        <div className="relative">
+                                            <select
+                                                value={formData.priority}
+                                                onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                                                className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] appearance-none focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                                            >
+                                                <option value="must-have" className="bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]">Must Have</option>
+                                                <option value="should-have" className="bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]">Should Have</option>
+                                                <option value="nice-to-have" className="bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]">Nice to Have</option>
+                                            </select>
+                                            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[color:var(--color-ash)]">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Story Points</label>
-                                            <Input
-                                                type="number"
-                                                value={formData.storyPoints}
-                                                onChange={(e) => setFormData({ ...formData, storyPoints: Number(e.target.value) })}
-                                                min={1}
-                                                max={13}
-                                            />
-                                        </div>
                                     </div>
-                                    <div className="flex gap-3">
-                                        <Button type="submit" variant="nebula" className="transition-all">
-                                            {editingId ? "Update User Story" : "Create User Story"}
-                                        </Button>
+                                    <div>
+                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Story Points</label>
+                                        <Input
+                                            type="number"
+                                            value={formData.storyPoints}
+                                            onChange={(e) => setFormData({ ...formData, storyPoints: Number(e.target.value) })}
+                                            min={1}
+                                            max={13}
+                                            className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                        />
+                                    </div>
+                                </div>
+                                <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                                    <div className="flex gap-3 justify-end w-full">
                                         <Button
                                             type="button"
                                             onClick={() => {
@@ -307,18 +357,22 @@ export default function UserStoriesPageClient({
                                                     storyPoints: 1,
                                                 });
                                             }}
-                                            variant="ghost"
+                                            variant="nebula-ghost"
+                                            className="px-6"
                                         >
                                             Cancel
                                         </Button>
+                                        <Button type="submit" variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                            {editingId ? "Update User Story" : "Create User Story"}
+                                        </Button>
                                     </div>
-                                </form>
-                            </GlassCard>
-                        </div>
-                    )}
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
 
                     {/* Stories List */}
-                    {stories.length === 0 && !isAdding ? (
+                    {stories.length === 0 ? (
                         <div className="flex items-center justify-center h-96">
                             <div className="text-center max-w-md mx-auto px-4">
                                 <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-6 border border-[var(--color-nebula-hairline-strong)]">
@@ -442,9 +496,13 @@ export default function UserStoriesPageClient({
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Delete User Story"
-                description="Are you sure you want to delete this user story? This action cannot be undone."
-                confirmText="Delete Story"
+                title={storyToDelete === "ALL" ? "Delete All User Stories" : "Delete User Story"}
+                description={
+                    storyToDelete === "ALL"
+                        ? "Are you sure you want to delete ALL user stories? This action cannot be undone and will permanently remove everything from this list."
+                        : "Are you sure you want to delete this user story? This action cannot be undone."
+                }
+                confirmText={storyToDelete === "ALL" ? "Delete All" : "Delete Story"}
             />
 
         </div >

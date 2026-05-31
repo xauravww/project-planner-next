@@ -8,12 +8,13 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Scale, Trash2, Pencil, AlertCircle, Wand2, Sparkles, Loader2 } from "lucide-react";
-import { createBusinessRule, updateBusinessRule, deleteBusinessRule } from "@/actions/crud";
+import { createBusinessRule, updateBusinessRule, deleteBusinessRule, deleteAllBusinessRules } from "@/actions/crud";
 import { generateBusinessRules } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 export default function BusinessRulesPage({ params, initialRules, projectName }: { params: { id: string }; initialRules: any[]; projectName: string }) {
     const queryClient = useQueryClient();
@@ -70,6 +71,16 @@ export default function BusinessRulesPage({ params, initialRules, projectName }:
         onError: () => toast.error("Failed to delete business rule"),
     });
 
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllBusinessRules(projectId),
+        onSuccess: () => {
+            toast.success("All business rules deleted");
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.businessRules(params.id) });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete all business rules"),
+    });
+
     const aiGenerateMutation = useMutation({
         mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateBusinessRules(params.id, answers),
         onSuccess: async (result) => {
@@ -112,8 +123,14 @@ export default function BusinessRulesPage({ params, initialRules, projectName }:
     };
 
     const confirmDelete = async () => {
-        if (ruleToDelete) {
+        if (ruleToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(params.id);
+            setDeleteModalOpen(false);
+            setRuleToDelete(null);
+        } else if (ruleToDelete) {
             await deleteMutation.mutateAsync(ruleToDelete);
+            setDeleteModalOpen(false);
+            setRuleToDelete(null);
         }
     };
 
@@ -157,11 +174,22 @@ export default function BusinessRulesPage({ params, initialRules, projectName }:
                                     {aiGenerateMutation.isPending ? (
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                     ) : (
-                                        <Wand2 className="w-4 h-4 mr-2" />
+                                        <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
                                     )}
                                     <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
+                                {rules.length > 0 && (
+                                    <Button
+                                        variant="nebula-ghost"
+                                        onClick={() => handleDelete("ALL")}
+                                        className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Delete All</span>
+                                        <span className="sm:hidden">Clear</span>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -237,62 +265,64 @@ export default function BusinessRulesPage({ params, initialRules, projectName }:
                     </div>
 
                     {/* Create/Edit Modal */}
-                    {isModalOpen && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
-                            <GlassCard className="w-full max-w-lg p-6">
-                                <h2 className="type-h3 mb-6">
+                    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                        <DialogContent className="sm:max-w-[600px]">
+                            <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                                <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center">
                                     {editingId ? "Edit Rule" : "New Business Rule"}
-                                </h2>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Title</label>
-                                        <input
-                                            type="text"
-                                            value={formData.title}
-                                            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                            className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
-                                            placeholder="e.g. Password Complexity"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Description</label>
-                                        <textarea
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            className="w-full h-24 bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
-                                            placeholder="Explain the rule..."
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Condition (Optional)</label>
-                                        <input
-                                            type="text"
-                                            value={formData.condition}
-                                            onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                                            className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
-                                            placeholder="IF user.password.length < 8"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Action (Optional)</label>
-                                        <input
-                                            type="text"
-                                            value={formData.action}
-                                            onChange={(e) => setFormData({ ...formData, action: e.target.value })}
-                                            className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
-                                            placeholder="THEN reject_registration()"
-                                        />
-                                    </div>
-                                    <div className="flex justify-end gap-3 mt-6">
-                                        <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                        <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula">
-                                            {editingId ? "Save Changes" : "Create Rule"}
-                                        </Button>
-                                    </div>
+                                </DialogTitle>
+                            </DialogHeader>
+                            <div className="px-6 py-5 space-y-5">
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Title</label>
+                                    <input
+                                        type="text"
+                                        value={formData.title}
+                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="e.g. Password Complexity"
+                                    />
                                 </div>
-                            </GlassCard>
-                        </div>
-                    )}
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Description</label>
+                                    <textarea
+                                        value={formData.description}
+                                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                        className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="Explain the rule..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Condition (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.condition}
+                                        onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="IF user.password.length < 8"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-1 block">Action (Optional)</label>
+                                    <input
+                                        type="text"
+                                        value={formData.action}
+                                        onChange={(e) => setFormData({ ...formData, action: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="THEN reject_registration()"
+                                    />
+                                </div>
+                            </div>
+                            <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                                <div className="flex gap-3 justify-end w-full">
+                                    <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                    <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                        {editingId ? "Save Changes" : "Create Rule"}
+                                    </Button>
+                                </div>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
             <AIGenerationModal
@@ -311,9 +341,13 @@ export default function BusinessRulesPage({ params, initialRules, projectName }:
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Delete Business Rule"
-                description="Are you sure you want to delete this business rule? This action cannot be undone."
-                confirmText="Delete Rule"
+                title={ruleToDelete === "ALL" ? "Delete All Business Rules" : "Delete Business Rule"}
+                description={
+                    ruleToDelete === "ALL"
+                        ? "Are you sure you want to delete ALL business rules? This action cannot be undone and will permanently remove everything from this list."
+                        : "Are you sure you want to delete this business rule? This action cannot be undone."
+                }
+                confirmText={ruleToDelete === "ALL" ? "Delete All" : "Delete Rule"}
             />
         </ProjectLayout>
     );

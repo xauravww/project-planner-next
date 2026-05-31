@@ -9,9 +9,10 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Wand2, Pencil, Trash2, Save, Code2, Plus, X, Sparkles, Loader2 } from "lucide-react";
 import { generateTechStack } from "@/actions/project";
-import { updateTechStack, deleteTechStack } from "@/actions/crud";
+import { deleteTechStack, updateTechStack } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { queryKeys } from "@/lib/query-client";
+import { DeleteModal } from "@/components/ui/DeleteModal";
 
 export default function TechStackPageClient({
     project,
@@ -105,10 +106,15 @@ export default function TechStackPageClient({
         await updateMutation.mutateAsync(formData);
     };
 
-    const handleDelete = async () => {
-        if (confirm("Delete tech stack?")) {
-            await deleteMutation.mutateAsync();
-        }
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+    const handleDelete = () => {
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        await deleteMutation.mutateAsync();
+        setIsDeleteModalOpen(false);
     };
 
     const addItem = (category: keyof typeof formData) => {
@@ -271,6 +277,15 @@ export default function TechStackPageClient({
                 type="tech-stack"
                 onGenerate={handleAIGenerate}
                 isGenerating={aiGenerateMutation.isPending}
+            />
+
+            <DeleteModal
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title="Delete Tech Stack"
+                description="Are you sure you want to delete the tech stack? This action cannot be undone."
+                confirmText="Delete Tech Stack"
             />
         </div>
     );

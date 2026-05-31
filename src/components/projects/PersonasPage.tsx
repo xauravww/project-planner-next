@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X, Wand2, Loader2 } from "lucide-react";
-import { createPersona, updatePersona, deletePersona } from "@/actions/crud";
+import { createPersona, updatePersona, deletePersona, deleteAllPersonas } from "@/actions/crud";
 import { generatePersonas } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
+import { DeleteModal } from "@/components/ui/DeleteModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
 export default function PersonasPage({ params, initialPersonas, projectName }: { params: { id: string }; initialPersonas: any[]; projectName: string }) {
     const queryClient = useQueryClient();
@@ -64,6 +66,16 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
             router.refresh();
         },
         onError: () => toast.error("Failed to delete persona"),
+    });
+
+    const deleteAllMutation = useMutation({
+        mutationFn: (projectId: string) => deleteAllPersonas(projectId),
+        onSuccess: () => {
+            toast.success("All personas deleted");
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.personas(params.id) });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete all personas"),
     });
 
     const aiGenerateMutation = useMutation({
@@ -118,9 +130,23 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
         setIsModalOpen(true);
     };
 
-    const handleDelete = async (id: string) => {
-        if (confirm("Delete this persona?")) {
-            await deleteMutation.mutateAsync(id);
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const [personaToDelete, setPersonaToDelete] = useState<string | null>(null);
+
+    const handleDelete = (id: string) => {
+        setPersonaToDelete(id);
+        setDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (personaToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync(params.id);
+            setDeleteModalOpen(false);
+            setPersonaToDelete(null);
+        } else if (personaToDelete) {
+            await deleteMutation.mutateAsync(personaToDelete);
+            setDeleteModalOpen(false);
+            setPersonaToDelete(null);
         }
     };
 
@@ -164,6 +190,17 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                             )}
                             {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                         </Button>
+                        {personas.length > 0 && (
+                            <Button
+                                variant="nebula-ghost"
+                                onClick={() => handleDelete("ALL")}
+                                className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                            >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                <span className="hidden sm:inline">Delete All</span>
+                                <span className="sm:hidden">Clear</span>
+                            </Button>
+                        )}
                     </div>
                 </div>
 
@@ -266,72 +303,74 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                 </div>
 
                 {/* Create/Edit Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
-                        <GlassCard className="w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-                            <h2 className="type-h4 mb-6">
+                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+                    <DialogContent className="sm:max-w-[600px]">
+                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                            <DialogTitle className="type-h4 text-[color:var(--color-nebula-fg)] text-center">
                                 {editingId ? "Edit Persona" : "New Persona"}
-                            </h2>
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Name</label>
-                                        <input
-                                            type="text"
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                            placeholder="e.g. Sarah Smith"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Role</label>
-                                        <input
-                                            type="text"
-                                            value={formData.role}
-                                            onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                            placeholder="e.g. Marketing Manager"
-                                        />
-                                    </div>
-                                </div>
+                            </DialogTitle>
+                        </DialogHeader>
+                        <div className="px-6 py-5 space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Bio</label>
-                                    <textarea
-                                        value={formData.bio}
-                                        onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        placeholder="Short biography..."
+                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Name</label>
+                                    <input
+                                        type="text"
+                                        value={formData.name}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="e.g. Sarah Smith"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Goals</label>
-                                    <textarea
-                                        value={formData.goals}
-                                        onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        placeholder="What are they trying to achieve?"
+                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Role</label>
+                                    <input
+                                        type="text"
+                                        value={formData.role}
+                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                        placeholder="e.g. Marketing Manager"
                                     />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Frustrations</label>
-                                    <textarea
-                                        value={formData.frustrations}
-                                        onChange={(e) => setFormData({ ...formData, frustrations: e.target.value })}
-                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        placeholder="What are their pain points?"
-                                    />
-                                </div>
-                                <div className="flex justify-end gap-3 mt-6">
-                                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                    <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="transition-all">
-                                        {editingId ? "Save Changes" : "Create Persona"}
-                                    </Button>
                                 </div>
                             </div>
-                        </GlassCard>
-                    </div>
-                )}
+                            <div>
+                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Bio</label>
+                                <textarea
+                                    value={formData.bio}
+                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="Short biography..."
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Goals (One per line)</label>
+                                <textarea
+                                    value={formData.goals}
+                                    onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
+                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="What are they trying to achieve?"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Frustrations (One per line)</label>
+                                <textarea
+                                    value={formData.frustrations}
+                                    onChange={(e) => setFormData({ ...formData, frustrations: e.target.value })}
+                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                    placeholder="What are their pain points?"
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
+                            <div className="flex gap-3 justify-end w-full">
+                                <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                    {editingId ? "Save Changes" : "Create Persona"}
+                                </Button>
+                            </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
@@ -343,6 +382,18 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                 type="personas"
                 onGenerate={handleAIGenerate}
                 isGenerating={aiGenerateMutation.isPending}
+            />
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
+                title={personaToDelete === "ALL" ? "Delete All Personas" : "Delete Persona"}
+                description={
+                    personaToDelete === "ALL"
+                        ? "Are you sure you want to delete ALL personas? This action cannot be undone and will permanently remove everything from this list."
+                        : "Are you sure you want to delete this persona? This action cannot be undone."
+                }
+                confirmText={personaToDelete === "ALL" ? "Delete All" : "Delete Persona"}
             />
         </ProjectLayout>
     );
