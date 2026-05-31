@@ -1,73 +1,84 @@
 "use client";
 
 import { useState } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Plus, Minus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Section, Container, SectionHeader } from "@/components/ui/Section";
+import { NebulaCard } from "@/components/ui/NebulaCard";
 
-const faqs = [
+type QA = { question: string; answer: string };
+
+const faqs: QA[] = [
     {
         question: "How does the AI planning work?",
-        answer: "Our AI analyzes your high-level idea and breaks it down into user stories, technical requirements, and database schemas using advanced LLMs trained on software architecture best practices.",
+        answer: "We read your high-level idea and break it into user stories, tech requirements, and data shapes using language models trained on software architecture.",
     },
     {
-        question: "Can I export my project plan?",
-        answer: "Yes! You can export your entire project plan as a PDF, Markdown, or even sync it directly to Jira, Linear, or GitHub Issues.",
+        question: "Can I export my plan?",
+        answer: "Yes. Export to PDF, Markdown, or sync straight to Jira, Linear, or GitHub Issues.",
     },
     {
         question: "Is my data secure?",
-        answer: "Absolutely. We use enterprise-grade encryption for all data at rest and in transit. Your intellectual property is yours alone.",
+        answer: "Yes. We encrypt data at rest and in transit. Your work stays yours.",
     },
     {
         question: "Do you offer team collaboration?",
-        answer: "Yes, our Pro and Enterprise plans support real-time collaboration, allowing your entire team to edit and comment on plans simultaneously.",
+        answer: "Pro and Enterprise plans support real-time editing and comments across your team.",
     },
 ];
 
 export function FAQ() {
-    const [openIndex, setOpenIndex] = useState<number | null>(null);
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <section className="py-24 bg-black">
-            <div className="container mx-auto px-4 max-w-3xl">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white sm:text-4xl mb-4 tracking-tight">
-                        Frequently Asked <span className="text-white">Questions</span>
-                    </h2>
-                </div>
+        <Section id="faq">
+            <Container className="max-w-3xl">
+                <SectionHeader
+                    title="Frequently"
+                    accent="asked"
+                />
 
-                <div className="space-y-4">
-                    {faqs.map((faq, index) => (
-                        <GlassCard
-                            key={index}
-                            className="p-0 overflow-hidden cursor-pointer bg-zinc-900 border-zinc-800 hover:border-zinc-700"
-                            onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                        >
-                            <div className="p-6 flex items-center justify-between">
-                                <h3 className="text-lg font-medium text-white">{faq.question}</h3>
-                                <div className="text-white">
-                                    {openIndex === index ? <Minus className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                                </div>
-                            </div>
+                <div className="space-y-3">
+                    {faqs.map((faq, i) => {
+                        const open = openIndex === i;
+                        return (
+                            <NebulaCard
+                                key={faq.question}
+                                interactive
+                                className="!p-0 cursor-pointer"
+                                onClick={() => setOpenIndex(open ? null : i)}
+                            >
+                                <button
+                                    type="button"
+                                    aria-expanded={open}
+                                    className="flex items-center justify-between gap-4 p-6 text-left w-full"
+                                >
+                                    <span className="type-h3 text-base md:text-lg">{faq.question}</span>
+                                    {open
+                                        ? <Minus className="w-4 h-4 text-[color:var(--color-nebula-fg)] shrink-0" />
+                                        : <Plus className="w-4 h-4 text-[color:var(--color-nebula-fg-mute)] shrink-0" />}
+                                </button>
 
-                            <AnimatePresence>
-                                {openIndex === index && (
-                                    <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="px-6 pb-6 text-zinc-400 border-t border-zinc-800 pt-4">
-                                            {faq.answer}
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </GlassCard>
-                    ))}
+                                <AnimatePresence initial={false}>
+                                    {open && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.25 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-6 pb-6 type-small nebula-hairline-t pt-4">
+                                                {faq.answer}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </NebulaCard>
+                        );
+                    })}
                 </div>
-            </div>
-        </section>
+            </Container>
+        </Section>
     );
 }

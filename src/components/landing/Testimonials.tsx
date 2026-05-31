@@ -1,100 +1,121 @@
 "use client";
 
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Star } from "lucide-react";
 import { motion } from "framer-motion";
-import AetherBackground from "@/components/ui/aether-background";
+import { Section, Container } from "@/components/ui/Section";
+import { NebulaCard } from "@/components/ui/NebulaCard";
 
-const testimonials = [
+type Testimonial = {
+    name: string;
+    role: string;
+    content: string;
+    avatar: string;
+};
+
+// First entry = hero quote; rest = small row below.
+const testimonials: Testimonial[] = [
     {
         name: "Sarah Chen",
         role: "Senior Product Manager",
-        content: "NebulaPlan transformed how we handle requirements. The AI suggestions are uncannily accurate and saved us weeks of planning.",
+        content:
+            "NebulaPlan changed how we handle requirements. The AI suggestions are sharp and saved us weeks of planning — we went from messy docs to a shippable plan in one afternoon.",
         avatar: "SC",
-        className: "md:col-span-1",
     },
     {
         name: "Marcus Rodriguez",
         role: "Tech Lead",
-        content: "Finally, a tool that bridges the gap between PMs and devs. The architecture diagrams are a lifesaver.",
+        content: "Finally bridges PMs and devs. The architecture diagrams alone are a lifesaver.",
         avatar: "MR",
-        className: "md:col-span-1",
     },
     {
         name: "Emily Wright",
         role: "Startup Founder",
-        content: "We went from idea to MVP in half the time. The structured workflow keeps us focused on what matters. It's like having a CTO in your pocket.",
+        content: "We went from idea to MVP in half the time. Like having a CTO in your pocket.",
         avatar: "EW",
-        className: "md:col-span-2",
     },
     {
-        name: "David Kim",
-        role: "Engineering Manager",
-        content: "The ability to export directly to Jira is a game changer. No more manual entry.",
-        avatar: "DK",
-        className: "md:col-span-1",
-    },
-    {
-        name: "Lisa Wang",
-        role: "UX Designer",
-        content: "The user flow visualization is beautiful. It helps me communicate my design intent clearly to the engineering team.",
-        avatar: "LW",
-        className: "md:col-span-1",
+        name: "Aarav Patel",
+        role: "Solo Founder",
+        content: "Cut my planning time in half. The Linear export alone is worth the price.",
+        avatar: "AP",
     },
 ];
 
-export function Testimonials() {
+function Author({ t, size = "sm" }: { t: Testimonial; size?: "sm" | "lg" }) {
+    const dim = size === "lg" ? "w-12 h-12 text-sm" : "w-9 h-9 text-xs";
     return (
-        <section className="py-24 bg-black relative overflow-hidden">
-            <AetherBackground
-                variant="orb"
-                overlayGradient="radial-gradient(circle at center, transparent 0%, #000000 80%)"
-                className="opacity-40"
-            />
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold text-white sm:text-5xl mb-4 tracking-tight">
-                        Loved by <span className="text-white">Builders</span>
-                    </h2>
-                    <p className="text-zinc-400 max-w-2xl mx-auto">
-                        Join thousands of teams who are shipping faster and better with NebulaPlan.
-                    </p>
-                </div>
+        <div className="flex items-center gap-3">
+            <span className={`${dim} rounded-full nebula-hairline flex items-center justify-center font-medium text-[color:var(--color-nebula-fg)]`}>
+                {t.avatar}
+            </span>
+            <div>
+                <p className="text-sm text-[color:var(--color-nebula-fg)]">{t.name}</p>
+                <p className="text-xs text-[color:var(--color-nebula-fg-mute)]">{t.role}</p>
+            </div>
+        </div>
+    );
+}
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {testimonials.map((testimonial, index) => (
+export function Testimonials() {
+    const [hero, ...rest] = testimonials;
+
+    return (
+        <Section id="testimonials">
+            <Container className="max-w-5xl">
+                {/* Hero quote — no card, big serif, editorial */}
+                <motion.figure
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-80px" }}
+                    transition={{ duration: 0.6 }}
+                    className="mb-20 max-w-3xl"
+                >
+                    <span
+                        aria-hidden
+                        className="block text-[color:var(--color-nebula-fg)] leading-none mb-2"
+                        style={{
+                            fontFamily: "var(--font-serif), serif",
+                            fontSize: "5rem",
+                            fontStyle: "italic",
+                            opacity: 0.4,
+                        }}
+                    >
+                        &ldquo;
+                    </span>
+                    <blockquote
+                        className="text-[color:var(--color-nebula-fg)]"
+                        style={{
+                            fontFamily: "var(--font-serif), serif",
+                            fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
+                            fontWeight: 400,
+                            lineHeight: 1.3,
+                            letterSpacing: "-0.01em",
+                        }}
+                    >
+                        {hero.content}
+                    </blockquote>
+                    <figcaption className="mt-6">
+                        <Author t={hero} size="lg" />
+                    </figcaption>
+                </motion.figure>
+
+                {/* small row — quieter cards */}
+                <div className="grid gap-4 md:grid-cols-3">
+                    {rest.map((t, i) => (
                         <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
+                            key={t.name}
+                            initial={{ opacity: 0, y: 16 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className={testimonial.className}
+                            viewport={{ once: true, margin: "-80px" }}
+                            transition={{ duration: 0.4, delay: i * 0.08 }}
                         >
-                            <GlassCard className="h-full flex flex-col justify-between hover:bg-zinc-900 transition-colors bg-zinc-950 border-zinc-800">
-                                <div className="mb-6">
-                                    <div className="flex gap-1 mb-4">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className="w-4 h-4 fill-white text-white" />
-                                        ))}
-                                    </div>
-                                    <p className="text-zinc-300 italic leading-relaxed">&quot;{testimonial.content}&quot;</p>
-                                </div>
-
-                                <div className="flex items-center gap-4 pt-4 border-t border-zinc-800">
-                                    <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-white font-bold text-sm border border-zinc-700">
-                                        {testimonial.avatar}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-white font-semibold text-sm">{testimonial.name}</h4>
-                                        <p className="text-xs text-zinc-500">{testimonial.role}</p>
-                                    </div>
-                                </div>
-                            </GlassCard>
+                            <NebulaCard className="h-full gap-5 !p-6">
+                                <p className="type-small italic">&ldquo;{t.content}&rdquo;</p>
+                                <Author t={t} />
+                            </NebulaCard>
                         </motion.div>
                     ))}
                 </div>
-            </div>
-        </section>
+            </Container>
+        </Section>
     );
 }

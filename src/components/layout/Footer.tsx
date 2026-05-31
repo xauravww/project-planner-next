@@ -1,77 +1,108 @@
 "use client";
 
 import Link from "next/link";
-import { Github, Twitter, Linkedin, Heart } from "lucide-react";
+import { Github, Twitter, Linkedin, Heart, type LucideIcon } from "lucide-react";
+import { Container } from "@/components/ui/Section";
+
+type LinkItem = { label: string; href: string };
+type Column = { title: string; links: LinkItem[] };
+
+const columns: Column[] = [
+    {
+        title: "Product",
+        links: [
+            { label: "Features", href: "#features" },
+            { label: "Pricing", href: "#pricing" },
+            { label: "Changelog", href: "#" },
+            { label: "Docs", href: "#" },
+        ],
+    },
+    {
+        title: "Company",
+        links: [
+            { label: "About", href: "#" },
+            { label: "Blog", href: "#" },
+            { label: "Careers", href: "#" },
+            { label: "Contact", href: "#" },
+        ],
+    },
+    {
+        title: "Legal",
+        links: [
+            { label: "Privacy Policy", href: "/privacy" },
+            { label: "Terms of Service", href: "/terms" },
+            { label: "Cookie Policy", href: "#" },
+            { label: "Security", href: "#" },
+        ],
+    },
+];
+
+const socials: { label: string; href: string; icon: LucideIcon }[] = [
+    { label: "Twitter", href: "#", icon: Twitter },
+    { label: "GitHub", href: "#", icon: Github },
+    { label: "LinkedIn", href: "#", icon: Linkedin },
+];
 
 export function Footer() {
     return (
-        <footer className="border-t border-zinc-900 bg-black pt-20 pb-10">
-            <div className="container mx-auto px-4">
-                <div className="grid gap-12 md:grid-cols-4 lg:gap-24 mb-16">
-                    <div className="col-span-1 md:col-span-1">
-                        <Link href="/" className="flex items-center space-x-2 mb-6">
-                            <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-black font-bold">N</div>
-                            <span className="text-xl font-bold text-white">NebulaPlan</span>
+        <footer className="bg-[var(--color-nebula-bg)] nebula-hairline-t pt-20 pb-10">
+            <Container>
+                <div className="grid gap-12 md:grid-cols-4 mb-16">
+                    {/* Brand */}
+                    <div>
+                        <Link href="/" className="flex items-center gap-2 mb-6">
+                            <span className="h-8 w-8 rounded-lg bg-[var(--color-nebula-fg)] text-[var(--color-nebula-bg)] flex items-center justify-center font-bold">
+                                N
+                            </span>
+                            <span className="text-xl font-medium text-[color:var(--color-nebula-fg)]">
+                                NebulaPlan
+                            </span>
                         </Link>
-                        <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                            The all-in-one platform for visionary builders and product teams.
-                            Plan, build, and ship faster than ever before.
+                        <p className="type-small mb-6 max-w-xs">
+                            One home for visionary builders. Plan, build, and ship faster.
                         </p>
-                        <div className="flex items-center space-x-4">
-                            <Link href="#" className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
-                                <Twitter className="w-5 h-5" />
-                            </Link>
-                            <Link href="#" className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
-                                <Github className="w-5 h-5" />
-                            </Link>
-                            <Link href="#" className="text-zinc-400 hover:text-white transition-colors p-2 hover:bg-white/5 rounded-full">
-                                <Linkedin className="w-5 h-5" />
-                            </Link>
+                        <div className="flex gap-2">
+                            {socials.map((s) => (
+                                <Link
+                                    key={s.label}
+                                    href={s.href}
+                                    aria-label={s.label}
+                                    className="p-2 rounded-full nebula-hairline text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+                                >
+                                    <s.icon className="w-4 h-4" />
+                                </Link>
+                            ))}
                         </div>
                     </div>
 
-                    <div>
-                        <h4 className="font-semibold text-white mb-6">Product</h4>
-                        <ul className="space-y-4 text-sm text-zinc-400">
-                            <li><Link href="#" className="hover:text-white transition-colors">Features</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Pricing</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Changelog</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Docs</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-semibold text-white mb-6">Company</h4>
-                        <ul className="space-y-4 text-sm text-zinc-400">
-                            <li><Link href="#" className="hover:text-white transition-colors">About</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Blog</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Careers</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Contact</Link></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 className="font-semibold text-white mb-6">Legal</h4>
-                        <ul className="space-y-4 text-sm text-zinc-400">
-                            <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Cookie Policy</Link></li>
-                            <li><Link href="#" className="hover:text-white transition-colors">Security</Link></li>
-                        </ul>
-                    </div>
+                    {columns.map((col) => (
+                        <div key={col.title}>
+                            <h4 className="type-eyebrow mb-5">{col.title}</h4>
+                            <ul className="space-y-3">
+                                {col.links.map((l) => (
+                                    <li key={l.label}>
+                                        <Link
+                                            href={l.href}
+                                            className="text-sm text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+                                        >
+                                            {l.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-zinc-900 text-sm text-zinc-500">
-                    <p className="mb-4 md:mb-0">
-                        © 2024 NebulaPlan Inc. All rights reserved.
-                    </p>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 nebula-hairline-t text-xs text-[color:var(--color-nebula-fg-mute)]">
+                    <p>© {new Date().getFullYear()} NebulaPlan Inc. All rights reserved.</p>
                     <div className="flex items-center gap-1">
                         <span>Made with</span>
-                        <Heart className="w-4 h-4 text-white fill-white" />
+                        <Heart className="w-3.5 h-3.5 fill-[color:var(--color-nebula-fg)] text-[color:var(--color-nebula-fg)]" />
                         <span>by builders, for builders.</span>
                     </div>
                 </div>
-            </div>
+            </Container>
         </footer>
     );
 }

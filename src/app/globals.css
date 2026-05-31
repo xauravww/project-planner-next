@@ -2,6 +2,47 @@
 @import "tailwindcss";
 
 @theme {
+  /* ──────────────────────────────────────────────────────────────
+     Landing-page design tokens.
+     Edit ONLY here — every section reads these via var() / Tailwind.
+     Never hardcode colors, sizes, or motion timings in components.
+     ────────────────────────────────────────────────────────────── */
+
+  /* Surface palette (cool obsidian) */
+  --color-nebula-bg:      #06070a;   /* page background           */
+  --color-nebula-surface: #0b0d12;   /* card / raised surface     */
+  --color-nebula-hairline: rgba(231, 229, 228, 0.10); /* 1px borders */
+  --color-nebula-hairline-strong: rgba(231, 229, 228, 0.22);
+  --color-nebula-fg:      #f5f5f4;   /* primary text              */
+  --color-nebula-fg-soft: rgba(231, 229, 228, 0.70); /* body copy */
+  --color-nebula-fg-mute: rgba(231, 229, 228, 0.45); /* eyebrow/meta */
+  --color-nebula-glow:    rgba(120, 130, 160, 0.18); /* radial glow */
+
+  /* Type scale */
+  --nebula-display:   clamp(2.6rem, 7.5vw, 6rem);    /* hero title  */
+  --nebula-h2:        clamp(2rem, 4.5vw, 3.5rem);    /* section title */
+  --nebula-h3:        clamp(1.25rem, 2vw, 1.75rem);  /* card title  */
+  --nebula-body:      clamp(1rem, 1.15vw, 1.125rem); /* paragraph   */
+  --nebula-small:     0.875rem;
+  --nebula-eyebrow:   0.7rem;
+
+  /* Spacing rhythm */
+  --nebula-section-y: clamp(5rem, 9vw, 8rem);
+  --nebula-stack-lg:  clamp(2.5rem, 4vw, 4rem);
+  --nebula-stack-md:  1.5rem;
+  --nebula-stack-sm:  0.75rem;
+
+  /* Radii */
+  --nebula-radius-sm: 8px;
+  --nebula-radius-md: 14px;
+  --nebula-radius-lg: 24px;
+
+  /* Motion */
+  --nebula-ease:      cubic-bezier(0.22, 1, 0.36, 1);
+  --nebula-fast:      220ms;
+  --nebula-slow:      700ms;
+
+  /* Theme bridge (existing) */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -161,6 +202,103 @@
 
   .bg-dot-white {
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='16' height='16' fill='none'%3e%3ccircle fill='rgb(255 255 255 / 0.05)' cx='10' cy='10' r='1.6'/%3e%3c/svg%3e");
+  }
+
+  /* ──────────────────────────────────────────────────────────────
+     Nebula landing utilities — used by Section/Hero/cards.
+     Reading these instead of inlining styles keeps every section
+     visually identical and edits cheap.
+     ────────────────────────────────────────────────────────────── */
+
+  /* Type roles */
+  .text-serif       { font-family: var(--font-serif), 'Fraunces', 'Cormorant Garamond', serif; }
+  .text-sans        { font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif; }
+
+  .type-display     { font-family: var(--font-serif), 'Fraunces', serif; font-weight: 400;
+                      font-size: var(--nebula-display); letter-spacing: -0.025em; line-height: 0.98; }
+  .type-h2          { font-family: var(--font-serif), 'Fraunces', serif; font-weight: 400;
+                      font-size: var(--nebula-h2); letter-spacing: -0.02em; line-height: 1.02; color: var(--color-nebula-fg); }
+  .type-h3          { font-family: var(--font-serif), 'Fraunces', serif; font-weight: 400;
+                      font-size: var(--nebula-h3); letter-spacing: -0.015em; line-height: 1.1; color: var(--color-nebula-fg); }
+  .type-body        { font-size: var(--nebula-body); line-height: 1.65; color: var(--color-nebula-fg-soft); }
+  .type-small       { font-size: var(--nebula-small); line-height: 1.6; color: var(--color-nebula-fg-soft); }
+  .type-eyebrow     { font-size: var(--nebula-eyebrow); letter-spacing: 0.32em; text-transform: uppercase;
+                      color: var(--color-nebula-fg-mute); font-weight: 500; }
+  .type-italic-accent { font-style: italic; font-weight: 400; color: var(--color-nebula-fg); }
+
+  /* Surfaces */
+  .nebula-surface   { background: var(--color-nebula-surface);
+                      border: 1px solid var(--color-nebula-hairline);
+                      border-radius: var(--nebula-radius-lg); }
+  .nebula-hairline  { border: 1px solid var(--color-nebula-hairline); }
+  .nebula-hairline-t { border-top: 1px solid var(--color-nebula-hairline); }
+  .nebula-hairline-b { border-bottom: 1px solid var(--color-nebula-hairline); }
+
+  /* Section backdrop — the constellation/grid layer used by every Section */
+  .nebula-backdrop::before,
+  .nebula-backdrop::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* edge-faded fine grid */
+  .nebula-backdrop::before {
+    background-image:
+      linear-gradient(var(--color-nebula-hairline) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-nebula-hairline) 1px, transparent 1px);
+    background-size: 64px 64px;
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 90%);
+            mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 30%, transparent 90%);
+    opacity: 0.6;
+  }
+  /* soft off-center glow */
+  .nebula-backdrop::after {
+    background: radial-gradient(60% 50% at 72% 38%,
+        var(--color-nebula-glow) 0%,
+        rgba(120, 130, 160, 0.05) 35%,
+        transparent 70%);
+  }
+
+  /* Buttons used by hero + CTA */
+  .nebula-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    font-size: var(--nebula-small); font-weight: 500;
+    padding: 14px 24px; border-radius: var(--nebula-radius-md);
+    text-decoration: none; transition: all var(--nebula-fast) var(--nebula-ease);
+    border: 1px solid transparent;
+  }
+  .nebula-btn--primary {
+    background: var(--color-nebula-fg); color: var(--color-nebula-bg);
+    border-color: var(--color-nebula-fg);
+  }
+  .nebula-btn--primary:hover {
+    background: transparent; color: var(--color-nebula-fg);
+  }
+  .nebula-btn--ghost {
+    background: transparent; color: var(--color-nebula-fg-soft);
+    border-color: var(--color-nebula-hairline-strong);
+  }
+  .nebula-btn--ghost:hover {
+    color: var(--color-nebula-fg);
+    border-color: var(--color-nebula-fg-mute);
+  }
+
+  /* Stagger entrance (use .reveal + .reveal-d-1/2/3) */
+  @keyframes nebula-rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal     { animation: nebula-rise var(--nebula-slow) var(--nebula-ease) both; }
+  .reveal-d-1 { animation-delay: 100ms; }
+  .reveal-d-2 { animation-delay: 260ms; }
+  .reveal-d-3 { animation-delay: 420ms; }
+  .reveal-d-4 { animation-delay: 580ms; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { animation: none !important; }
   }
 }
 

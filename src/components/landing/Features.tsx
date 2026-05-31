@@ -1,102 +1,96 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Layers, Zap, Shield, Globe, Cpu, GitBranch } from "lucide-react";
-import { cn } from "@/lib/utils";
-import AetherBackground from "@/components/ui/aether-background";
+import { Layers, Zap, Shield, Globe, Cpu, GitBranch, type LucideIcon } from "lucide-react";
+import { Section, Container, SectionHeader } from "@/components/ui/Section";
+import { NebulaCard } from "@/components/ui/NebulaCard";
 
-const features = [
+type Feature = {
+    title: string;
+    description: string;
+    icon: LucideIcon;
+    /** Tailwind grid span — controls bento layout */
+    span: string;
+};
+
+const features: Feature[] = [
     {
-        title: "Modular Architecture",
-        description: "Build scalable systems with our intuitive module planning tools. Drag, drop, and connect components.",
+        title: "Modular architecture",
+        description: "Drag, drop, and connect components to plan scalable systems before you write a line of code.",
         icon: Layers,
-        className: "md:col-span-2 md:row-span-2",
+        span: "md:col-span-2 md:row-span-2", // hero tile
     },
     {
-        title: "Edge Optimized",
-        description: "Zero-latency planning.",
+        title: "Edge fast",
+        description: "Zero-latency planning, anywhere you work.",
         icon: Zap,
-        className: "md:col-span-1 md:row-span-1",
+        span: "md:col-span-2",
     },
     {
-        title: "Global Sync",
-        description: "Real-time collaboration across the globe.",
+        title: "Global sync",
+        description: "Real-time team editing across timezones.",
         icon: Globe,
-        className: "md:col-span-1 md:row-span-1",
+        span: "md:col-span-2",
     },
     {
-        title: "Enterprise Security",
-        description: "Bank-grade encryption for your IP.",
+        title: "Secure by default",
+        description: "Bank-grade encryption for your ideas.",
         icon: Shield,
-        className: "md:col-span-1 md:row-span-1",
+        span: "md:col-span-2",
     },
     {
-        title: "AI Powered",
-        description: "Generative suggestions for your tech stack.",
+        title: "AI suggestions",
+        description: "Smart picks for your stack and structure.",
         icon: Cpu,
-        className: "md:col-span-1 md:row-span-1",
+        span: "md:col-span-2",
     },
     {
-        title: "Git Integration",
-        description: "Sync directly with your repo.",
+        title: "Git native",
+        description: "Plans sync with your repo. Code and spec stay in step.",
         icon: GitBranch,
-        className: "md:col-span-2 md:row-span-1",
+        span: "md:col-span-4",
     },
 ];
 
 export function Features() {
     return (
-        <section id="features" className="py-24 md:py-32 bg-black relative overflow-hidden">
-            <AetherBackground
-                overlayGradient="linear-gradient(180deg, #000000 0%, #000000bb 20%, #000000bb 80%, #000000 100%)"
-                className="opacity-40"
-            />
+        <Section id="features">
+            <Container>
+                <SectionHeader
+                    title="Everything you need to"
+                    accent="ship faster"
+                    subtitle="A small set of sharp tools that take you from idea to working code, without busywork."
+                />
 
-            <div className="container mx-auto px-4 relative z-10">
-                <div className="mb-16 md:mb-24 max-w-3xl mx-auto text-center">
-                    <h2 className="mb-6 text-3xl font-bold text-white sm:text-5xl md:text-6xl tracking-tight">
-                        Everything you need to <span className="text-white">ship faster</span>
-                    </h2>
-                    <p className="text-lg md:text-xl text-zinc-400 leading-relaxed">
-                        A complete suite of tools designed to take you from concept to code in record time.
-                        Built for speed, designed for scale.
-                    </p>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-4 md:grid-rows-3 gap-6 md:gap-8 h-auto md:h-[800px]">
-                    {features.map((feature, index) => (
+                {/* 4-col bento — first tile is 2×2, rest fill in */}
+                <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-4">
+                    {features.map((f, i) => (
                         <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
+                            key={f.title}
+                            initial={{ opacity: 0, y: 16 }}
                             whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                            className={cn(
-                                "group relative overflow-hidden rounded-3xl border border-white/10 bg-zinc-900/30 p-8 transition-all duration-500 hover:bg-zinc-900/50",
-                                feature.className
-                            )}
+                            viewport={{ once: true, margin: "-80px" }}
+                            transition={{ duration: 0.5, delay: i * 0.05 }}
+                            className={f.span}
                         >
-                            <div className="relative z-10 flex flex-col h-full justify-between">
-                                <div className="mb-6">
-                                    <div className="mb-6 inline-flex rounded-2xl bg-white/5 p-4 text-white shadow-inner ring-1 ring-white/10 backdrop-blur-md">
-                                        <feature.icon className="h-8 w-8 text-white" />
+                            <NebulaCard interactive className="h-full justify-between gap-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--nebula-radius-sm)] nebula-hairline">
+                                        <f.icon className="h-4 w-4 text-[color:var(--color-nebula-fg)]" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-white mb-3">{feature.title}</h3>
-                                    <p className="text-base text-zinc-400 group-hover:text-zinc-300 transition-colors leading-relaxed">
-                                        {feature.description}
-                                    </p>
+                                    <span className="type-eyebrow text-[0.6rem] opacity-50">
+                                        {String(i + 1).padStart(2, "0")}
+                                    </span>
                                 </div>
-
-                                {/* Decorative mini-visuals */}
-                                <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-auto">
-                                    <div className="h-full bg-white/40 w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
+                                <div className="space-y-2">
+                                    <h3 className="type-h3">{f.title}</h3>
+                                    <p className="type-small">{f.description}</p>
                                 </div>
-                            </div>
+                            </NebulaCard>
                         </motion.div>
                     ))}
                 </div>
-            </div>
-        </section>
+            </Container>
+        </Section>
     );
 }
-
