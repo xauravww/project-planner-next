@@ -1,591 +1,563 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Checkbox } from "@/components/ui/Checkbox";
-import { Label } from "@/components/ui/Label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/Dialog";
-import { Send, Sparkles, ArrowLeft, HelpCircle, Loader2 } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { createProjectWithAI } from "@/actions/project";
-import { generateProjectQuestions } from "@/actions/ai-questions";
 import { useRouter } from "next/navigation";
-import { MessageContent } from "@/components/chat/MessageContent";
-import { ProjectReadiness } from "@/components/dashboard/ProjectReadiness";
-import { ClaudeChatInput } from "@/components/ui/claude-chat-input";
+import { GraphBrainstorm, GraphNode, NodeType } from "@/components/brainstorm/GraphBrainstorm";
+import { toast } from "sonner";
 
-interface Question {
-    id: string;
-    text: string;
-    options: string[];
-}
+// Initial seed with spatial positioning
+const createInitialGraph = (projectName: string, description: string): Record<string, GraphNode> => {
+  const rootId = "root";
+  return {
+    [rootId]: {
+      id: rootId,
+      content: description || projectName,
+      type: "root",
+      x: 0,
+      y: 0,
+      parentId: null,
+      relatedIds: [],
+      aiGenerated: false,
+      expanded: true,
+      collapsed: false,
+    },
+  };
+};
 
 export default function NewProjectPage() {
-    const [isCreating, setIsCreating] = useState(false);
-    const [showMCQModal, setShowMCQModal] = useState(false);
-    const [mcqAnswers, setMcqAnswers] = useState<Record<string, string[]>>({});
-    const [questions, setQuestions] = useState<Question[]>([]);
-    const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
-    const router = useRouter();
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [step, setStep] = useState<"seed" | "brainstorm" | "review">("seed");
+  const [projectName, setProjectName] = useState("");
+  const [description, setDescription] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
 
-    // Manual Chat Implementation
-    const [messages, setMessages] = useState<any[]>([
-        {
-            id: "1",
-            role: "assistant",
-            content: "Hi! I'm your AI planning assistant. Tell me about your project idea, and I'll help you structure it. What are you building?",
-        },
-    ]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [localInput, setLocalInput] = useState("");
+  // Graph state
+  const [nodes, setNodes] = useState<Record<string, GraphNode>>({});
+  const rootId = "root";
 
-    // Calculate Readiness
-    const hasStarted = messages.length > 2;
-    const hasMCQ = Object.keys(mcqAnswers).length > 0;
+  // Load from local storage
+  useEffect(() => {
+    const saved = localStorage.getItem("projectPlannerBrainstormDraft");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.projectName) setProjectName(parsed.projectName);
+        if (parsed.description) setDescription(parsed.description);
+        if (parsed.step) setStep(parsed.step);
+        if (parsed.nodes) setNodes(parsed.nodes);
+      } catch (e) {
+        console.error("Failed to parse saved brainstorm draft", e);
+      }
+    }
+  }, []);
 
-    // Simple heuristic for readiness
-    const readiness = {
-        hasIdea: messages.length > 2,
-        hasAudience: hasMCQ || messages.length > 4, // Assume if they answered MCQs or chatted enough
-        hasFeatures: messages.length > 6,
-        hasGoal: Object.keys(mcqAnswers).length >= 2,
-    };
+  // Save to local storage
+  useEffect(() => {
+    if (step === "seed" && !projectName && Object.keys(nodes).length === 0) return;
+    
+    const timeoutId = setTimeout(() => {
+      localStorage.setItem("projectPlannerBrainstormDraft", JSON.stringify({
+        projectName,
+        description,
+        step,
+        nodes
+      }));
+    }, 500); // Debounce save
+    return () => clearTimeout(timeoutId);
+  }, [projectName, description, step, nodes]);
 
-    const readinessScore = (Object.values(readiness).filter(Boolean).length / 4) * 100;
+  // Initialize graph when moving to brainstorm step
+  const startBrainstorming = useCallback(() => {
+    if (!projectName.trim()) {
+      toast.error("Please enter a project name");
+      return;
+    }
+    const initialNodes = createInitialGraph(projectName, description || projectName);
+    setNodes(initialNodes);
+    setStep("brainstorm");
+    // Auto-generate initial suggestions for root
+    generateSuggestions("root", initialNodes);
+  }, [projectName, description]);
 
-    // Auto-scroll to latest message
-    useEffect(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+  // Generate AI suggestions - placed in circle around parent
+  const generateSuggestions = useCallback(async (parentId: string, currentNodes?: Record<string, GraphNode>) => {
+    const nodesToUse = currentNodes || nodes;
+    const parent = nodesToUse[parentId];
+    if (!parent) return;
 
-    const append = async (message: { role: string; content: string }) => {
-        const userMessage = { id: Date.now().toString(), ...message };
-        setMessages((prev) => [...prev, userMessage]);
-        setIsLoading(true);
+    setGeneratingFor(parentId);
 
-        try {
-            const answersArray = Object.values(mcqAnswers).flat();
-            const contextMessage = answersArray.length > 0
-                ? `\n\nUser preferences:\n${answersArray.join("\n")}`
-                : "";
+    try {
+      const siblingContents = Object.values(nodesToUse)
+        .filter((n) => n.parentId === parentId)
+        .map((n) => n.content);
 
-            // Add system message for simple, conversational guidance
-            const systemMessage = {
-                role: "system" as const,
-                content: `You are a friendly AI project planning assistant helping users brainstorm their project ideas.
+      const response = await fetch("/api/brainstorm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentContent: parent.content,
+          parentType: parent.type,
+          siblingContents,
+        }),
+      });
 
-KEEP IT SIMPLE AND CONVERSATIONAL:
-- Have a natural, friendly conversation to understand their project idea
-- Ask clarifying questions about what they want to build
-- Discuss target audience, main features, and goals
-- Keep responses concise and easy to read
-- Use simple bullet points and short paragraphs
+      if (!response.ok) throw new Error("Failed to generate suggestions");
 
-DO NOT:
-- Create diagrams, flowcharts, or architecture sketches
-- Write detailed technical specifications
-- Generate code or implementation details
-- Go into deep technical planning
+      const { suggestions } = await response.json();
 
-Remember: This is just the initial brainstorming chat. Detailed planning, diagrams, and technical specs will be created later in dedicated project modules.`
-            };
+      // Add suggestions in circle formation around parent
+      setNodes((prev) => {
+        const newNodes = { ...prev };
+        const existingChildren = Object.values(newNodes).filter((n) => n.parentId === parentId);
+        const startAngle = existingChildren.length * (Math.PI * 2 / 8);
+        const radius = 400;
 
-            console.log("Sending messages to /api/chat:", [systemMessage, ...messages, { ...userMessage, content: userMessage.content + contextMessage }]);
-
-            // Use the Next.js API route for chat
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    messages: [systemMessage, ...messages, { ...userMessage, content: userMessage.content + contextMessage }],
-                }),
-            });
-
-            console.log("Response status:", response.status);
-            console.log("Response ok:", response.ok);
-
-            if (!response.ok) throw new Error("Failed to fetch from AI server");
-
-            const reader = response.body?.getReader();
-            const decoder = new TextDecoder();
-            const assistantMessage = { id: (Date.now() + 1).toString(), role: "assistant", content: "" };
-
-            setMessages((prev) => [...prev, assistantMessage]);
-
-            if (reader) {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-                    const text = decoder.decode(value, { stream: true });
-                    assistantMessage.content += text;
-                    setMessages((prev) => {
-                        const newMessages = [...prev];
-                        newMessages[newMessages.length - 1] = { ...assistantMessage };
-                        return newMessages;
-                    });
-                }
-            }
-        } catch (error) {
-            console.error("Chat error:", error);
-            alert("Failed to get response from AI.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const quickPrompts = [
-        "E-commerce platform",
-        "Social media app",
-        "Project management tool",
-        "Blog platform",
-    ];
-
-    const loadQuestions = async (topic?: string) => {
-        setIsLoadingQuestions(true);
-        setQuestions([]); // Clear previous
-
-        const result = await generateProjectQuestions(topic);
-
-        if (result.success && result.questions) {
-            setQuestions(result.questions);
-        } else {
-            // Fallback if AI fails
-            setQuestions([
-                {
-                    id: "fallback_type",
-                    text: "What type of project is this?",
-                    options: ["Web App", "Mobile App", "Desktop Software", "API/Service"]
-                },
-                {
-                    id: "fallback_scale",
-                    text: "What is the expected scale?",
-                    options: ["Prototype", "Small Business", "Enterprise"]
-                }
-            ]);
-        }
-        setIsLoadingQuestions(false);
-    };
-
-    const handleLocalSubmit = async (e?: React.FormEvent) => {
-        e?.preventDefault();
-        if (!localInput.trim()) return;
-
-        await append({ role: "user", content: localInput });
-        setLocalInput("");
-    };
-
-    const handleQuickPrompt = (prompt: string) => {
-        setLocalInput(prompt);
-        setShowMCQModal(true);
-        // Load questions relevant to the prompt
-        loadQuestions(prompt);
-    };
-
-    const handleOpenGuide = () => {
-        setShowMCQModal(true);
-        // If there's input, use it, otherwise general
-        loadQuestions(localInput || undefined);
-    };
-
-    const handleAnswerToggle = (questionId: string, option: string) => {
-        setMcqAnswers(prev => {
-            const current = prev[questionId] || [];
-            if (current.includes(option)) {
-                return {
-                    ...prev,
-                    [questionId]: current.filter(o => o !== option)
-                };
-            } else {
-                return {
-                    ...prev,
-                    [questionId]: [...current, option]
-                };
-            }
+        suggestions.forEach((suggestion: string, index: number) => {
+          const id = `${parentId}-ai-${Date.now()}-${index}`;
+          const type = inferTypeFromContent(suggestion, parent.type);
+          const angle = startAngle + (index * (Math.PI * 2 / suggestions.length));
+          
+          newNodes[id] = {
+            id,
+            content: suggestion,
+            type,
+            x: parent.x + Math.cos(angle) * radius,
+            y: parent.y + Math.sin(angle) * radius,
+            parentId,
+            relatedIds: [],
+            aiGenerated: true,
+            expanded: false,
+            collapsed: false,
+          };
         });
-    };
 
-    const handleMCQSubmit = async () => {
-        setShowMCQModal(false);
-        if (localInput.trim()) {
-            await append({ role: "user", content: localInput });
-            setLocalInput("");
+        return newNodes;
+      });
+    } catch (error) {
+      console.error("Failed to generate suggestions:", error);
+      toast.error("Failed to generate suggestions");
+    } finally {
+      setGeneratingFor(null);
+    }
+  }, [nodes]);
+
+  const inferTypeFromContent = (content: string, parentType: NodeType): NodeType => {
+    const lower = content.toLowerCase();
+    if (lower.includes("user") || lower.includes("person")) return "user";
+    if (lower.includes("feature") || lower.includes("can")) return "feature";
+    if (lower.includes("problem") || lower.includes("pain")) return "problem";
+    if (lower.includes("solution") || lower.includes("fix")) return "solution";
+    if (lower.includes("goal") || lower.includes("objective")) return "goal";
+    if (lower.includes("constraint") || lower.includes("limit")) return "constraint";
+    // Default based on parent
+    if (parentType === "problem") return "solution";
+    if (parentType === "user") return "problem";
+    if (parentType === "feature") return "user";
+    return "feature";
+  };
+
+  // Graph operations
+  const handleUpdateNode = useCallback((id: string, updates: Partial<GraphNode>) => {
+    setNodes((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], ...updates },
+    }));
+  }, []);
+
+  const handleAddNode = useCallback((parentId: string | null, type: NodeType, x: number, y: number) => {
+    setNodes((prev) => {
+      const id = `node-${Date.now()}`;
+      return {
+        ...prev,
+        [id]: {
+          id,
+          content: "",
+          type,
+          x,
+          y,
+          parentId,
+          relatedIds: [],
+          aiGenerated: false,
+          expanded: true,
+          collapsed: false,
+        },
+      };
+    });
+  }, []);
+
+  const handleDeleteNode = useCallback((id: string) => {
+    setNodes((prev) => {
+      const newNodes = { ...prev };
+      delete newNodes[id];
+      // Remove from related lists
+      Object.values(newNodes).forEach((n) => {
+        n.relatedIds = n.relatedIds.filter((rid) => rid !== id);
+      });
+      return newNodes;
+    });
+  }, []);
+
+  const handleConnectNodes = useCallback((fromId: string, toId: string) => {
+    setNodes((prev) => ({
+      ...prev,
+      [fromId]: {
+        ...prev[fromId],
+        relatedIds: [...new Set([...prev[fromId].relatedIds, toId])],
+      },
+    }));
+  }, []);
+
+
+  // Calculate progress based on graph complexity
+  const getProgress = useCallback(() => {
+    const root = nodes[rootId];
+    if (!root) return 0;
+
+    const nodeList = Object.values(nodes);
+    const totalNodes = nodeList.length;
+    const crossConnections = nodeList.reduce((sum, n) => sum + n.relatedIds.length, 0) / 2;
+    const types = new Set(nodeList.map((n) => n.type));
+
+    // Score: nodes (30%), depth (20%), connections (20%), variety (30%)
+    let score = 0;
+    if (totalNodes >= 3) score += 15;
+    if (totalNodes >= 6) score += 15;
+    if (crossConnections >= 1) score += 10;
+    if (crossConnections >= 3) score += 10;
+    if (types.has("user")) score += 10;
+    if (types.has("feature")) score += 10;
+    if (types.has("problem")) score += 10;
+
+    return Math.min(score, 100);
+  }, [nodes, rootId]);
+
+  const progress = getProgress();
+
+  // Create project from graph
+  const handleCreateProject = useCallback(async () => {
+    setIsCreating(true);
+
+    // Convert graph to structured description with spatial relationships
+    const graphToDescription = (): string => {
+      const lines: string[] = [];
+      const processed = new Set<string>();
+
+      const traverse = (nodeId: string, depth = 0) => {
+        if (processed.has(nodeId)) return;
+        processed.add(nodeId);
+
+        const node = nodes[nodeId];
+        if (!node) return;
+
+        const indent = "  ".repeat(depth);
+        lines.push(`${indent}- ${node.type.toUpperCase()}: ${node.content}`);
+
+        // Add cross-connections note
+        if (node.relatedIds.length > 0) {
+          const related = node.relatedIds
+            .filter((id) => nodes[id])
+            .map((id) => nodes[id].type)
+            .filter((t, i, arr) => arr.indexOf(t) === i);
+          if (related.length > 0) {
+            lines.push(`${indent}  (relates to: ${related.join(", ")})`);
+          }
         }
+
+        // Find children (hierarchical)
+        const children = Object.values(nodes).filter((n) => n.parentId === nodeId);
+        children.forEach((child) => traverse(child.id, depth + 1));
+      };
+
+      traverse(rootId);
+      return lines.join("\n");
     };
 
-    const extractProjectInfo = () => {
-        // Extract project name from conversation
-        const lastUserMessage = messages.filter((m) => m.role === "user").pop();
+    const description = graphToDescription();
 
-        if (lastUserMessage) {
-            // Use last user message as project name
-            const name = lastUserMessage.content.slice(0, 100);
-            return { name };
-        }
+    const result = await createProjectWithAI(projectName, description, [
+      { role: "assistant", content: "Project brainstormed using graph visualization" },
+      { role: "user", content: `Project: ${projectName}\n\n${description}` },
+    ]);
 
-        return { name: "New Project" };
-    };
+    if (result.success && result.projectId) {
+      localStorage.removeItem("projectPlannerBrainstormDraft");
+      router.push(`/projects/${result.projectId}`);
+    } else {
+      toast.error("Failed to create project");
+      setIsCreating(false);
+    }
+  }, [nodes, projectName, router, rootId]);
 
-    const handleCreateProject = async () => {
-        setIsCreating(true);
-        const { name } = extractProjectInfo();
+  // --- Render Steps ---
 
-        const result = await createProjectWithAI(
-            name,
-            undefined, // description will be generated by AI
-            messages.map((m) => ({ role: m.role as any, content: m.content }))
-        );
-
-        if (result.success && result.projectId) {
-            router.push(`/projects/${result.projectId}`);
-        } else {
-            alert("Failed to create project");
-            setIsCreating(false);
-        }
-    };
-
+  // Step 1: Seed - Editorial style matching homepage
+  if (step === "seed") {
     return (
-        <div className="relative min-h-[calc(100vh-4rem)] w-full bg-[var(--color-nebula-bg)] overflow-hidden flex flex-col items-center">
-            {/* Ambient Background */}
-            <div className="fixed inset-0 z-0 bg-[var(--color-nebula-bg)]" />
-
-            <div className="container max-w-[1600px] mx-auto px-4 py-4 h-[calc(100vh-2rem)] flex flex-col relative z-10">
-                {/* Header - Minimal & Compact */}
-                <div className="flex items-center justify-between mb-4 shrink-0">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
-                    >
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back
-                    </Link>
-
-                    {/* Mobile Readiness Indicator (Simple) */}
-                    <div className="lg:hidden flex items-center gap-2">
-                        <span className="type-caption text-[color:var(--color-charcoal)]">Readiness</span>
-                        <div className="h-2 w-16 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden">
-                            <div className="h-full bg-[var(--color-nebula-fg)]" style={{ width: `${readinessScore}%` }} />
-                        </div>
-                    </div>
-                </div>
-
-                <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
-                    {/* Chat Container - Takes up more space */}
-                    <div className="lg:col-span-9 h-full flex flex-col min-h-0">
-                        <GlassCard className="flex-1 flex flex-col border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] relative overflow-hidden">
-                            {/* Messages Area */}
-                            <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 scrollbar-none scroll-smooth">
-                                {messages.map((msg) => (
-                                    <div
-                                        key={msg.id}
-                                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                                    >
-                                        <div
-                                            className={`max-w-[90%] md:max-w-[75%] rounded-[var(--r-lg)] px-5 py-4 ${msg.role === "user"
-                                                ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
-                                                : "bg-[var(--color-nebula-surface)] text-[color:var(--color-charcoal)] border border-[var(--color-nebula-hairline-strong)]"
-                                                }`}
-                                            style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
-                                        >
-                                            {msg.role === "assistant" && (
-                                                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-[var(--color-nebula-hairline-strong)]">
-                                                    <Sparkles className="w-3 h-3 text-[color:var(--color-nebula-fg)]" />
-                                                    <span className="type-caption text-[color:var(--color-nebula-fg)] uppercase tracking-wider">NebulaPlan AI</span>
-                                                </div>
-                                            )}
-                                            {msg.role === "user" ? (
-                                                <span className="whitespace-pre-wrap break-words">{msg.content}</span>
-                                            ) : (
-                                                <div className="prose prose-invert prose-sm max-w-none break-words text-[color:var(--color-charcoal)]">
-                                                    <MessageContent content={msg.content} />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-
-                                {isLoading && (
-                                    <div className="flex justify-start animate-pulse">
-                                        <div className="bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] px-5 py-4 flex items-center gap-3">
-                                            <Loader2 className="w-4 h-4 animate-spin text-[color:var(--color-nebula-fg)]" />
-                                            <span className="type-small text-[color:var(--color-ash)]">Thinking...</span>
-                                        </div>
-                                    </div>
-                                )}
-                                <div ref={messagesEndRef} className="h-4" />
-                            </div>
-
-                            {/* Quick Prompts */}
-                            {
-                                messages.length === 1 && (
-                                    <div className="px-8 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <p className="type-caption text-[color:var(--color-ash)] mb-3 uppercase tracking-wider pl-1">Start with an idea</p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {quickPrompts.map((prompt, idx) => (
-                                                <button
-                                                    key={idx}
-                                                    onClick={() => handleQuickPrompt(prompt)}
-                                                    className="px-4 py-2 bg-[var(--color-nebula-surface)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-all duration-300"
-                                                >
-                                                    {prompt}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )
-                            }
-
-                            {/* Input Area - Fixed at bottom of card */}
-                            < div className="p-4 md:p-6 bg-[var(--color-nebula-bg)] border-t border-[var(--color-nebula-hairline-strong)] flex flex-col gap-2" >
-                                <div className="flex justify-end px-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={handleOpenGuide}
-                                        className="type-caption text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)] gap-2"
-                                    >
-                                        <HelpCircle className="w-3 h-3" />
-                                        Need inspiration? Open Guide
-                                    </Button>
-                                </div>
-                                <ClaudeChatInput
-                                    onSendMessage={(msg, files) => {
-                                        // TODO: Handle files if needed in the future
-                                        setLocalInput(msg);
-                                        // We need to call handleLocalSubmit, but it expects an event or relies on state
-                                        // Let's modify handleLocalSubmit to accept a string arg or just call the logic directly
-
-                                        if (!msg.trim()) return;
-
-                                        const userMsg = {
-                                            id: Date.now().toString(),
-                                            role: "user",
-                                            content: msg,
-                                        };
-
-                                        setMessages((prev) => [...prev, userMsg]);
-                                        setLocalInput(""); // Clear local input
-                                        setIsLoading(true);
-
-                                        // Call API
-                                        fetch("/api/chat", {
-                                            method: "POST",
-                                            headers: { "Content-Type": "application/json" },
-                                            body: JSON.stringify({
-                                                messages: [...messages, userMsg], // Send full history including new message
-                                            }),
-                                        })
-                                            .then(async (res) => {
-                                                if (!res.ok) throw new Error(res.statusText);
-                                                if (!res.body) throw new Error("No response body");
-
-                                                const reader = res.body.getReader();
-                                                const decoder = new TextDecoder();
-                                                let assistantMessage = { id: (Date.now() + 1).toString(), role: "assistant", content: "" };
-
-                                                setMessages((prev) => [...prev, assistantMessage]);
-
-                                                while (true) {
-                                                    const { done, value } = await reader.read();
-                                                    if (done) break;
-                                                    const text = decoder.decode(value, { stream: true });
-                                                    assistantMessage.content += text;
-                                                    setMessages((prev) => [
-                                                        ...prev.slice(0, -1),
-                                                        { ...assistantMessage }
-                                                    ]);
-                                                }
-                                            })
-                                            .catch((err) => {
-                                                console.error("Chat error:", err);
-                                                setMessages((prev) => [
-                                                    ...prev,
-                                                    { id: Date.now().toString(), role: "assistant", content: "Sorry, I encountered an error. Please try again." }
-                                                ]);
-                                            })
-                                            .finally(() => setIsLoading(false));
-                                    }}
-                                    disabled={isLoading}
-                                    placeholder="Describe your project idea... (e.g. 'A marketplace for vintage cameras')"
-                                />
-                            </div>
-                        </GlassCard>
-                    </div>
-
-                    {/* Readiness Panel - Sidebar on Desktop */}
-                    <div className="hidden lg:col-span-3 lg:flex flex-col gap-4 h-full min-h-0">
-                        <GlassCard className="flex-1 p-6 border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] flex flex-col gap-6">
-                            <div>
-                                <h3 className="type-h4 mb-1">Project Blueprint</h3>
-                                <p className="type-small text-[color:var(--color-ash)]">Track your planning progress</p>
-                            </div>
-
-                            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                                <ProjectReadiness values={readiness} />
-                            </div>
-
-                            <div className="pt-4 border-t border-[var(--color-nebula-hairline-strong)]">
-                                <Button
-                                    onClick={handleCreateProject}
-                                    disabled={isCreating || readinessScore < 50}
-                                    className={`
-                                        w-full py-6 text-base font-bold rounded-[var(--r-md)] transition-all transform hover:scale-[1.02] active:scale-[0.98]
-                                        ${readinessScore >= 50
-                                            ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
-                                            : "bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] text-[color:var(--color-ash)] cursor-not-allowed"}
-                                    `}
-                                >
-                                    {isCreating ? (
-                                        <>
-                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                            Initializing...
-                                        </>
-                                    ) : (
-                                        `Launch Workspace (${Math.round(readinessScore)}%)`
-                                    )}
-                                </Button>
-                            </div>
-                        </GlassCard>
-                    </div>
-                </div>
-
-                {/* Mobile FAB for Launch */}
-                <div className="lg:hidden fixed bottom-6 right-6 z-50">
-                    <Button
-                        onClick={handleCreateProject}
-                        disabled={isCreating || readinessScore < 50}
-                        size="lg"
-                        className={`
-                            rounded-full font-bold flex items-center gap-2
-                            ${readinessScore >= 50
-                                ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
-                                : "bg-[var(--color-nebula-surface)] text-[color:var(--color-ash)] border border-[var(--color-nebula-hairline-strong)]"}
-                        `}
-                    >
-                        {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                        {Math.round(readinessScore)}% Launch
-                    </Button>
-                </div>
-
-                {/* Simple MCQ Modal */}
-                <Dialog open={showMCQModal} onOpenChange={setShowMCQModal}>
-                    <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] text-[color:var(--color-nebula-fg)] max-h-[85vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle className="type-h4 flex items-center gap-2">
-                                <HelpCircle className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
-                                Help us understand your project better
-                            </DialogTitle>
-                        </DialogHeader>
-
-                        {isLoadingQuestions ? (
-                            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                                <Loader2 className="w-8 h-8 animate-spin text-[color:var(--color-nebula-fg)]" />
-                                <p className="type-body text-[color:var(--color-charcoal)]">Generating relevant questions...</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-6 py-4">
-                                {questions.map((q) => (
-                                    <div key={q.id} className="space-y-3">
-                                        <h4 className="type-h4 text-[color:var(--color-nebula-fg)]">{q.text}</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                            {[...q.options, "Other"].map((option) => (
-                                                <div
-                                                    key={option}
-                                                    className={`
-                                                    flex items-center space-x-3 p-3 rounded-[var(--r-md)] border cursor-pointer transition-all relative
-                                                    ${mcqAnswers[q.id]?.includes(option) && option !== "Other"
-                                                            ? "bg-[var(--color-surface-elevated)] border-[var(--color-nebula-fg)]"
-                                                            : "bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] hover:bg-[var(--color-surface-elevated)]"}
-                                                    `}
-                                                    onClick={(e) => {
-                                                        // Prevent toggling if clicking directly on the input or checkbox to avoid double events
-                                                        if ((e.target as HTMLElement).tagName === 'INPUT' || (e.target as HTMLElement).role === 'checkbox') {
-                                                            return;
-                                                        }
-
-                                                        if (option === "Other") {
-                                                            const input = document.getElementById(`${q.id}-Other-Input`);
-                                                            input?.focus();
-                                                        } else {
-                                                            handleAnswerToggle(q.id, option);
-                                                        }
-                                                    }}
-                                                >
-                                                    <Checkbox
-                                                        id={`${q.id}-${option}`}
-                                                        checked={mcqAnswers[q.id]?.includes(option) || (option === "Other" && !!mcqAnswers[q.id]?.some(a => !q.options.includes(a)))}
-                                                        onCheckedChange={() => {
-                                                            if (option === "Other") {
-                                                                const input = document.getElementById(`${q.id}-Other-Input`);
-                                                                input?.focus();
-                                                            } else {
-                                                                handleAnswerToggle(q.id, option);
-                                                            }
-                                                        }}
-                                                        className="mt-1"
-                                                    />
-
-                                                    {option === "Other" ? (
-                                                        <Input
-                                                            id={`${q.id}-Other-Input`}
-                                                            placeholder="Other (Type here...)"
-                                                            className="flex-1 bg-transparent border-none text-sm h-8 p-0 focus-visible:ring-0 placeholder:text-[color:var(--color-ash)] text-[color:var(--color-nebula-fg)]"
-                                                            value={mcqAnswers[q.id]?.find(a => !q.options.includes(a)) || ""}
-                                                            onChange={(e) => {
-                                                                const val = e.target.value;
-                                                                // Remove any existing custom values
-                                                                const currentAnswers = mcqAnswers[q.id] || [];
-                                                                const standardOptions = q.options;
-                                                                const newAnswers = currentAnswers.filter(a => standardOptions.includes(a));
-
-                                                                if (val.trim()) {
-                                                                    setMcqAnswers(prev => ({
-                                                                        ...prev,
-                                                                        [q.id]: [...newAnswers, val]
-                                                                    }));
-                                                                } else {
-                                                                    setMcqAnswers(prev => ({
-                                                                        ...prev,
-                                                                        [q.id]: newAnswers
-                                                                    }));
-                                                                }
-                                                            }}
-                                                            onClick={(e) => e.stopPropagation()} // Prevent triggering parent onClick
-                                                        />
-                                                    ) : (
-                                                        <Label
-                                                            htmlFor={`${q.id}-${option}`}
-                                                            className="type-small text-[color:var(--color-charcoal)] cursor-pointer leading-tight flex-1"
-                                                        >
-                                                            {option}
-                                                        </Label>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="flex justify-end gap-3 border-t border-[var(--color-nebula-hairline-strong)] pt-4">
-                            <Button variant="nebula-ghost" onClick={() => setShowMCQModal(false)}>
-                                Skip
-                            </Button>
-                            <Button
-                                variant="nebula"
-                                onClick={handleMCQSubmit}
-                            >
-                                Continue
-                            </Button>
-                        </div>
-                    </DialogContent>
-                </Dialog>
-            </div>
+      <div className="min-h-screen bg-[var(--color-nebula-bg)] flex flex-col">
+        {/* Minimal nav */}
+        <div className="px-6 py-6">
+          <Link
+            href="/dashboard"
+            className="type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+          >
+            ← Back
+          </Link>
         </div>
+
+        {/* Main content - editorial layout */}
+        <div className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full max-w-2xl">
+            
+            {/* Headline - Resend style with italic accent */}
+            <h1 className="type-display text-[color:var(--color-nebula-fg)] mb-6">
+              What are you{" "}
+              <em className="type-italic-accent">building?</em>
+            </h1>
+
+            <p className="type-subtitle max-w-lg mb-12">
+              A name and a sentence is all we need. The rest, we'll figure out together.
+            </p>
+
+            {/* Form - minimal, elegant */}
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <label className="type-caption text-[color:var(--color-ash)]">
+                  Name your project
+                </label>
+                <input
+                  type="text"
+                  value={projectName}
+                  onChange={(e) => setProjectName(e.target.value)}
+                  placeholder="Vintage Camera Marketplace"
+                  className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
+                           focus:border-[color:var(--color-nebula-fg)] outline-none
+                           py-3 text-2xl text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)]/50
+                           transition-colors font-serif"
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="type-caption text-[color:var(--color-ash)]">
+                  One-line pitch
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="A curated marketplace for film photography enthusiasts"
+                  className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
+                           focus:border-[color:var(--color-nebula-fg)] outline-none
+                           py-3 text-lg text-[color:var(--color-charcoal)] placeholder:text-[color:var(--color-ash)]/50
+                           transition-colors"
+                  onKeyDown={(e) => e.key === "Enter" && projectName.trim() && startBrainstorming()}
+                />
+              </div>
+
+              <div className="pt-4">
+                <button
+                  onClick={startBrainstorming}
+                  disabled={!projectName.trim()}
+                  className="nebula-btn nebula-btn--primary disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Start brainstorming
+                </button>
+                
+                {projectName.trim() && (
+                  <span className="ml-4 type-caption text-[color:var(--color-ash)]">
+                    Press Enter ↵
+                  </span>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        {/* Footer hint */}
+        <div className="px-6 py-6 text-center">
+          <p className="type-caption text-[color:var(--color-ash)]/60">
+            Not sure yet? Just type anything — we'll help you refine it.
+          </p>
+        </div>
+      </div>
     );
+  }
+
+  // Step 2: Brainstorm
+  if (step === "brainstorm") {
+    return (
+      <div className="h-screen flex flex-col bg-[var(--color-nebula-bg)]">
+        {/* Minimal header */}
+        <div className="px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setStep("seed")}
+              className="type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+            >
+              ← Back
+            </button>
+            <span className="type-body text-[color:var(--color-nebula-fg)]">{projectName}</span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="type-caption text-[color:var(--color-ash)]">{progress}%</span>
+              <div className="h-1.5 w-20 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[var(--color-nebula-fg)] transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => setStep("review")}
+              disabled={progress < 50}
+              className={progress >= 50 ? "nebula-btn nebula-btn--primary" : "nebula-btn nebula-btn--ghost opacity-40 cursor-not-allowed"}
+            >
+              Continue →
+            </button>
+          </div>
+        </div>
+
+        {/* Content - Full width graph canvas */}
+        <div className="flex-1 overflow-hidden relative">
+          <GraphBrainstorm
+            nodes={nodes}
+            rootId={rootId}
+            onUpdateNode={handleUpdateNode}
+            onAddNode={handleAddNode}
+            onDeleteNode={handleDeleteNode}
+            onConnectNodes={handleConnectNodes}
+            onGenerateSuggestions={generateSuggestions}
+            generatingFor={generatingFor}
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Step 3: Review - Editorial style
+  return (
+    <div className="min-h-screen bg-[var(--color-nebula-bg)] flex flex-col">
+      {/* Minimal nav */}
+      <div className="px-6 py-6">
+        <button
+          onClick={() => setStep("brainstorm")}
+          className="type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+        >
+          ← Back
+        </button>
+      </div>
+
+      <div className="flex-1 px-6 py-12">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="type-display text-[color:var(--color-nebula-fg)] mb-2">
+            Review your <em className="type-italic-accent">plan</em>
+          </h1>
+          <p className="type-subtitle text-[color:var(--color-ash)] mb-12">
+            {projectName}
+          </p>
+
+          {/* Stats - minimal */}
+          <div className="flex gap-8 mb-12">
+            <div>
+              <div className="type-h2 text-[color:var(--color-nebula-fg)]">{Object.values(nodes).length}</div>
+              <div className="type-caption text-[color:var(--color-ash)]">nodes</div>
+            </div>
+            <div>
+              <div className="type-h2 text-[color:var(--color-nebula-fg)]">
+                {Object.values(nodes).reduce((sum, n) => sum + n.relatedIds.length, 0) / 2}
+              </div>
+              <div className="type-caption text-[color:var(--color-ash)]">connections</div>
+            </div>
+            <div>
+              <div className="type-h2 text-[color:var(--color-nebula-fg)]">{progress}%</div>
+              <div className="type-caption text-[color:var(--color-ash)]">complexity</div>
+            </div>
+          </div>
+
+          {/* Editable name */}
+          <div className="mb-8">
+            <label className="type-caption text-[color:var(--color-ash)] mb-2 block">
+              Project name
+            </label>
+            <input
+              type="text"
+              value={projectName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
+              className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
+                       focus:border-[color:var(--color-nebula-fg)] outline-none
+                       py-3 text-2xl text-[color:var(--color-nebula-fg)] font-serif
+                       transition-colors"
+            />
+          </div>
+
+          {/* Overview */}
+          <div className="mb-12">
+            <label className="type-caption text-[color:var(--color-ash)] mb-4 block">
+              Overview
+            </label>
+            <div className="space-y-2 max-h-64 overflow-auto">
+              {(() => {
+                const lines: { content: string; depth: number; connects: number }[] = [];
+                const processed = new Set<string>();
+                const traverse = (nodeId: string, depth = 0) => {
+                  if (processed.has(nodeId)) return;
+                  processed.add(nodeId);
+                  const node = nodes[nodeId];
+                  if (!node) return;
+                  lines.push({ 
+                    content: `${node.type}: ${node.content}`, 
+                    depth,
+                    connects: node.relatedIds.length 
+                  });
+                  Object.values(nodes)
+                    .filter((n) => n.parentId === nodeId)
+                    .forEach((child) => traverse(child.id, depth + 1));
+                };
+                traverse("root");
+                return lines.map((line, i) => (
+                  <div 
+                    key={i} 
+                    className="type-body text-[color:var(--color-charcoal)]"
+                    style={{ marginLeft: `${line.depth * 20}px` }}
+                  >
+                    {line.depth > 0 && "↳ "}{line.content}
+                    {line.connects > 0 && (
+                      <span className="text-[color:var(--color-ash)] text-sm ml-2">
+                        ({line.connects} links)
+                      </span>
+                    )}
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+
+          {/* CTA */}
+          <button
+            onClick={handleCreateProject}
+            disabled={isCreating}
+            className="nebula-btn nebula-btn--primary disabled:opacity-50"
+          >
+            {isCreating ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              <>Create project →</>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
