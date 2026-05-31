@@ -15,12 +15,13 @@ export default function Home() {
     <main className="min-h-screen bg-[var(--color-nebula-bg)]">
       <Navbar />
       <AetherHero
-        title="Plan Like a Visionary"
-        subtitle="Turn your ideas into clear, actionable plans. AI-powered project planning for modern builders."
-        ctaLabel="Start Building"
+        title="Project planning, reimagined"
+        subtitle="One home for the whole plan. Turn a rough idea into stories, an architecture map, and a shippable backlog — in minutes."
+        ctaLabel="Get started"
         ctaHref="/signup"
-        secondaryCtaLabel="View Demo"
+        secondaryCtaLabel="View demo"
         secondaryCtaHref="#demo"
+        align="left"
       />
       <Story />
       <Features />

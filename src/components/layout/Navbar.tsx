@@ -44,14 +44,14 @@ export function Navbar() {
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.4 }}
                 className={cn(
-                    "fixed top-0 inset-x-0 z-50 transition-all",
+                    "fixed top-0 inset-x-0 z-50 transition-all h-16 flex items-center",
                     isScrolled
-                        ? "bg-[var(--color-nebula-bg)]/80 backdrop-blur-md nebula-hairline-b py-3"
-                        : "bg-transparent py-5",
+                        ? "bg-[var(--color-nebula-bg)]/85 backdrop-blur-md nebula-hairline-b"
+                        : "bg-transparent",
                 )}
                 style={{ transitionDuration: "var(--nebula-fast)" }}
             >
-                <div className="container mx-auto flex items-center justify-between px-6">
+                <div className="container mx-auto flex items-center justify-between px-6 max-w-[1200px] w-full">
                     <Link href="/" className="flex items-center gap-2 z-50">
                         <span className="h-8 w-8 rounded-lg bg-[var(--color-nebula-fg)] text-[var(--color-nebula-bg)] flex items-center justify-center font-bold">
                             N
@@ -61,12 +61,12 @@ export function Navbar() {
                         </span>
                     </Link>
 
-                    <div className="hidden md:flex items-center gap-10">
+                    <div className="hidden md:flex items-center gap-7">
                         {NAV.map((item) => (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className="type-eyebrow hover:text-[color:var(--color-nebula-fg)] transition-colors"
+                                className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
                             >
                                 {item.name}
                             </Link>
@@ -74,10 +74,10 @@ export function Navbar() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-3">
-                        <Link href={AUTH.signIn.href} className="text-sm text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] transition-colors px-3 py-2">
+                        <Link href={AUTH.signIn.href} className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors">
                             {AUTH.signIn.label}
                         </Link>
-                        <Link href={AUTH.signUp.href} className="nebula-btn nebula-btn--primary py-2.5 px-4 text-xs">
+                        <Link href={AUTH.signUp.href} className="nebula-btn nebula-btn--primary">
                             {AUTH.signUp.label}
                         </Link>
                     </div>

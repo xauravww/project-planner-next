@@ -30,7 +30,7 @@ const steps: Step[] = [
 
 export function HowItWorks() {
     return (
-        <Section id="how">
+        <Section id="how" glow="green">
             <Container className="max-w-4xl">
                 <SectionHeader
                     title="From idea to"
@@ -78,7 +78,7 @@ export function HowItWorks() {
                                     <step.icon className="w-4 h-4 text-[color:var(--color-nebula-fg-mute)]" />
                                     <h3 className="type-h3">{step.title}</h3>
                                 </div>
-                                <p className="type-body max-w-xl">{step.description}</p>
+                                <p className="type-body-lg max-w-xl">{step.description}</p>
                             </div>
                         </motion.li>
                     ))}

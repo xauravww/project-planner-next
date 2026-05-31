@@ -45,7 +45,7 @@ const socials: { label: string; href: string; icon: LucideIcon }[] = [
 
 export function Footer() {
     return (
-        <footer className="bg-[var(--color-nebula-bg)] nebula-hairline-t pt-20 pb-10">
+        <footer className="bg-[var(--color-nebula-bg)] pt-[var(--space-xxxl)] pb-[var(--space-xxl)]" style={{ borderTop: "1px solid var(--color-divider-soft)" }}>
             <Container>
                 <div className="grid gap-12 md:grid-cols-4 mb-16">
                     {/* Brand */}
@@ -94,7 +94,7 @@ export function Footer() {
                     ))}
                 </div>
 
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 nebula-hairline-t text-xs text-[color:var(--color-nebula-fg-mute)]">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8 text-xs text-[color:var(--color-ash)]" style={{ borderTop: "1px solid var(--color-divider-soft)" }}>
                     <p>© {new Date().getFullYear()} NebulaPlan Inc. All rights reserved.</p>
                     <div className="flex items-center gap-1">
                         <span>Made with</span>

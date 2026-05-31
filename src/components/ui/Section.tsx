@@ -1,41 +1,45 @@
 "use client";
 
 /**
- * Landing-page primitives. Every section uses these — no section
- * styles its own background, padding, type, or hairlines. All
- * tokens live in globals.css (`@theme` + .nebula-* utilities).
+ * Landing primitives — Resend-style.
  *
- *   <Section>            ← bg, vertical rhythm, constellation backdrop
- *     <Container>        ← centered max-width
- *       <SectionHeader/> ← eyebrow + serif title + body subtitle
+ *   <Section glow="blue">     ← canvas-black bg, vertical rhythm, optional
+ *     <Container>                atmospheric glow anchored at the top
+ *       <SectionHeader/>         editorial serif title + simple subtitle
  *       …body…
  *     </Container>
  *   </Section>
+ *
+ * No section restyles bg, padding, type, or borders — only composes
+ * tokens from globals.css. Cards are rare on Resend; reach for the
+ * surface tokens directly when you need depth.
  */
 
 import React from "react";
 import { cn } from "@/lib/utils";
 
+type Glow = "blue" | "orange" | "green" | "red" | "yellow" | "slate";
+
 /* ---------- Section ---------- */
 
 type SectionProps = {
     id?: string;
-    /** Drop the constellation grid + glow backdrop. */
-    plain?: boolean;
+    /** Atmospheric radial glow anchored at the top of the section. */
+    glow?: Glow;
     className?: string;
     children: React.ReactNode;
 };
 
-export function Section({ id, plain, className, children }: SectionProps) {
+export function Section({ id, glow, className, children }: SectionProps) {
     return (
         <section
             id={id}
             className={cn(
                 "relative overflow-hidden",
-                // bg + vertical rhythm from tokens
                 "bg-[var(--color-nebula-bg)]",
-                "py-[var(--nebula-section-y)]",
-                !plain && "nebula-backdrop",
+                "py-[var(--space-section)]",
+                glow && "nebula-glow",
+                glow && `glow-${glow}`,
                 className,
             )}
         >
@@ -54,13 +58,13 @@ export function Container({
     children: React.ReactNode;
 }) {
     return (
-        <div className={cn("container mx-auto px-6 relative z-10", className)}>
+        <div className={cn("container mx-auto px-6 max-w-[1200px] relative z-10", className)}>
             {children}
         </div>
     );
 }
 
-/* ---------- Eyebrow ---------- */
+/* ---------- Eyebrow (rare per Resend — kept for opt-in) ---------- */
 
 export function Eyebrow({
     children,
@@ -69,15 +73,7 @@ export function Eyebrow({
     children: React.ReactNode;
     className?: string;
 }) {
-    return (
-        <div className={cn("inline-flex items-center gap-3 type-eyebrow", className)}>
-            <span
-                aria-hidden
-                className="inline-block w-6 h-px bg-[var(--color-nebula-hairline-strong)]"
-            />
-            {children}
-        </div>
-    );
+    return <span className={cn("type-eyebrow", className)}>{children}</span>;
 }
 
 /* ---------- SectionHeader ---------- */
@@ -85,7 +81,7 @@ export function Eyebrow({
 type SectionHeaderProps = {
     eyebrow?: string;
     title: React.ReactNode;
-    /** Italic-serif word emphasised after the title. */
+    /** Italic-serif emphasis at end of title. */
     accent?: string;
     subtitle?: string;
     align?: "center" | "left";
@@ -97,20 +93,20 @@ export function SectionHeader({
     title,
     accent,
     subtitle,
-    align = "center",
+    align = "left",
     className,
 }: SectionHeaderProps) {
     return (
         <div
             className={cn(
-                "max-w-3xl mb-[var(--nebula-stack-lg)] space-y-[var(--nebula-stack-md)]",
+                "max-w-3xl mb-[var(--space-xxxl)] space-y-[var(--space-lg)]",
                 align === "center" ? "mx-auto text-center" : "text-left",
                 className,
             )}
         >
             {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
 
-            <h2 className="type-h2">
+            <h2 className="type-display-xl text-[color:var(--color-nebula-fg)]">
                 {title}
                 {accent ? (
                     <>
@@ -120,7 +116,7 @@ export function SectionHeader({
                 ) : null}
             </h2>
 
-            {subtitle ? <p className="type-body max-w-2xl mx-auto">{subtitle}</p> : null}
+            {subtitle ? <p className="type-subtitle max-w-xl">{subtitle}</p> : null}
         </div>
     );
 }

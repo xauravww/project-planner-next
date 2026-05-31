@@ -59,7 +59,7 @@ export function Testimonials() {
     const [hero, ...rest] = testimonials;
 
     return (
-        <Section id="testimonials">
+        <Section id="testimonials" glow="yellow">
             <Container className="max-w-5xl">
                 {/* Hero quote — no card, big serif, editorial */}
                 <motion.figure

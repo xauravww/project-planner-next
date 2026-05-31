@@ -54,7 +54,7 @@ const features: Feature[] = [
 
 export function Features() {
     return (
-        <Section id="features">
+        <Section id="features" glow="slate">
             <Container>
                 <SectionHeader
                     title="Everything you need to"
@@ -64,27 +64,22 @@ export function Features() {
 
                 {/* 4-col bento — first tile is 2×2, rest fill in */}
                 <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[180px] gap-4">
-                    {features.map((f, i) => (
+                    {features.map((f, idx) => (
                         <motion.div
                             key={f.title}
                             initial={{ opacity: 0, y: 16 }}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-80px" }}
-                            transition={{ duration: 0.5, delay: i * 0.05 }}
+                            transition={{ duration: 0.5, delay: idx * 0.05 }}
                             className={f.span}
                         >
-                            <NebulaCard interactive className="h-full justify-between gap-4">
-                                <div className="flex items-start justify-between">
-                                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--nebula-radius-sm)] nebula-hairline">
-                                        <f.icon className="h-4 w-4 text-[color:var(--color-nebula-fg)]" />
-                                    </div>
-                                    <span className="type-eyebrow text-[0.6rem] opacity-50">
-                                        {String(i + 1).padStart(2, "0")}
-                                    </span>
+                            <NebulaCard interactive className="h-full justify-between gap-[var(--space-lg)]">
+                                <div className="inline-flex h-10 w-10 items-center justify-center rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)]">
+                                    <f.icon className="h-4 w-4 text-[color:var(--color-nebula-fg)]" />
                                 </div>
                                 <div className="space-y-2">
                                     <h3 className="type-h3">{f.title}</h3>
-                                    <p className="type-small">{f.description}</p>
+                                    <p className="type-body">{f.description}</p>
                                 </div>
                             </NebulaCard>
                         </motion.div>

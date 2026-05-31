@@ -25,27 +25,23 @@ export type AetherHeroProps = {
 };
 
 /**
- * Constellation-drift hero. CSS-only. All visual rules live in
- * `globals.css` (`@theme` tokens + `.nebula-*` utilities). This
- * component only composes them — no hardcoded colors or sizes.
- *
- * Replaces the previous WebGL shader (chess-tile + X-ray) the
- * user disliked. Same prop API as before so `page.tsx` keeps
- * compiling.
+ * Hero stripe — Resend rhythm.
+ * Pure black canvas, no backdrop, no shader. The loudest element
+ * is the serif headline; the only solid bright surface is the
+ * primary white CTA. One per page.
  */
 export default function AetherHero({
-    title = 'Make the impossible feel inevitable.',
+    title = 'Email for developers',
     subtitle,
     ctaLabel = 'Get Started',
     ctaHref = '#',
     secondaryCtaLabel,
     secondaryCtaHref,
-    align = 'center',
+    align = 'left',
     height = '100vh',
     className = '',
     ariaLabel = 'Hero',
 }: AetherHeroProps) {
-    // Last word renders in italic serif — editorial accent.
     const words = title.split(' ');
     const last = words.pop() ?? '';
     const head = words.join(' ');
@@ -54,22 +50,16 @@ export default function AetherHero({
         <section
             aria-label={ariaLabel}
             className={cn(
-                'relative overflow-hidden bg-[var(--color-nebula-bg)] nebula-backdrop',
+                'relative overflow-hidden bg-[var(--color-nebula-bg)]',
                 align === 'center' ? 'text-center' : 'text-left',
                 className,
             )}
             style={{ height }}
         >
-            {/* content */}
-            <div
-                className={cn(
-                    'relative z-10 h-full w-full flex flex-col justify-center',
-                    'container mx-auto px-6',
-                )}
-            >
+            <div className="relative z-10 h-full w-full flex flex-col justify-center container mx-auto px-6 max-w-[1200px]">
                 <div
                     className={cn(
-                        'w-full max-w-4xl space-y-[var(--nebula-stack-md)]',
+                        'w-full max-w-3xl space-y-[var(--space-xl)]',
                         align === 'center' && 'mx-auto',
                     )}
                 >
@@ -81,7 +71,7 @@ export default function AetherHero({
                     {subtitle ? (
                         <p
                             className={cn(
-                                'type-body max-w-xl reveal reveal-d-2',
+                                'type-subtitle max-w-xl reveal reveal-d-2',
                                 align === 'center' && 'mx-auto',
                             )}
                         >
@@ -92,14 +82,13 @@ export default function AetherHero({
                     {(ctaLabel || secondaryCtaLabel) && (
                         <div
                             className={cn(
-                                'flex flex-wrap gap-3 pt-2 reveal reveal-d-3',
+                                'flex flex-wrap gap-3 pt-[var(--space-md)] reveal reveal-d-3',
                                 align === 'center' ? 'justify-center' : 'justify-start',
                             )}
                         >
                             {ctaLabel ? (
                                 <a href={ctaHref} className="nebula-btn nebula-btn--primary">
                                     {ctaLabel}
-                                    <span aria-hidden>→</span>
                                 </a>
                             ) : null}
                             {secondaryCtaLabel ? (
@@ -111,16 +100,6 @@ export default function AetherHero({
                     )}
                 </div>
             </div>
-
-            {/* bottom fade into next section */}
-            <div
-                aria-hidden
-                className="absolute inset-x-0 bottom-0 h-32 z-[1] pointer-events-none"
-                style={{
-                    background:
-                        'linear-gradient(180deg, transparent 0%, var(--color-nebula-bg) 100%)',
-                }}
-            />
         </section>
     );
 }

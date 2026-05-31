@@ -51,40 +51,49 @@ export function Pricing() {
                     subtitle="Pick the plan that fits. No hidden fees, cancel anytime."
                 />
 
-                <div className="grid gap-6 lg:grid-cols-3 max-w-6xl mx-auto">
+                <div className="grid gap-[var(--space-xl)] lg:grid-cols-3 max-w-6xl mx-auto">
                     {plans.map((plan) => (
                         <NebulaCard
                             key={plan.name}
-                            highlight={plan.popular}
-                            className="h-full justify-between gap-8"
+                            variant={plan.popular ? "elevated" : "default"}
+                            className="h-full justify-between gap-[var(--space-xl)]"
                         >
                             {plan.popular && (
                                 <span
-                                    className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[0.7rem] tracking-[0.32em] uppercase font-medium"
+                                    className="absolute -top-3 left-1/2 -translate-x-1/2 nebula-pill"
                                     style={{
                                         background: "var(--color-nebula-fg)",
-                                        color: "var(--color-nebula-bg)",
+                                        color: "var(--color-on-light)",
+                                        borderColor: "var(--color-nebula-fg)",
                                     }}
                                 >
                                     Most popular
                                 </span>
                             )}
 
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 <h3 className="type-h3">{plan.name}</h3>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="type-h2">{plan.price}</span>
-                                    {plan.period && (
-                                        <span className="text-sm text-[color:var(--color-nebula-fg-mute)]">{plan.period}</span>
-                                    )}
+                                    <span
+                                        className="text-[color:var(--color-nebula-fg)]"
+                                        style={{
+                                            fontFamily: "var(--font-serif), serif",
+                                            fontSize: "var(--nebula-display-lg)",
+                                            lineHeight: 1,
+                                            letterSpacing: "-0.02em",
+                                        }}
+                                    >
+                                        {plan.price}
+                                    </span>
+                                    {plan.period && <span className="type-small">{plan.period}</span>}
                                 </div>
-                                <p className="type-small">{plan.description}</p>
+                                <p className="type-body">{plan.description}</p>
                             </div>
 
                             <ul className="space-y-3 flex-1">
                                 {plan.features.map((feature) => (
-                                    <li key={feature} className="flex items-start gap-3 text-sm text-[color:var(--color-nebula-fg-soft)]">
-                                        <Check className="w-4 h-4 mt-0.5 text-[color:var(--color-nebula-fg)] shrink-0" />
+                                    <li key={feature} className="flex items-start gap-3 type-small text-[color:var(--color-nebula-fg-soft)]">
+                                        <Check className="w-4 h-4 mt-0.5 text-[color:var(--color-accent-green)] shrink-0" />
                                         {feature}
                                     </li>
                                 ))}
