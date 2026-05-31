@@ -142,6 +142,19 @@ export async function deleteRequirement(id: string) {
     }
 }
 
+export async function deleteAllRequirements(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.requirement.deleteMany({ where: { projectId } });
+        revalidatePath(`/projects/${projectId}/requirements`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all requirements" };
+    }
+}
+
 // USER STORY CRUD
 export async function createUserStory(
     projectId: string,

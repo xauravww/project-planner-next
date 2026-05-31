@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/Input";
 import { Plus, Pencil, Trash2, Wand2, Sparkles, FileText, Loader2 } from "lucide-react";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { generateRequirements } from "@/actions/project";
-import { createRequirement, updateRequirement, deleteRequirement } from "@/actions/crud";
+import { createRequirement, updateRequirement, deleteRequirement, deleteAllRequirements } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ImproveButton } from "@/components/ui/ImproveButton";
 import { queryKeys, invalidateModule } from "@/lib/query-client";
@@ -47,6 +47,11 @@ export default function RequirementsPageClient({
         },
         initialData: initialRequirements,
     });
+
+    // Sync server-fetched data to query cache when it changes (e.g., after router.refresh())
+    useEffect(() => {
+        queryClient.setQueryData(queryKeys.projects.requirements(project.id), initialRequirements);
+    }, [initialRequirements, project.id, queryClient]);
 
     // Create mutation with optimistic update
     const createMutation = useMutation({
@@ -141,6 +146,29 @@ export default function RequirementsPageClient({
         },
     });
 
+    // Delete All mutation
+    const deleteAllMutation = useMutation({
+        mutationFn: () => deleteAllRequirements(project.id),
+        onMutate: async () => {
+            await queryClient.cancelQueries({ queryKey: queryKeys.projects.requirements(project.id) });
+            const previousRequirements = queryClient.getQueryData<any[]>(queryKeys.projects.requirements(project.id)) || [];
+            queryClient.setQueryData(queryKeys.projects.requirements(project.id), []);
+            return { previousRequirements };
+        },
+        onError: (err, _, context) => {
+            queryClient.setQueryData(queryKeys.projects.requirements(project.id), context?.previousRequirements);
+            toast.error("Failed to delete all requirements");
+        },
+        onSuccess: (result) => {
+            if (result.success) {
+                toast.success("All requirements deleted");
+            } else {
+                toast.error(result.error || "Failed to delete requirements");
+            }
+            invalidateModule(project.id, "requirements");
+        },
+    });
+
     // AI Generation mutation
     const aiGenerateMutation = useMutation({
         mutationFn: (answers: Array<{ question: string; selected: string[] }>) =>
@@ -201,12 +229,19 @@ export default function RequirementsPageClient({
         setDeleteModalOpen(true);
     };
 
+    const handleDeleteAll = () => {
+        setRequirementToDelete("ALL");
+        setDeleteModalOpen(true);
+    };
+
     const confirmDelete = async () => {
-        if (requirementToDelete) {
+        if (requirementToDelete === "ALL") {
+            await deleteAllMutation.mutateAsync();
+        } else if (requirementToDelete) {
             await deleteMutation.mutateAsync(requirementToDelete);
-            setDeleteModalOpen(false);
-            setRequirementToDelete(null);
         }
+        setDeleteModalOpen(false);
+        setRequirementToDelete(null);
     };
 
     return (
@@ -247,6 +282,17 @@ export default function RequirementsPageClient({
                                         {aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}
                                     </span>
                                 </Button>
+                                {requirements.length > 0 && (
+                                    <Button
+                                        variant="ghost"
+                                        onClick={handleDeleteAll}
+                                        className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] text-[color:var(--color-ash)] transition-colors border border-transparent hover:border-[var(--color-accent-red)]/20"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Delete All</span>
+                                        <span className="sm:hidden">Clear</span>
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -258,8 +304,11 @@ export default function RequirementsPageClient({
                 {/* Add/Edit Form */}
                 {(isAdding || editingId) && (
                     <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                        <GlassCard className="p-4 lg:p-6">
-                            <h3 className="type-h4 mb-4">
+                        <GlassCard className="p-6 lg:p-8">
+                            <h3 className="type-h3 mb-6 flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] shadow-sm">
+                                    {editingId ? <Pencil className="w-5 h-5 text-[color:var(--color-nebula-fg)]" /> : <FileText className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />}
+                                </div>
                                 {editingId ? "Edit Requirement" : "New Requirement"}
                             </h3>
                             <form onSubmit={handleSubmit} className="space-y-4">
@@ -291,8 +340,7 @@ export default function RequirementsPageClient({
                                     <textarea
                                         value={formData.content}
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
-                                        rows={4}
+                                        className="flex w-full rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)] resize-y min-h-[120px]"
                                         placeholder="Describe the requirement in detail..."
                                         required
                                     />
@@ -303,7 +351,7 @@ export default function RequirementsPageClient({
                                         <select
                                             value={formData.type}
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)]"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
                                         >
                                             <option value="functional">Functional</option>
                                             <option value="non-functional">Non-Functional</option>
@@ -314,7 +362,7 @@ export default function RequirementsPageClient({
                                         <select
                                             value={formData.priority}
                                             onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)]"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
                                         >
                                             <option value="must-have">Must Have</option>
                                             <option value="should-have">Should Have</option>
@@ -322,12 +370,13 @@ export default function RequirementsPageClient({
                                         </select>
                                     </div>
                                 </div>
-                                <div className="flex gap-3">
-                                    <Button type="submit" variant="nebula" className="transition-all">
+                                <div className="flex gap-3 pt-4 border-t border-[var(--color-nebula-hairline-strong)] mt-6">
+                                    <Button type="submit" variant="nebula" className="transition-all px-6">
                                         {editingId ? "Update Requirement" : "Create Requirement"}
                                     </Button>
                                     <Button
                                         type="button"
+                                        variant="nebula-ghost"
                                         onClick={() => {
                                             setIsAdding(false);
                                             setEditingId(null);
@@ -474,9 +523,13 @@ export default function RequirementsPageClient({
                 isOpen={deleteModalOpen}
                 onClose={() => setDeleteModalOpen(false)}
                 onConfirm={confirmDelete}
-                title="Delete Requirement"
-                description="Are you sure you want to delete this requirement? This action cannot be undone and will permanently remove the requirement from your project."
-                confirmText="Delete Requirement"
+                title={requirementToDelete === "ALL" ? "Delete All Requirements" : "Delete Requirement"}
+                description={
+                    requirementToDelete === "ALL"
+                        ? "Are you sure you want to delete ALL requirements? This action cannot be undone and will permanently remove everything from this list."
+                        : "Are you sure you want to delete this requirement? This action cannot be undone and will permanently remove the requirement from your project."
+                }
+                confirmText={requirementToDelete === "ALL" ? "Delete All" : "Delete Requirement"}
             />
         </div >
     );

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/Button";
 import { Checkbox } from "@/components/ui/Checkbox";
+import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
 import { Wand2, Info } from "lucide-react";
 import { generateGenerationQuestions, saveProjectContext } from "@/actions/project";
@@ -43,6 +44,8 @@ export function AIGenerationModal({
     const [questions, setQuestions] = useState<Question[]>([]);
     const [answers, setAnswers] = useState<Record<string, string[]>>({});
     const [existingContext, setExistingContext] = useState<ExistingContext[]>([]);
+    const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
+    const [additionalContext, setAdditionalContext] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [progressMessage, setProgressMessage] = useState<string>("");
     const [retryCount, setRetryCount] = useState(0);
@@ -116,11 +119,24 @@ export function AIGenerationModal({
         
         try {
             const formattedAnswers = questions
-                .map(q => ({
-                    question: q.text,
-                    selected: answers[q.id] || []
-                }))
+                .map(q => {
+                    const selected = [...(answers[q.id] || [])];
+                    if (customAnswers[q.id]?.trim()) {
+                        selected.push(customAnswers[q.id].trim());
+                    }
+                    return {
+                        question: q.text,
+                        selected
+                    };
+                })
                 .filter(a => a.selected.length > 0);
+
+            if (additionalContext.trim()) {
+                formattedAnswers.push({
+                    question: "Additional Context / Specific Instructions from User",
+                    selected: [additionalContext.trim()]
+                });
+            }
 
             // Save answers to context
             setProgressMessage("Saving your preferences...");
@@ -252,8 +268,26 @@ export function AIGenerationModal({
                                             </div>
                                         ))}
                                     </div>
+                                    <div className="mt-2">
+                                        <Input 
+                                            placeholder="Other (please specify)..." 
+                                            value={customAnswers[q.id] || ""}
+                                            onChange={(e) => setCustomAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                                            className="bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] text-[color:var(--color-nebula-fg)] text-sm h-9"
+                                        />
+                                    </div>
                                 </div>
                             ))}
+
+                            <div className="pt-4 border-t border-[var(--color-nebula-hairline-strong)]">
+                                <h4 className="type-h4 mb-2">Any specific instructions or additional context?</h4>
+                                <textarea
+                                    value={additionalContext}
+                                    onChange={(e) => setAdditionalContext(e.target.value)}
+                                    placeholder="e.g., Make sure to focus heavily on the enterprise B2B features, keep it concise, etc..."
+                                    className="flex w-full rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] px-3 py-2 text-sm text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)] min-h-[80px] resize-y"
+                                />
+                            </div>
                         </div>
                     )}
                 </div>
@@ -268,7 +302,9 @@ export function AIGenerationModal({
                             onClick={handleGenerateClick}
                         >
                             <Wand2 className="w-4 h-4 mr-2" />
-                            Generate Content
+                            {Object.values(answers).some(a => a.length > 0) || Object.values(customAnswers).some(a => a.trim().length > 0) || additionalContext.trim().length > 0
+                                ? "Generate Content"
+                                : "Skip & Generate"}
                         </Button>
                     )}
                 </DialogFooter>
