@@ -27,55 +27,54 @@ export function DeleteModal({
 }: DeleteModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="bg-black/90 border-red-500/30 backdrop-blur-xl max-w-md p-6 max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-md p-6 max-h-[80vh] overflow-y-auto">
         {/* Warning Background Effect */}
-        <div className="absolute inset-0 bg-gradient-radial pointer-events-none opacity-20" />
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-4 right-4 w-16 h-16 rounded-full bg-red-500/20 blur-xl" />
+        <div className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[var(--color-accent-red)]/10 blur-[60px]" />
         </div>
 
-        <DialogHeader className="text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
-            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mx-auto sm:mx-0">
-              <AlertTriangle className="w-5 h-5 text-red-400" />
+        <DialogHeader className="text-center sm:text-left relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-3">
+            <div className="w-12 h-12 rounded-full bg-[var(--color-accent-red)]/10 border border-[var(--color-accent-red)]/20 flex items-center justify-center mx-auto sm:mx-0 shadow-[0_0_20px_rgba(var(--color-accent-red-rgb),0.15)]">
+              <AlertTriangle className="w-6 h-6 text-[color:var(--color-accent-red)]" />
             </div>
-            <DialogTitle className="text-xl text-white text-center sm:text-left">
+            <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center sm:text-left">
               {title}
             </DialogTitle>
           </div>
-          <DialogDescription className="text-gray-300 text-center sm:text-left">
+          <DialogDescription className="type-small text-[color:var(--color-charcoal)] text-center sm:text-left">
             {description}
-             {itemName && <strong className="text-white"> &quot;{itemName}&quot;</strong>}?
+             {itemName && <strong className="text-[color:var(--color-nebula-fg)] font-medium"> &quot;{itemName}&quot;</strong>}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex gap-3 mt-6 justify-end pt-4 border-t border-white/10">
-          <button
+        <div className="flex gap-3 mt-8 justify-end pt-5 border-t border-[var(--color-nebula-hairline-strong)] relative z-10">
+          <Button
             type="button"
+            variant="nebula-ghost"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Cancel button clicked");
               onClose();
             }}
             disabled={isDeleting}
-            className="border border-gray-600 text-gray-300 hover:bg-gray-700 px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="destructive"
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Delete button clicked in modal");
               onConfirm();
             }}
             disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20 px-4 py-2 rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 bg-[var(--color-accent-red)] hover:bg-[var(--color-accent-red)]/90 text-white border-none shadow-[0_0_15px_rgba(var(--color-accent-red-rgb),0.3)]"
           >
             {isDeleting ? "Deleting..." : confirmText}
-          </button>
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

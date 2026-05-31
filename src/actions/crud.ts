@@ -148,6 +148,11 @@ export async function deleteAllRequirements(projectId: string) {
 
     try {
         await prisma.requirement.deleteMany({ where: { projectId } });
+        await prisma.projectContext.deleteMany({ where: { projectId, module: 'requirements' } });
+        
+        // Also clear embeddings/stale tracking if necessary
+        await markDependentModulesStale(projectId, 'requirements');
+        
         revalidatePath(`/projects/${projectId}/requirements`);
         return { success: true };
     } catch (_error) {

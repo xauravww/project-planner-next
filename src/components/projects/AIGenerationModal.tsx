@@ -175,17 +175,17 @@ export function AIGenerationModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] text-[color:var(--color-nebula-fg)] max-h-[85vh] overflow-hidden flex flex-col">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-[color:var(--color-nebula-fg)]">
-                        <div className="p-1.5 rounded-[var(--r-md)] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)]">
-                            <Wand2 className="w-4 h-4 text-[color:var(--color-nebula-fg)]" />
+            <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-2xl text-[color:var(--color-nebula-fg)] max-h-[85vh] overflow-hidden flex flex-col p-0">
+                <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                    <DialogTitle className="flex items-center gap-3 text-[color:var(--color-nebula-fg)] type-h3">
+                        <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)]">
+                            <Wand2 className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
                         </div>
                         AI Generation Setup
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex-1 overflow-y-auto py-4">
+                <div className="flex-1 overflow-y-auto px-6 py-6 relative z-10 custom-scrollbar">
                     {step === "loading" && (
                         <LoadingMessages module={type} />
                     )}
@@ -246,7 +246,7 @@ export function AIGenerationModal({
                                             <div
                                                 key={option}
                                                 className={`
-                                                    flex items-start space-x-3 p-3 rounded-[var(--r-md)] border cursor-pointer transition-all
+                                                    flex items-start space-x-3 p-4 rounded-xl border cursor-pointer transition-all duration-300
                                                     ${answers[q.id]?.includes(option)
                                                         ? "bg-[var(--color-surface-elevated)] border-[color:var(--color-nebula-fg)]"
                                                         : "bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] hover:bg-[var(--color-surface-elevated)]"}
@@ -257,11 +257,11 @@ export function AIGenerationModal({
                                                     id={`${q.id}-${option}`}
                                                     checked={answers[q.id]?.includes(option)}
                                                     onCheckedChange={() => handleAnswerToggle(q.id, option)}
-                                                    className="mt-1"
+                                                    className="mt-0.5"
                                                 />
                                                 <Label
                                                     htmlFor={`${q.id}-${option}`}
-                                                    className="text-sm font-normal text-[color:var(--color-charcoal)] cursor-pointer leading-tight"
+                                                    className={`text-sm font-medium cursor-pointer leading-tight ${answers[q.id]?.includes(option) ? "text-[color:var(--color-nebula-fg)]" : "text-[color:var(--color-charcoal)]"}`}
                                                 >
                                                     {option}
                                                 </Label>
@@ -279,27 +279,28 @@ export function AIGenerationModal({
                                 </div>
                             ))}
 
-                            <div className="pt-4 border-t border-[var(--color-nebula-hairline-strong)]">
-                                <h4 className="type-h4 mb-2">Any specific instructions or additional context?</h4>
+                            <div className="pt-6 border-t border-[var(--color-nebula-hairline-strong)] mt-4">
+                                <h4 className="type-h4 mb-3">Any specific instructions or additional context?</h4>
                                 <textarea
                                     value={additionalContext}
                                     onChange={(e) => setAdditionalContext(e.target.value)}
                                     placeholder="e.g., Make sure to focus heavily on the enterprise B2B features, keep it concise, etc..."
-                                    className="flex w-full rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] px-3 py-2 text-sm text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)] min-h-[80px] resize-y"
+                                    className="flex w-full rounded-xl border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)] min-h-[100px] resize-y transition-all"
                                 />
                             </div>
                         </div>
                     )}
                 </div>
 
-                <DialogFooter className="border-t border-[var(--color-nebula-hairline-strong)] pt-4">
-                    <Button variant="nebula-ghost" onClick={onClose} disabled={step !== "questions"}>
+                <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-bg)]/50 relative z-10 flex flex-row justify-between sm:justify-end gap-3">
+                    <Button variant="nebula-ghost" onClick={onClose} disabled={step !== "questions"} className="px-6">
                         Cancel
                     </Button>
                     {step === "questions" && (
                         <Button
                             variant="nebula"
                             onClick={handleGenerateClick}
+                            className="px-6 transition-all"
                         >
                             <Wand2 className="w-4 h-4 mr-2" />
                             {Object.values(answers).some(a => a.length > 0) || Object.values(customAnswers).some(a => a.trim().length > 0) || additionalContext.trim().length > 0

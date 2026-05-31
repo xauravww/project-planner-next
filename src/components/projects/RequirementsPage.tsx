@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
 import { Plus, Pencil, Trash2, Wand2, Sparkles, FileText, Loader2 } from "lucide-react";
 import { DeleteModal } from "@/components/ui/DeleteModal";
@@ -256,9 +257,13 @@ export default function RequirementsPageClient({
                         {!isAdding && !editingId && (
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                                 <Button
+                                    onClick={() => {
+                                        setIsAdding(true);
+                                        setEditingId(null);
+                                        setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
+                                    }}
                                     variant="nebula"
-                                    onClick={() => setIsAdding(true)}
-                                    className="text-sm px-4 py-2"
+                                    className="transition-all duration-300"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     <span className="hidden sm:inline">Add Requirement</span>
@@ -301,17 +306,29 @@ export default function RequirementsPageClient({
 
             {/* Content */}
             <div className="flex-1 overflow-auto">
-                {/* Add/Edit Form */}
-                {(isAdding || editingId) && (
-                    <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                        <GlassCard className="p-6 lg:p-8">
-                            <h3 className="type-h3 mb-6 flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] shadow-sm">
+                {/* Add/Edit Modal */}
+                <Dialog 
+                    open={isAdding || editingId !== null} 
+                    onOpenChange={(open) => {
+                        if (!open) {
+                            setIsAdding(false);
+                            setEditingId(null);
+                            setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
+                        }
+                    }}
+                >
+                    <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-2xl text-[color:var(--color-nebula-fg)] max-h-[90vh] overflow-hidden flex flex-col p-0">
+                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
+                            <DialogTitle className="flex items-center gap-3 text-[color:var(--color-nebula-fg)] type-h3">
+                                <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)]">
                                     {editingId ? <Pencil className="w-5 h-5 text-[color:var(--color-nebula-fg)]" /> : <FileText className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />}
                                 </div>
                                 {editingId ? "Edit Requirement" : "New Requirement"}
-                            </h3>
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
+                            <form id="requirement-form" onSubmit={handleSubmit} className="space-y-6">
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
                                         <label className="text-sm font-medium text-[color:var(--color-charcoal)]">Title</label>
@@ -370,30 +387,36 @@ export default function RequirementsPageClient({
                                         </select>
                                     </div>
                                 </div>
-                                <div className="flex gap-3 pt-4 border-t border-[var(--color-nebula-hairline-strong)] mt-6">
-                                    <Button type="submit" variant="nebula" className="transition-all px-6">
-                                        {editingId ? "Update Requirement" : "Create Requirement"}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant="nebula-ghost"
-                                        onClick={() => {
-                                            setIsAdding(false);
-                                            setEditingId(null);
-                                            setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-                                        }}
-                                        variant="ghost"
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
                             </form>
-                        </GlassCard>
-                    </div>
-                )}
+                        </div>
+                        
+                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-bg)]/50 flex flex-row justify-between sm:justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="nebula-ghost"
+                                className="px-6"
+                                onClick={() => {
+                                    setIsAdding(false);
+                                    setEditingId(null);
+                                    setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                form="requirement-form"
+                                variant="nebula"
+                                className="px-6"
+                            >
+                                {editingId ? "Update Requirement" : "Create Requirement"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
-                {/* Requirements List */}
-                {requirements.length === 0 && !isAdding ? (
+                {/* Content List */}
+                {requirements.length === 0 ? (
                     <div className="flex items-center justify-center h-96">
                         <div className="text-center max-w-md mx-auto px-4">
                             <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-6 border border-[var(--color-nebula-hairline-strong)]">
@@ -415,7 +438,11 @@ export default function RequirementsPageClient({
                                     Generate with AI
                                 </Button>
                                 <Button
-                                    onClick={() => setIsAdding(true)}
+                                    onClick={() => {
+                                        setIsAdding(true);
+                                        setEditingId(null);
+                                        setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
+                                    }}
                                     variant="nebula-ghost"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
@@ -424,7 +451,7 @@ export default function RequirementsPageClient({
                             </div>
                         </div>
                     </div>
-                ) : !isAdding && !editingId && (
+                ) : (
                     <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-3">
                         {requirements.map((req: any) => (
                             <GlassCard key={req.id} className="p-5">
