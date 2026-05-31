@@ -20,6 +20,7 @@ import {
   NodeToolbar,
   useNodesState,
   useEdgesState,
+  MiniMap,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { motion, AnimatePresence } from "framer-motion";
@@ -160,7 +161,7 @@ function BrainstormNode({ data, selected }: any) {
           <span className="text-xs font-medium text-amber-300/90 hidden sm:inline-block">AI Ideas</span>
         </button>
         <div className="w-px h-5 bg-white/10 mx-1 self-center" />
-        {(["user", "feature", "problem", "solution"] as NodeType[]).map((type) => (
+        {(["user", "feature", "problem", "solution", "goal", "constraint"] as NodeType[]).map((type) => (
           <button
             key={type}
             onClick={(e) => { e.stopPropagation(); onAddChild(type); }}
@@ -171,6 +172,8 @@ function BrainstormNode({ data, selected }: any) {
             {type === "feature" && <Zap className="w-4 h-4 text-green-400" />}
             {type === "problem" && <AlertCircle className="w-4 h-4 text-red-400" />}
             {type === "solution" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+            {type === "goal" && <Sparkles className="w-4 h-4 text-purple-400" />}
+            {type === "constraint" && <GitBranch className="w-4 h-4 text-orange-400" />}
           </button>
         ))}
         <div className="w-px h-5 bg-white/10 mx-1 self-center" />
@@ -233,7 +236,7 @@ function BrainstormNode({ data, selected }: any) {
                   handleSave();
                 }
               }}
-              className="w-full bg-transparent resize-none text-[15px] leading-relaxed text-[color:var(--color-nebula-fg)] focus:outline-none min-h-[60px]"
+              className="w-full bg-transparent resize-none text-[15px] leading-relaxed text-[color:var(--color-nebula-fg)] focus:outline-none min-h-[60px] nowheel nodrag nopan"
               autoFocus
             />
           ) : (
@@ -275,7 +278,7 @@ function GraphBrainstormContent({
   className,
 }: GraphBrainstormProps) {
   
-  const { fitView } = useReactFlow();
+  const { fitView, zoomIn, zoomOut, screenToFlowPosition } = useReactFlow();
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState<Node>([]);
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
@@ -365,8 +368,48 @@ function GraphBrainstormContent({
     });
   }, [nodes, onUpdateNode]);
 
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const onDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    const type = event.dataTransfer.getData('application/reactflow') as NodeType;
+    if (!type || !Object.keys(typeConfig).includes(type)) return;
+
+    const position = screenToFlowPosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+
+    // Add new standalone node
+    onAddNode(null, type, position.x, position.y);
+  }, [screenToFlowPosition, onAddNode]);
+
+  const handleLegendClick = useCallback((type: NodeType) => {
+    // Find approximate center of the screen
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+    
+    const position = screenToFlowPosition({
+      x: centerX,
+      y: centerY,
+    });
+
+    // Add a slight random offset so multiple clicks don't perfectly overlap
+    const offsetX = Math.random() * 40 - 20;
+    const offsetY = Math.random() * 40 - 20;
+
+    onAddNode(null, type, position.x + offsetX, position.y + offsetY);
+  }, [screenToFlowPosition, onAddNode]);
+
   return (
-    <div className={cn("w-full h-full bg-[var(--color-nebula-bg)]", className)}>
+    <div 
+      className={cn("w-full h-full bg-[var(--color-nebula-bg)]", className)}
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
@@ -413,17 +456,37 @@ function GraphBrainstormContent({
           </button>
         </div>
 
-        {/* Legend - Top Right */}
-        <Panel position="top-right" className="bg-[var(--color-nebula-surface)]/80 backdrop-blur-md border border-[var(--color-nebula-hairline-strong)] rounded-2xl p-4 shadow-2xl mr-4 mt-4">
-          <div className="flex gap-4">
+        {/* Legend - Top Right - Now Draggable AND Clickable! */}
+        <Panel position="top-right" className="bg-[var(--color-nebula-surface)]/80 backdrop-blur-md border border-[var(--color-nebula-hairline-strong)] rounded-2xl p-2 shadow-2xl mr-4 mt-4">
+          <div className="flex gap-1">
             {Object.entries(typeConfig).map(([type, config]) => (
-              <div key={type} className="flex items-center gap-2">
+              <div 
+                key={type} 
+                className="flex items-center gap-2 cursor-grab active:cursor-grabbing hover:scale-105 transition-all p-2 rounded-lg hover:bg-white/10"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('application/reactflow', type);
+                  e.dataTransfer.effectAllowed = 'move';
+                }}
+                onClick={() => handleLegendClick(type as NodeType)}
+                title={`Drag or click to add ${config.label}`}
+              >
                 <div className="w-3 h-3 rounded-full shadow-inner" style={{ background: config.color }} />
                 <span className="text-xs font-medium text-[color:var(--color-ash)]">{config.label}</span>
               </div>
             ))}
           </div>
         </Panel>
+
+        <MiniMap 
+          nodeColor={(n) => {
+            const realType = (n.data as any)?.node?.type as NodeType || "feature";
+            return typeConfig[realType]?.color || "#fff";
+          }}
+          maskColor="rgba(0, 0, 0, 0.4)"
+          className="!bg-[var(--color-nebula-surface)] border border-white/10 rounded-xl overflow-hidden shadow-2xl"
+          style={{ width: 220, height: 160, bottom: 24, right: 24, margin: 0 }}
+        />
       </ReactFlow>
     </div>
   );
