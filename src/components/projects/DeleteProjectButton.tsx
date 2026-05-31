@@ -18,7 +18,7 @@ export function DeleteProjectButton({ projectId, projectName }: DeleteProjectBut
       <Button
         variant="ghost"
         size="icon"
-        className="h-8 w-8 hover:bg-red-500/20 text-red-400 hover:text-red-300 transition-all duration-300 animate-pulse"
+        className="h-8 w-8 hover:bg-[var(--color-accent-red-glow)] text-[color:var(--color-accent-red)] transition-all duration-300 animate-pulse"
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();

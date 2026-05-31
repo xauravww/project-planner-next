@@ -182,32 +182,33 @@ export default function UserStoriesPageClient({
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+            <div className="nebula-hairline-b px-4 lg:px-6 py-4 bg-[var(--color-nebula-bg)]">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="text-center lg:text-left">
-                            <h1 className="text-xl lg:text-2xl font-semibold text-white">User Stories</h1>
+                            <h1 className="type-h3">User Stories</h1>
                         </div>
                         {!isAdding && !editingId && (
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                                 <Button
+                                    variant="nebula"
                                     onClick={() => setIsAdding(true)}
-                                    className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2"
+                                    className="text-sm px-4 py-2"
                                 >
                                     <Plus className="w-4 h-4 mr-2" />
                                     <span className="hidden sm:inline">Add Story</span>
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                                 <Button
-                                    variant="glass"
+                                    variant="nebula-ghost"
                                     onClick={handleGenerateClick}
                                     disabled={aiGenerateMutation.isPending}
-                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
+                                    className="transition-all duration-300 text-sm px-4 py-2"
                                 >
                                     {aiGenerateMutation.isPending ? (
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                     ) : (
-                                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                        <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
                                     )}
                                     <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
@@ -225,12 +226,12 @@ export default function UserStoriesPageClient({
                     {(isAdding || editingId) && (
                         <div className="mb-6">
                             <GlassCard className="p-6">
-                                <h3 className="text-lg font-semibold text-white mb-4">
+                                <h3 className="type-h4 mb-4">
                                     {editingId ? "Edit User Story" : "New User Story"}
                                 </h3>
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Title</label>
+                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Title</label>
                                         <Input
                                             value={formData.title}
                                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -239,47 +240,47 @@ export default function UserStoriesPageClient({
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-300 mb-2 block">Description</label>
+                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Description</label>
                                         <textarea
                                             value={formData.content}
                                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none"
                                             rows={3}
                                             required
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm font-medium text-gray-300 mb-2 block">
+                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">
                                             Acceptance Criteria
                                         </label>
                                         <textarea
                                             value={formData.acceptanceCriteria}
                                             onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white resize-none"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none"
                                             rows={4}
                                             placeholder="- User can see login button&#10;- User gets error on invalid input"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="text-sm font-medium text-gray-300 mb-2 block">Priority</label>
+                                            <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Priority</label>
                                             <div className="relative">
                                                 <select
                                                     value={formData.priority}
                                                     onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                                    className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all cursor-pointer"
+                                                    className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] appearance-none focus:outline-none focus:border-[color:var(--color-nebula-fg)] transition-all cursor-pointer"
                                                 >
-                                                    <option value="must-have" className="bg-zinc-900">Must Have</option>
-                                                    <option value="should-have" className="bg-zinc-900">Should Have</option>
-                                                    <option value="nice-to-have" className="bg-zinc-900">Nice to Have</option>
+                                                    <option value="must-have" className="bg-[var(--color-nebula-surface)]">Must Have</option>
+                                                    <option value="should-have" className="bg-[var(--color-nebula-surface)]">Should Have</option>
+                                                    <option value="nice-to-have" className="bg-[var(--color-nebula-surface)]">Nice to Have</option>
                                                 </select>
-                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[color:var(--color-ash)]">
                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
                                                 </div>
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-sm font-medium text-gray-300 mb-2 block">Story Points</label>
+                                            <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Story Points</label>
                                             <Input
                                                 type="number"
                                                 value={formData.storyPoints}
@@ -290,7 +291,7 @@ export default function UserStoriesPageClient({
                                         </div>
                                     </div>
                                     <div className="flex gap-3">
-                                        <Button type="submit" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                        <Button type="submit" variant="nebula" className="transition-all">
                                             {editingId ? "Update User Story" : "Create User Story"}
                                         </Button>
                                         <Button
@@ -320,16 +321,16 @@ export default function UserStoriesPageClient({
                     {stories.length === 0 && !isAdding ? (
                         <div className="flex items-center justify-center h-96">
                             <div className="text-center max-w-md mx-auto px-4">
-                                <div className="w-20 h-20 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
-                                    <Target className="w-10 h-10 text-indigo-400" />
+                                <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-6 border border-[var(--color-nebula-hairline-strong)]">
+                                    <Target className="w-10 h-10 text-[color:var(--color-nebula-fg)]" />
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-3">No User Stories Yet</h3>
-                                <p className="text-gray-400 mb-6">Generate user stories with AI or add them manually</p>
+                                <h3 className="type-h3 mb-3">No User Stories Yet</h3>
+                                <p className="text-[color:var(--color-charcoal)] mb-6">Generate user stories with AI or add them manually</p>
                                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                                     <Button
+                                        variant="nebula"
                                         onClick={handleGenerateClick}
                                         disabled={aiGenerateMutation.isPending}
-                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
                                     >
                                         {aiGenerateMutation.isPending ? (
                                             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -340,8 +341,7 @@ export default function UserStoriesPageClient({
                                     </Button>
                                     <Button
                                         onClick={() => setIsAdding(true)}
-                                        variant="outline"
-                                        className="border-white/20 text-white hover:bg-white/10"
+                                        variant="nebula-ghost"
                                     >
                                         <Plus className="w-4 h-4 mr-2" />
                                         Add Manually
@@ -356,10 +356,10 @@ export default function UserStoriesPageClient({
                                     <div className="flex items-start justify-between mb-3">
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <Target className="w-4 h-4 text-orange-400" />
-                                                <h3 className="text-base font-semibold text-white">{story.title}</h3>
+                                                <Target className="w-4 h-4 text-[color:var(--color-accent-orange)]" />
+                                                <h3 className="text-base font-semibold text-[color:var(--color-nebula-fg)]">{story.title}</h3>
                                             </div>
-                                            <div className="text-sm text-gray-300 italic mb-3">
+                                            <div className="text-sm text-[color:var(--color-charcoal)] italic mb-3">
                                                 {(() => {
                                                     try {
                                                         const content = story.content;
@@ -377,15 +377,15 @@ export default function UserStoriesPageClient({
                                         <div className="flex gap-1 ml-4">
                                             <button
                                                 onClick={() => handleEdit(story)}
-                                                className="p-2 hover:bg-white/10 rounded transition-colors"
+                                                className="p-2 hover:bg-[var(--color-surface-elevated)] rounded transition-colors"
                                             >
-                                                <Pencil className="w-4 h-4 text-gray-400 hover:text-white" />
+                                                <Pencil className="w-4 h-4 text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)]" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(story.id)}
-                                                className="p-2 hover:bg-white/10 rounded transition-colors"
+                                                className="p-2 hover:bg-[var(--color-surface-elevated)] rounded transition-colors"
                                             >
-                                                <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-400" />
+                                                <Trash2 className="w-4 h-4 text-[color:var(--color-ash)] hover:text-[color:var(--color-accent-red)]" />
                                             </button>
                                         </div>
                                     </div>
@@ -393,9 +393,9 @@ export default function UserStoriesPageClient({
                                     {/* Acceptance Criteria */}
                                     {story.acceptanceCriteria && (
                                         <div className="mb-3">
-                                            <h4 className="text-xs font-semibold text-gray-400 mb-1">Acceptance Criteria:</h4>
-                                            <div className="bg-white/5 rounded p-2 border border-white/10">
-                                                <pre className="text-xs text-gray-300 whitespace-pre-wrap font-sans">
+                                            <h4 className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Acceptance Criteria:</h4>
+                                            <div className="bg-[var(--color-nebula-surface)] rounded p-2 border border-[var(--color-nebula-hairline-strong)]">
+                                                <pre className="text-xs text-[color:var(--color-charcoal)] whitespace-pre-wrap font-sans">
                                                     {story.acceptanceCriteria}
                                                 </pre>
                                             </div>
@@ -403,19 +403,19 @@ export default function UserStoriesPageClient({
                                     )}
 
                                     {/* Meta Info */}
-                                    <div className="flex items-center gap-2 mt-auto pt-3 border-t border-white/10">
+                                    <div className="flex items-center gap-2 mt-auto pt-3 nebula-hairline-t">
                                         <span
                                             className={`text-xs px-2 py-0.5 rounded-full ${story.priority === "must-have"
-                                                ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                                                ? "bg-[var(--color-accent-red-glow)] text-[color:var(--color-accent-red)] border border-[var(--color-nebula-hairline-strong)]"
                                                 : story.priority === "should-have"
-                                                    ? "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
-                                                    : "bg-green-500/20 text-green-300 border border-green-500/30"
+                                                    ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-accent-yellow)] border border-[var(--color-nebula-hairline-strong)]"
+                                                    : "bg-[var(--color-accent-green-glow)] text-[color:var(--color-accent-green)] border border-[var(--color-nebula-hairline-strong)]"
                                                 }`}
                                         >
                                             {story.priority}
                                         </span>
                                         {story.storyPoints && (
-                                            <span className="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                                            <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-surface-elevated)] text-[color:var(--color-accent-blue)] border border-[var(--color-nebula-hairline-strong)]">
                                                 {story.storyPoints} pts
                                             </span>
                                         )}

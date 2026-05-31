@@ -112,7 +112,7 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
+                <div className="border-b border-[var(--color-nebula-hairline-strong)] px-6 py-4 flex items-center justify-between bg-[var(--color-nebula-bg)]">
                     <div>
                         <Breadcrumb
                             items={[
@@ -121,27 +121,26 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                                 { label: "Journeys" },
                             ]}
                         />
-                        <h1 className="text-2xl font-semibold text-white mt-2">User Journeys</h1>
+                        <h1 className="type-h2 mt-2">User Journeys</h1>
                     </div>
                     <div className="flex gap-3">
-                        <Button onClick={() => {
+                        <Button variant="nebula" onClick={() => {
                             setEditingId(null);
                             setFormData({ title: "", steps: "" });
                             setIsModalOpen(true);
-                        }} className="bg-white text-black hover:bg-gray-200">
+                        }}>
                             <Plus className="w-4 h-4 mr-2" />
                             Add Journey
                         </Button>
                         <Button
-                            variant="glass"
+                            variant="nebula-ghost"
                             onClick={() => setIsAIModalOpen(true)}
                             disabled={aiGenerateMutation.isPending}
-                            className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                         >
                             {aiGenerateMutation.isPending ? (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
-                                <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                <Wand2 className="w-4 h-4 mr-2" />
                             )}
                             {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                         </Button>
@@ -151,14 +150,14 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                 <div className="flex-1 overflow-auto p-6">
                     {journeys.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
-                                <Map className="w-10 h-10 text-gray-400" />
+                            <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mb-6">
+                                <Map className="w-10 h-10 text-[color:var(--color-charcoal)]" />
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Journeys Yet</h3>
-                            <p className="text-gray-400 max-w-md mb-6">
+                            <h3 className="type-h3 mb-2">No Journeys Yet</h3>
+                            <p className="type-body text-[color:var(--color-charcoal)] max-w-md mb-6">
                                 Map out user flows and experiences to ensure a smooth user journey.
                             </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                            <Button variant="nebula" onClick={() => setIsModalOpen(true)} size="lg">
                                 <Plus className="w-5 h-5 mr-2" />
                                 Create First Journey
                             </Button>
@@ -168,16 +167,16 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                             {journeys.map((journey) => (
                                 <GlassCard key={journey.id} className="p-6 relative group">
                                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(journey)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white">
+                                        <button onClick={() => handleEdit(journey)} className="p-2 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-elevated)] rounded-[var(--r-md)] text-[color:var(--color-nebula-fg)]">
                                             <Pencil className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(journey.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400">
+                                        <button onClick={() => handleDelete(journey.id)} className="p-2 bg-[var(--color-accent-red-glow)] hover:bg-[var(--color-accent-red-glow)] rounded-[var(--r-md)] text-[color:var(--color-accent-red)]">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
 
-                                    <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
-                                        <Map className="w-5 h-5 text-blue-400" />
+                                    <h3 className="type-h3 mb-4 flex items-center gap-3">
+                                        <Map className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
                                         {journey.title}
                                     </h3>
 
@@ -192,15 +191,15 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
 
                 {/* Create/Edit Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
                         <GlassCard className="w-full max-w-2xl p-6">
-                            <h2 className="text-xl font-bold text-white mb-6">
+                            <h2 className="type-h3 mb-6">
                                 {editingId ? "Edit Journey" : "New Journey"}
                             </h2>
                             <div className="space-y-4">
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
-                                        <label className="text-sm text-gray-400">Title</label>
+                                        <label className="type-small text-[color:var(--color-charcoal)]">Title</label>
                                         <ImproveButton
                                             currentText={formData.title}
                                             fieldType="user journey title"
@@ -211,30 +210,30 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                                         type="text"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                         placeholder="e.g., User Onboarding Flow"
                                     />
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-between mb-1">
-                                        <label className="text-sm text-gray-400">Steps</label>
+                                        <label className="type-small text-[color:var(--color-charcoal)]">Steps</label>
                                         <ImproveButton
                                             currentText={formData.steps}
                                             fieldType="user journey steps"
                                             onImprove={(improved) => setFormData({ ...formData, steps: improved })}
                                         />
                                     </div>
-                                    <p className="text-xs text-gray-500 mb-2">Describe the user journey step-by-step</p>
+                                    <p className="type-caption mb-2">Describe the user journey step-by-step</p>
                                     <textarea
                                         value={formData.steps}
                                         onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
-                                        className="w-full h-64 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-sm"
+                                        className="w-full h-64 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)] text-mono text-sm"
                                         placeholder={`Example:\n1. User lands on homepage\n2. Clicks 'Get Started' button\n3. Completes profile setup\n4. Receives welcome email\n5. Begins using the platform`}
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3 mt-6">
-                                    <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                    <Button variant="nebula-ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+                                    <Button variant="nebula" onClick={editingId ? handleUpdate : handleCreate}>
                                         {editingId ? "Save Changes" : "Create Journey"}
                                     </Button>
                                 </div>

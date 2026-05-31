@@ -13,7 +13,6 @@ import { createProjectWithAI } from "@/actions/project";
 import { generateProjectQuestions } from "@/actions/ai-questions";
 import { useRouter } from "next/navigation";
 import { MessageContent } from "@/components/chat/MessageContent";
-import AetherBackground from "@/components/ui/aether-background"; // Rebuild trigger
 import { ProjectReadiness } from "@/components/dashboard/ProjectReadiness";
 import { ClaudeChatInput } from "@/components/ui/claude-chat-input";
 
@@ -250,22 +249,16 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
     };
 
     return (
-        <div className="relative min-h-[calc(100vh-4rem)] w-full bg-black overflow-hidden flex flex-col items-center">
+        <div className="relative min-h-[calc(100vh-4rem)] w-full bg-[var(--color-nebula-bg)] overflow-hidden flex flex-col items-center">
             {/* Ambient Background */}
-            <div className="fixed inset-0 z-0">
-                <AetherBackground
-                    variant="grid"
-                    overlayGradient="linear-gradient(180deg, #000000 0%, transparent 40%, transparent 60%, #000000 100%)"
-                    className="opacity-30"
-                />
-            </div>
+            <div className="fixed inset-0 z-0 bg-[var(--color-nebula-bg)]" />
 
             <div className="container max-w-[1600px] mx-auto px-4 py-4 h-[calc(100vh-2rem)] flex flex-col relative z-10">
                 {/* Header - Minimal & Compact */}
                 <div className="flex items-center justify-between mb-4 shrink-0">
                     <Link
                         href="/dashboard"
-                        className="inline-flex items-center text-sm text-zinc-500 hover:text-white transition-colors"
+                        className="inline-flex items-center type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
                     >
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back
@@ -273,9 +266,9 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
 
                     {/* Mobile Readiness Indicator (Simple) */}
                     <div className="lg:hidden flex items-center gap-2">
-                        <span className="text-xs font-medium text-zinc-400">Readiness</span>
-                        <div className="h-2 w-16 bg-white/10 rounded-full overflow-hidden">
-                            <div className="h-full bg-blue-500" style={{ width: `${readinessScore}%` }} />
+                        <span className="type-caption text-[color:var(--color-charcoal)]">Readiness</span>
+                        <div className="h-2 w-16 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden">
+                            <div className="h-full bg-[var(--color-nebula-fg)]" style={{ width: `${readinessScore}%` }} />
                         </div>
                     </div>
                 </div>
@@ -283,7 +276,7 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0">
                     {/* Chat Container - Takes up more space */}
                     <div className="lg:col-span-9 h-full flex flex-col min-h-0">
-                        <GlassCard className="flex-1 flex flex-col border-white/10 bg-black/60 backdrop-blur-2xl shadow-2xl relative overflow-hidden">
+                        <GlassCard className="flex-1 flex flex-col border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] relative overflow-hidden">
                             {/* Messages Area */}
                             <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 scrollbar-none scroll-smooth">
                                 {messages.map((msg) => (
@@ -292,22 +285,22 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                                     >
                                         <div
-                                            className={`max-w-[90%] md:max-w-[75%] rounded-2xl px-5 py-4 shadow-sm ${msg.role === "user"
-                                                ? "bg-white text-black font-medium"
-                                                : "bg-white/5 text-zinc-200 border border-white/5"
+                                            className={`max-w-[90%] md:max-w-[75%] rounded-[var(--r-lg)] px-5 py-4 ${msg.role === "user"
+                                                ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
+                                                : "bg-[var(--color-nebula-surface)] text-[color:var(--color-charcoal)] border border-[var(--color-nebula-hairline-strong)]"
                                                 }`}
                                             style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
                                         >
                                             {msg.role === "assistant" && (
-                                                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-white/5">
-                                                    <Sparkles className="w-3 h-3 text-blue-400" />
-                                                    <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">NebulaPlan AI</span>
+                                                <div className="flex items-center gap-2 mb-2 pb-2 border-b border-[var(--color-nebula-hairline-strong)]">
+                                                    <Sparkles className="w-3 h-3 text-[color:var(--color-nebula-fg)]" />
+                                                    <span className="type-caption text-[color:var(--color-nebula-fg)] uppercase tracking-wider">NebulaPlan AI</span>
                                                 </div>
                                             )}
                                             {msg.role === "user" ? (
                                                 <span className="whitespace-pre-wrap break-words">{msg.content}</span>
                                             ) : (
-                                                <div className="prose prose-invert prose-sm max-w-none break-words text-zinc-300">
+                                                <div className="prose prose-invert prose-sm max-w-none break-words text-[color:var(--color-charcoal)]">
                                                     <MessageContent content={msg.content} />
                                                 </div>
                                             )}
@@ -317,9 +310,9 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
 
                                 {isLoading && (
                                     <div className="flex justify-start animate-pulse">
-                                        <div className="bg-white/5 border border-white/5 rounded-2xl px-5 py-4 flex items-center gap-3">
-                                            <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                                            <span className="text-sm text-zinc-500">Thinking...</span>
+                                        <div className="bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] px-5 py-4 flex items-center gap-3">
+                                            <Loader2 className="w-4 h-4 animate-spin text-[color:var(--color-nebula-fg)]" />
+                                            <span className="type-small text-[color:var(--color-ash)]">Thinking...</span>
                                         </div>
                                     </div>
                                 )}
@@ -330,13 +323,13 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                             {
                                 messages.length === 1 && (
                                     <div className="px-8 pb-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                        <p className="text-xs font-medium text-zinc-500 mb-3 uppercase tracking-wider pl-1">Start with an idea</p>
+                                        <p className="type-caption text-[color:var(--color-ash)] mb-3 uppercase tracking-wider pl-1">Start with an idea</p>
                                         <div className="flex flex-wrap gap-2">
                                             {quickPrompts.map((prompt, idx) => (
                                                 <button
                                                     key={idx}
                                                     onClick={() => handleQuickPrompt(prompt)}
-                                                    className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl text-sm text-zinc-300 hover:text-white transition-all duration-300"
+                                                    className="px-4 py-2 bg-[var(--color-nebula-surface)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-all duration-300"
                                                 >
                                                     {prompt}
                                                 </button>
@@ -347,13 +340,13 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                             }
 
                             {/* Input Area - Fixed at bottom of card */}
-                            < div className="p-4 md:p-6 bg-black/40 border-t border-white/5 backdrop-blur-md flex flex-col gap-2" >
+                            < div className="p-4 md:p-6 bg-[var(--color-nebula-bg)] border-t border-[var(--color-nebula-hairline-strong)] flex flex-col gap-2" >
                                 <div className="flex justify-end px-2">
                                     <Button
                                         variant="ghost"
                                         size="sm"
                                         onClick={handleOpenGuide}
-                                        className="text-xs text-zinc-500 hover:text-blue-400 hover:bg-white/5 gap-2"
+                                        className="type-caption text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)] gap-2"
                                     >
                                         <HelpCircle className="w-3 h-3" />
                                         Need inspiration? Open Guide
@@ -425,25 +418,25 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
 
                     {/* Readiness Panel - Sidebar on Desktop */}
                     <div className="hidden lg:col-span-3 lg:flex flex-col gap-4 h-full min-h-0">
-                        <GlassCard className="flex-1 p-6 border-white/10 bg-black/60 backdrop-blur-2xl flex flex-col gap-6">
+                        <GlassCard className="flex-1 p-6 border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] flex flex-col gap-6">
                             <div>
-                                <h3 className="text-lg font-medium text-white mb-1">Project Blueprint</h3>
-                                <p className="text-sm text-zinc-500">Track your planning progress</p>
+                                <h3 className="type-h4 mb-1">Project Blueprint</h3>
+                                <p className="type-small text-[color:var(--color-ash)]">Track your planning progress</p>
                             </div>
 
                             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                                 <ProjectReadiness values={readiness} />
                             </div>
 
-                            <div className="pt-4 border-t border-white/5">
+                            <div className="pt-4 border-t border-[var(--color-nebula-hairline-strong)]">
                                 <Button
                                     onClick={handleCreateProject}
                                     disabled={isCreating || readinessScore < 50}
                                     className={`
-                                        w-full py-6 text-base font-bold rounded-xl shadow-lg transition-all transform hover:scale-[1.02] active:scale-[0.98]
+                                        w-full py-6 text-base font-bold rounded-[var(--r-md)] transition-all transform hover:scale-[1.02] active:scale-[0.98]
                                         ${readinessScore >= 50
-                                            ? "bg-white text-black hover:bg-zinc-200 shadow-white/10"
-                                            : "bg-zinc-900 border border-white/5 text-zinc-500 cursor-not-allowed"}
+                                            ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
+                                            : "bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] text-[color:var(--color-ash)] cursor-not-allowed"}
                                     `}
                                 >
                                     {isCreating ? (
@@ -467,10 +460,10 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                         disabled={isCreating || readinessScore < 50}
                         size="lg"
                         className={`
-                            rounded-full shadow-2xl font-bold flex items-center gap-2
+                            rounded-full font-bold flex items-center gap-2
                             ${readinessScore >= 50
-                                ? "bg-white text-black hover:bg-zinc-200"
-                                : "bg-zinc-800 text-zinc-500 border border-white/10"}
+                                ? "bg-[var(--color-nebula-fg)] text-[color:var(--color-nebula-bg)]"
+                                : "bg-[var(--color-nebula-surface)] text-[color:var(--color-ash)] border border-[var(--color-nebula-hairline-strong)]"}
                         `}
                     >
                         {isCreating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -480,33 +473,33 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
 
                 {/* Simple MCQ Modal */}
                 <Dialog open={showMCQModal} onOpenChange={setShowMCQModal}>
-                    <DialogContent className="sm:max-w-[700px] bg-zinc-900 border-white/10 text-white max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] text-[color:var(--color-nebula-fg)] max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <HelpCircle className="w-5 h-5 text-blue-400" />
+                            <DialogTitle className="type-h4 flex items-center gap-2">
+                                <HelpCircle className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
                                 Help us understand your project better
                             </DialogTitle>
                         </DialogHeader>
 
                         {isLoadingQuestions ? (
                             <div className="flex flex-col items-center justify-center py-12 space-y-4">
-                                <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-                                <p className="text-zinc-400">Generating relevant questions...</p>
+                                <Loader2 className="w-8 h-8 animate-spin text-[color:var(--color-nebula-fg)]" />
+                                <p className="type-body text-[color:var(--color-charcoal)]">Generating relevant questions...</p>
                             </div>
                         ) : (
                             <div className="space-y-6 py-4">
                                 {questions.map((q) => (
                                     <div key={q.id} className="space-y-3">
-                                        <h4 className="font-medium text-gray-200">{q.text}</h4>
+                                        <h4 className="type-h4 text-[color:var(--color-nebula-fg)]">{q.text}</h4>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                             {[...q.options, "Other"].map((option) => (
                                                 <div
                                                     key={option}
                                                     className={`
-                                                    flex items-center space-x-3 p-3 rounded-lg border cursor-pointer transition-all relative
+                                                    flex items-center space-x-3 p-3 rounded-[var(--r-md)] border cursor-pointer transition-all relative
                                                     ${mcqAnswers[q.id]?.includes(option) && option !== "Other"
-                                                            ? "bg-blue-500/20 border-blue-500/50"
-                                                            : "bg-white/5 border-white/10 hover:bg-white/10"}
+                                                            ? "bg-[var(--color-surface-elevated)] border-[var(--color-nebula-fg)]"
+                                                            : "bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] hover:bg-[var(--color-surface-elevated)]"}
                                                     `}
                                                     onClick={(e) => {
                                                         // Prevent toggling if clicking directly on the input or checkbox to avoid double events
@@ -540,7 +533,7 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                                                         <Input
                                                             id={`${q.id}-Other-Input`}
                                                             placeholder="Other (Type here...)"
-                                                            className="flex-1 bg-transparent border-none text-sm h-8 p-0 focus-visible:ring-0 placeholder:text-zinc-500 text-white"
+                                                            className="flex-1 bg-transparent border-none text-sm h-8 p-0 focus-visible:ring-0 placeholder:text-[color:var(--color-ash)] text-[color:var(--color-nebula-fg)]"
                                                             value={mcqAnswers[q.id]?.find(a => !q.options.includes(a)) || ""}
                                                             onChange={(e) => {
                                                                 const val = e.target.value;
@@ -566,7 +559,7 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                                                     ) : (
                                                         <Label
                                                             htmlFor={`${q.id}-${option}`}
-                                                            className="text-sm font-normal text-gray-300 cursor-pointer leading-tight flex-1"
+                                                            className="type-small text-[color:var(--color-charcoal)] cursor-pointer leading-tight flex-1"
                                                         >
                                                             {option}
                                                         </Label>
@@ -579,13 +572,13 @@ Remember: This is just the initial brainstorming chat. Detailed planning, diagra
                             </div>
                         )}
 
-                        <div className="flex justify-end gap-3 border-t border-white/10 pt-4">
-                            <Button variant="ghost" onClick={() => setShowMCQModal(false)}>
+                        <div className="flex justify-end gap-3 border-t border-[var(--color-nebula-hairline-strong)] pt-4">
+                            <Button variant="nebula-ghost" onClick={() => setShowMCQModal(false)}>
                                 Skip
                             </Button>
                             <Button
+                                variant="nebula"
                                 onClick={handleMCQSubmit}
-                                className="bg-blue-600 hover:bg-blue-700"
                             >
                                 Continue
                             </Button>

@@ -32,38 +32,26 @@ export function DeleteProjectModal({ isOpen, onClose, projectId, projectName }: 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-black/90 border-purple-500/30 backdrop-blur-xl relative overflow-hidden">
-        {/* Black Hole Background Effect */}
-        <div className="absolute inset-0 bg-gradient-radial pointer-events-none" />
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3ccircle cx='50' cy='50' r='2' fill='white' opacity='0.1'/%3e%3c/svg%3e")`,
-            backgroundSize: '20px 20px',
-            animation: 'swirl 3s linear infinite',
-          }}
-        />
-
-
+      <DialogContent className="bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] relative overflow-hidden">
         <DialogHeader>
-          <DialogTitle className="modal-title text-2xl text-gradient text-center">
+          <DialogTitle className="type-h3 text-center">
             Enter the Black Hole
           </DialogTitle>
-          <DialogDescription className="text-center text-muted-foreground mt-4">
+          <DialogDescription className="text-center text-[color:var(--color-charcoal)] mt-4">
             &ldquo;{projectName}&rdquo; is about to be pulled into the cosmic void. This action cannot be undone &mdash;
             all plans, stories, and dreams within will vanish forever. Are you certain this star must collapse?
           </DialogDescription>
         </DialogHeader>
 
         <DialogFooter className="flex gap-3 mt-6">
-          <Button variant="outline" onClick={onClose} disabled={isDeleting}>
+          <Button variant="nebula-ghost" onClick={onClose} disabled={isDeleting}>
             Spare It
           </Button>
           <Button
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="bg-red-600 hover:bg-red-700 text-white shadow-lg shadow-red-500/20"
+            className="bg-[var(--color-accent-red)] text-[color:var(--color-nebula-fg)] shadow-[0_0_20px_var(--color-accent-red-glow)]"
           >
             {isDeleting ? "Collapsing..." : "Confirm Deletion"}
           </Button>

@@ -129,29 +129,25 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col relative">
-                {/* Background Effects */}
-                <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
-                <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-purple-500/5 blur-[128px] -z-10" />
-
                 {/* Header */}
-                <div className="border-b border-white/10 px-4 lg:px-6 py-4 lg:py-6 bg-black/40 backdrop-blur-sm">
+                <div className="border-b border-[var(--color-nebula-hairline-strong)] px-4 lg:px-6 py-4 lg:py-6 bg-[var(--color-nebula-bg)]">
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div className="flex items-center gap-4 justify-center lg:justify-start">
-                                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
-                                    <ImageIcon className="w-5 h-5 lg:w-6 lg:h-6 text-purple-400" />
+                                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-[var(--r-lg)] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center">
+                                    <ImageIcon className="w-5 h-5 lg:w-6 lg:h-6 text-[color:var(--color-nebula-fg)]" />
                                 </div>
                                 <div className="text-center lg:text-left">
-                                    <h1 className="text-xl lg:text-2xl font-bold text-white">Visual Mockups</h1>
-                                    <p className="text-sm text-muted-foreground mt-0.5">UI designs & interface previews</p>
+                                    <h1 className="type-h2">Visual Mockups</h1>
+                                    <p className="type-small mt-0.5">UI designs & interface previews</p>
                                 </div>
                             </div>
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                                 {mockups.length > 0 && (
                                     <Button
                                         onClick={() => setIsDeleteAllDialogOpen(true)}
-                                        variant="ghost"
-                                        className="text-red-400 hover:text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20 border border-transparent hover:border-red-500/40 transition-all duration-200 text-sm px-4 py-2"
+                                        variant="nebula-ghost"
+                                        className="text-[color:var(--color-accent-red)] text-sm px-4 py-2"
                                     >
                                         <Trash2 className="w-4 h-4 mr-2" />
                                         <span className="hidden sm:inline">Delete All</span>
@@ -160,7 +156,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                 )}
                                 <Button
                                     onClick={() => setIsModalOpen(true)}
-                                    variant="glass"
+                                    variant="nebula-ghost"
                                     className="gap-2 text-sm px-4 py-2"
                                 >
                                     <Plus className="w-4 h-4" />
@@ -168,12 +164,12 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     <span className="sm:hidden">Add</span>
                                 </Button>
                                 <Button
-                                    variant="glass"
+                                    variant="nebula-ghost"
                                     onClick={() => setIsAIModalOpen(true)}
                                     disabled={isGenerating}
-                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
+                                    className="text-sm px-4 py-2"
                                 >
-                                    <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
+                                    <Sparkles className="w-4 h-4 mr-2" />
                                     <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
@@ -188,20 +184,20 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                         {mockups.length === 0 ? (
                             <div className="flex items-center justify-center h-full p-4 sm:p-8">
                                 <div className="max-w-sm sm:max-w-md text-center px-4">
-                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-purple-500/20">
-                                        <ImageIcon className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" />
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-[var(--color-nebula-hairline-strong)]">
+                                        <ImageIcon className="w-8 h-8 sm:w-10 sm:h-10 text-[color:var(--color-nebula-fg)]" />
                                     </div>
-                                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">No Mockups Defined</h3>
-                                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 leading-relaxed break-words">
+                                    <h3 className="type-h3 mb-3">No Mockups Defined</h3>
+                                    <p className="type-body text-[color:var(--color-charcoal)] mb-4 sm:mb-6 break-words">
                                         Create visual mockups for your project with AI assistance. We&apos;ll help you generate high-fidelity UI designs and interface previews.
                                     </p>
                                     <Button
-                                        variant="glass"
+                                        variant="nebula-ghost"
                                         onClick={() => setIsAIModalOpen(true)}
                                         size="lg"
-                                        className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
+                                        className="text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
                                     >
-                                        <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
+                                        <Sparkles className="w-4 h-4 mr-2" />
                                         <span className="hidden xs:inline">Generate with AI</span>
                                         <span className="xs:hidden">Generate</span>
                                     </Button>
@@ -216,7 +212,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                             className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] p-0"
                                             onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
                                         >
-                                            <div className="aspect-[4/3] bg-black/40 relative">
+                                            <div className="aspect-[4/3] bg-[var(--color-nebula-bg)] relative">
                                                 {mockup.code ? (
                                                     <iframe
                                                         title="Mockup preview"
@@ -232,37 +228,37 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                                         className="w-full h-full object-cover"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/50 p-4 text-center">
-                                                        <ImageIcon className="w-8 h-8 text-indigo-400 mb-3 opacity-80" />
-                                                        <p className="text-xs text-gray-400 mb-4 line-clamp-2 px-2">{mockup.prompt}</p>
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-[var(--color-nebula-surface)] p-4 text-center">
+                                                        <ImageIcon className="w-8 h-8 text-[color:var(--color-nebula-fg)] mb-3 opacity-80" />
+                                                        <p className="type-caption mb-4 line-clamp-2 px-2">{mockup.prompt}</p>
                                                         <Button
                                                             size="sm"
-                                                            variant="glass"
+                                                            variant="nebula-ghost"
                                                             onClick={(e) => handleGenerateImage(mockup.id, e)}
-                                                            className="border-indigo-500/30 hover:bg-indigo-500/20 relative z-20"
+                                                            className="relative z-20"
                                                         >
                                                             <Wand2 className="w-3 h-3 mr-2" />
                                                             Generate Image
                                                         </Button>
                                                     </div>
                                                 )}
-                                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                <div className="absolute inset-0 bg-[var(--color-nebula-bg)]/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                     {mockup.code && (
-                                                        <div className="absolute top-4 left-4 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-400 text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
+                                                        <div className="absolute top-4 left-4 px-3 py-1 bg-[var(--color-accent-green-glow)] border border-[color:var(--color-accent-green)] rounded-full text-[color:var(--color-accent-green)] text-xs font-medium flex items-center gap-1">
                                                             <Code2 className="w-3 h-3" />
                                                             <span>UI Generated</span>
                                                         </div>
                                                     )}
                                                     <button
                                                         onClick={(e) => handleDeleteClick(mockup.id, e)}
-                                                        className="absolute top-4 right-4 p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 transition-colors backdrop-blur-sm"
+                                                        className="absolute top-4 right-4 p-2 bg-[var(--color-accent-red-glow)] hover:bg-[var(--color-accent-red-glow)] rounded-full text-[color:var(--color-accent-red)] transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </div>
-                                            <div className="p-3 bg-black/20">
-                                                <p className="text-xs text-gray-400">
+                                            <div className="p-3 bg-[var(--color-nebula-surface)]">
+                                                <p className="type-caption">
                                                     {new Date(mockup.createdAt).toISOString().split('T')[0]}
                                                 </p>
                                             </div>
@@ -276,42 +272,42 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
                 {/* Generation Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
                         <GlassCard className="w-full max-w-lg p-6">
-                            <h2 className="text-xl font-bold text-white mb-4">Generate Mockup</h2>
+                            <h2 className="type-h3 mb-4">Generate Mockup</h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-2 block">
+                                    <label className="type-small text-[color:var(--color-charcoal)] mb-2 block">
                                         Describe the screen or interface
                                     </label>
                                     <textarea
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         placeholder="E.g., A dark mode dashboard with sales charts and a sidebar navigation..."
-                                        className="w-full h-32 bg-black/40 border border-white/10 rounded-lg p-3 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        className="w-full h-32 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3">
                                     <Button
-                                        variant="ghost"
+                                        variant="nebula-ghost"
                                         onClick={() => setIsModalOpen(false)}
                                         disabled={isGenerating}
                                     >
                                         Cancel
                                     </Button>
                                     <Button
+                                        variant="nebula"
                                         onClick={handleGenerate}
                                         disabled={!prompt || isGenerating}
-                                        className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all"
                                     >
                                         {isGenerating ? (
                                             <>
-                                                <Wand2 className="w-4 h-4 mr-2 animate-spin text-white/70" />
+                                                <Wand2 className="w-4 h-4 mr-2 animate-spin" />
                                                 Generating...
                                             </>
                                         ) : (
                                             <>
-                                                <Wand2 className="w-4 h-4 mr-2 text-white/90" />
+                                                <Wand2 className="w-4 h-4 mr-2" />
                                                 Generate
                                             </>
                                         )}
@@ -353,10 +349,9 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
 
             {/* Global Loader Overlay */}
             {isGenerating && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80">
                     <div className="relative">
-                        <div className="absolute -inset-8 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-full blur-3xl" />
-                        <div className="relative bg-black/40 border border-white/10 rounded-2xl p-8 backdrop-blur-xl">
+                        <div className="relative bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] p-8">
                             <AestheticLoader message="Generating your mockups..." />
                         </div>
                     </div>

@@ -97,11 +97,11 @@ export function LoadingMessages({ module }: LoadingMessagesProps) {
     return (
         <div className="flex flex-col items-center justify-center py-8 space-y-4">
             <div className="relative">
-                <Loader2 className="w-10 h-10 text-blue-400 animate-spin" />
-                <div className="absolute inset-0 bg-blue-400/20 rounded-full animate-ping" />
+                <Loader2 className="w-10 h-10 text-[color:var(--color-nebula-fg)] animate-spin" />
+                <div className="absolute inset-0 bg-[var(--color-nebula-hairline-strong)] rounded-full animate-ping" />
             </div>
             <div className="h-8 flex items-center justify-center">
-                <p className="text-gray-400 text-center animate-fade-in">
+                <p className="type-body text-[color:var(--color-charcoal)] text-center animate-fade-in">
                     {messages[currentIndex]}
                 </p>
             </div>

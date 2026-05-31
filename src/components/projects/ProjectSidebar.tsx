@@ -88,34 +88,34 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
     ];
 
     return (
-        <aside className="w-64 border-r-2 border-white/20 bg-black/90 backdrop-blur-xl flex flex-col h-full relative z-20 shadow-2xl">
+        <aside className="w-64 bg-[var(--color-nebula-bg)] flex flex-col h-full relative z-20" style={{ borderRight: "1px solid var(--color-nebula-hairline)" }}>
             {/* Mobile close button */}
             {onClose && (
-                <div className="flex items-center justify-between p-4 border-b border-white/10 lg:hidden">
-                    <h2 className="text-lg font-semibold text-white truncate">{projectName}</h2>
+                <div className="flex items-center justify-between p-4 nebula-hairline-b lg:hidden">
+                    <h2 className="type-h4 truncate">{projectName}</h2>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="text-white hover:bg-white/10"
+                        className="text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-surface-elevated)]"
                     >
                         <X className="w-5 h-5" />
                     </Button>
                 </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-3">
                 {/* Global Navigation */}
                 <div className="mb-6">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Navigation</div>
+                    <div className="type-eyebrow mb-3 px-1">Navigation</div>
                     <nav className="space-y-1">
                         {globalItems.map((item) => (
                             <Link key={item.href} href={item.href}>
                                 <Button
                                     variant="ghost"
-                                    className={`w-full justify-start text-sm ${isActive(item.href)
-                                        ? "bg-white/10 text-white"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    className={`w-full justify-start type-small ${isActive(item.href)
+                                        ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-nebula-fg)]"
+                                        : "text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
                                         }`}
                                 >
                                     <item.icon className="w-4 h-4 mr-2" />
@@ -126,8 +126,8 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                     </nav>
                 </div>
 
-                <div className="border-t border-white/10 pt-4 mb-4">
-                    <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Project: {projectName}</div>
+                <div className="nebula-hairline-t pt-4 mb-4">
+                    <div className="type-eyebrow px-1 truncate">Project: {projectName}</div>
                 </div>
                 {/* Navigation */}
                 <nav className="space-y-1">
@@ -135,7 +135,7 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                         <div key={category.id}>
                             <Button
                                 variant="ghost"
-                                className="w-full justify-between text-gray-300 hover:text-white hover:bg-white/10"
+                                className="w-full justify-between type-small text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
                                 onClick={() => toggleCategory(category.id)}
                             >
                                 <span className="flex items-center">
@@ -155,9 +155,9 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                                         <Link key={item.href} href={item.href}>
                                             <Button
                                                 variant="ghost"
-                                                className={`w-full justify-start text-sm ${isActive(item.href)
-                                                    ? "bg-white/10 text-white"
-                                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                                className={`w-full justify-start type-small ${isActive(item.href)
+                                                    ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-nebula-fg)]"
+                                                    : "text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
                                                     }`}
                                             >
                                                 <item.icon className="w-4 h-4 mr-2" />
@@ -173,11 +173,11 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
             </div>
 
             {/* Settings at bottom */}
-            <div className="p-4 border-t border-white/10">
+            <div className="p-3 nebula-hairline-t">
                 <Link href={`/projects/${projectId}/settings`}>
                     <Button
                         variant="ghost"
-                        className="w-full justify-start text-gray-400 hover:text-white hover:bg-white/10"
+                        className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
                     >
                         <Settings className="w-4 h-4 mr-2" />
                         Settings

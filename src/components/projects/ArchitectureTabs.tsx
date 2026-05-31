@@ -121,16 +121,16 @@ export function ArchitectureTabs({
     return (
         <div className="space-y-6 overflow-x-hidden w-full h-full p-4 sm:p-6">
             {/* Tab Navigation */}
-            <div className="flex gap-1 sm:gap-2 border-b border-white/10 pb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+            <div className="flex gap-1 sm:gap-2 nebula-hairline-b pb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id
-                                ? "bg-white/10 text-white"
-                                : "text-gray-400 hover:text-white hover:bg-white/5"
+                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-[var(--r-md)] transition-all whitespace-nowrap border-b-2 ${activeTab === tab.id
+                                ? "border-[var(--color-nebula-fg)] text-[color:var(--color-nebula-fg)]"
+                                : "border-transparent text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)]"
                                 }`}
                         >
                             <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -146,10 +146,10 @@ export function ArchitectureTabs({
                 {activeTab === "overview" && (
                     <div className="space-y-6">
                         <GlassCard>
-                            <h3 className="text-lg font-semibold mb-4 text-white">System Architecture</h3>
+                            <h3 className="type-h4 mb-4">System Architecture</h3>
                             {isEditing ? (
                                 <textarea
-                                    className="w-full h-64 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y"
+                                    className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
                                     value={formData?.content || ""}
                                     onChange={(e) => onFormChange?.("content", e.target.value)}
                                     placeholder="Enter system architecture overview..."
@@ -158,17 +158,17 @@ export function ArchitectureTabs({
                                 architecture?.content ? (
                                     <MessageContent content={architecture.content} />
                                 ) : (
-                                    <p className="text-gray-400">No architecture generated yet</p>
+                                    <p className="type-body text-[color:var(--color-charcoal)]">No architecture generated yet</p>
                                 )
                             )}
                         </GlassCard>
 
                         {architecture?.systemDiagram && (
                             <GlassCard>
-                                <h3 className="text-lg font-semibold mb-4 text-white">System Diagram</h3>
+                                <h3 className="type-h4 mb-4">System Diagram</h3>
                                 {isEditing ? (
                                     <textarea
-                                        className="w-full h-64 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y mb-4"
+                                        className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y mb-4"
                                         value={formData?.diagram || ""}
                                         onChange={(e) => onFormChange?.("diagram", e.target.value)}
                                         placeholder="Enter Mermaid diagram code..."
@@ -183,10 +183,10 @@ export function ArchitectureTabs({
 
                         {(architecture?.highLevel || isEditing) && (
                             <GlassCard>
-                                <h3 className="text-lg font-semibold mb-4 text-white">High-Level Architecture</h3>
+                                <h3 className="type-h4 mb-4">High-Level Architecture</h3>
                                 {isEditing ? (
                                     <textarea
-                                        className="w-full h-48 bg-black/30 text-white rounded-md p-4 border border-white/10 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 outline-none font-mono text-sm resize-y"
+                                        className="w-full h-48 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
                                         value={formData?.highLevel || ""}
                                         onChange={(e) => onFormChange?.("highLevel", e.target.value)}
                                         placeholder="Enter high-level architecture details..."
@@ -204,15 +204,15 @@ export function ArchitectureTabs({
                     <div className="space-y-6">
                         {!architecture?.erDiagram ? (
                             <GlassCard className="text-center py-12">
-                                <Database className="w-12 h-12 mx-auto mb-4 text-blue-400" />
-                                <h3 className="text-xl font-semibold mb-2">Database Schema Not Generated</h3>
-                                <p className="text-gray-400 mb-6">
+                                <Database className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-nebula-fg)]" />
+                                <h3 className="type-h3 mb-2">Database Schema Not Generated</h3>
+                                <p className="type-body text-[color:var(--color-charcoal)] mb-6">
                                     Generate comprehensive database schema with ER diagram and table specifications
                                 </p>
                                 <Button
                                     onClick={() => handleGenerateSection("database")}
                                     disabled={isGenerating === "database"}
-                                    className="bg-blue-500 hover:bg-blue-600"
+                                    variant="nebula"
                                 >
                                     {isGenerating === "database" ? (
                                         <>
@@ -230,7 +230,7 @@ export function ArchitectureTabs({
                         ) : (
                             <>
                                 <GlassCard>
-                                    <h3 className="text-lg font-semibold mb-4">Entity-Relationship Diagram</h3>
+                                    <h3 className="type-h4 mb-4">Entity-Relationship Diagram</h3>
                                     <Mermaid
                                         chart={architecture.erDiagram}
                                         onFix={(error) => handleFixDiagram(error, "erDiagram", architecture.erDiagram)}
@@ -238,29 +238,29 @@ export function ArchitectureTabs({
                                 </GlassCard>
 
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold">Database Tables</h3>
+                                    <h3 className="type-h4">Database Tables</h3>
                                     {databaseTables.map((table) => (
                                         <GlassCard key={table.name}>
-                                            <h4 className="text-md font-semibold text-blue-400 mb-2">{table.name}</h4>
-                                            <p className="text-sm text-gray-400 mb-4">{table.description}</p>
+                                            <h4 className="type-h4 text-[color:var(--color-nebula-fg)] mb-2">{table.name}</h4>
+                                            <p className="type-small text-[color:var(--color-charcoal)] mb-4">{table.description}</p>
 
                                             <div className="overflow-x-auto max-w-full">
                                                 <table className="w-full text-sm min-w-[600px] border-collapse">
                                                     <thead>
-                                                        <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-gray-500 font-mono">
+                                                        <tr className="nebula-hairline-b text-xs uppercase tracking-wider text-[color:var(--color-ash)] text-mono">
                                                             <th className="text-left py-3 px-3 font-medium">Field</th>
                                                             <th className="text-left py-3 px-3 font-medium">Type</th>
                                                             <th className="text-left py-3 px-3 font-medium">Constraints</th>
                                                             <th className="text-left py-3 px-3 font-medium">Description</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody className="font-mono text-xs">
+                                                    <tbody className="text-mono text-xs">
                                                         {table.fields.map((field) => (
-                                                            <tr key={field.name} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                                <td className="py-3 px-3 text-indigo-300 font-semibold">{field.name}</td>
-                                                                <td className="py-3 px-3 text-emerald-400/80">{field.type}</td>
-                                                                <td className="py-3 px-3 text-amber-400/80">{field.constraints}</td>
-                                                                <td className="py-3 px-3 text-gray-400 font-sans">{field.description}</td>
+                                                            <tr key={field.name} className="nebula-hairline-b hover:bg-[var(--color-surface-elevated)] transition-colors">
+                                                                <td className="py-3 px-3 text-[color:var(--color-nebula-fg)] font-semibold">{field.name}</td>
+                                                                <td className="py-3 px-3 text-[color:var(--color-accent-green)]">{field.type}</td>
+                                                                <td className="py-3 px-3 text-[color:var(--color-accent-yellow)]">{field.constraints}</td>
+                                                                <td className="py-3 px-3 text-[color:var(--color-charcoal)] font-sans">{field.description}</td>
                                                             </tr>
                                                         ))}
                                                     </tbody>
@@ -268,8 +268,8 @@ export function ArchitectureTabs({
                                             </div>
 
                                             {table.indexes.length > 0 && (
-                                                <div className="mt-4 pt-4 border-t border-white/10">
-                                                    <p className="text-xs text-gray-500">
+                                                <div className="mt-4 pt-4 nebula-hairline-t">
+                                                    <p className="text-xs text-[color:var(--color-ash)]">
                                                         <span className="font-semibold">Indexes:</span> {table.indexes.join(", ")}
                                                     </p>
                                                 </div>
@@ -277,7 +277,7 @@ export function ArchitectureTabs({
 
                                             {table.relationships.length > 0 && (
                                                 <div className="mt-2">
-                                                    <p className="text-xs text-gray-500">
+                                                    <p className="text-xs text-[color:var(--color-ash)]">
                                                         <span className="font-semibold">Relationships:</span>{" "}
                                                         {table.relationships.map(r => `${r.type} → ${r.table}`).join(", ")}
                                                     </p>
@@ -296,15 +296,15 @@ export function ArchitectureTabs({
                     <div className="space-y-6">
                         {!architecture?.apiSpec ? (
                             <GlassCard className="text-center py-12">
-                                <Code className="w-12 h-12 mx-auto mb-4 text-green-400" />
-                                <h3 className="text-xl font-semibold mb-2">API Specification Not Generated</h3>
-                                <p className="text-gray-400 mb-6">
+                                <Code className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-accent-green)]" />
+                                <h3 className="type-h3 mb-2">API Specification Not Generated</h3>
+                                <p className="type-body text-[color:var(--color-charcoal)] mb-6">
                                     Generate comprehensive API documentation with endpoints and sequence diagrams
                                 </p>
                                 <Button
                                     onClick={() => handleGenerateSection("api")}
                                     disabled={isGenerating === "api"}
-                                    className="bg-green-500 hover:bg-green-600"
+                                    variant="nebula"
                                 >
                                     {isGenerating === "api" ? (
                                         <>
@@ -322,49 +322,49 @@ export function ArchitectureTabs({
                         ) : (
                             <>
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold">API Endpoints</h3>
+                                    <h3 className="type-h4">API Endpoints</h3>
                                     {apiEndpoints.map((endpoint, idx) => (
                                         <GlassCard key={idx}>
                                             <div className="flex items-start gap-4">
-                                                <span className={`px-3 py-1 rounded text-xs font-bold ${endpoint.method === "GET" ? "bg-blue-500" :
-                                                    endpoint.method === "POST" ? "bg-green-500" :
-                                                        endpoint.method === "PUT" ? "bg-yellow-500" :
-                                                            endpoint.method === "DELETE" ? "bg-red-500" :
-                                                                "bg-gray-500"
+                                                <span className={`px-3 py-1 rounded text-xs font-bold text-[color:var(--color-on-light)] ${endpoint.method === "GET" ? "bg-[var(--color-nebula-fg)]" :
+                                                    endpoint.method === "POST" ? "bg-[var(--color-accent-green)]" :
+                                                        endpoint.method === "PUT" ? "bg-[var(--color-accent-yellow)]" :
+                                                            endpoint.method === "DELETE" ? "bg-[var(--color-accent-red)]" :
+                                                                "bg-[var(--color-surface-elevated)]"
                                                     }`}>
                                                     {endpoint.method}
                                                 </span>
                                                 <div className="flex-1">
-                                                    <p className="font-mono text-blue-300 mb-2">{endpoint.path}</p>
-                                                    <p className="text-sm text-gray-400 mb-3">{endpoint.description}</p>
+                                                    <p className="text-mono text-[color:var(--color-nebula-fg)] mb-2">{endpoint.path}</p>
+                                                    <p className="type-small text-[color:var(--color-charcoal)] mb-3">{endpoint.description}</p>
 
                                                     {endpoint.authentication && (
-                                                        <p className="text-xs text-gray-500 mb-2">🔒 {endpoint.authentication}</p>
+                                                        <p className="text-xs text-[color:var(--color-ash)] mb-2">🔒 {endpoint.authentication}</p>
                                                     )}
 
                                                     <details className="mt-3">
-                                                        <summary className="cursor-pointer text-sm text-gray-400 hover:text-white">
+                                                        <summary className="cursor-pointer text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)]">
                                                             View Details
                                                         </summary>
-                                                        <div className="mt-3 space-y-2 pl-4 border-l-2 border-white/10">
+                                                        <div className="mt-3 space-y-2 pl-4 border-l-2 border-[var(--color-nebula-hairline-strong)]">
                                                             <div>
-                                                                <p className="text-xs font-semibold text-gray-500 mb-1">Request Body:</p>
-                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                <p className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Request Body:</p>
+                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-[var(--r-lg)] overflow-x-auto max-w-full">
                                                                     {JSON.stringify(endpoint.requestBody, null, 2)}
                                                                 </pre>
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs font-semibold text-gray-500 mb-1">Success Response ({endpoint.responseSuccess.code}):</p>
-                                                                <pre className="text-xs bg-black/30 p-2 rounded overflow-x-auto max-w-full">
+                                                                <p className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Success Response ({endpoint.responseSuccess.code}):</p>
+                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-[var(--r-lg)] overflow-x-auto max-w-full">
                                                                     {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
                                                                 </pre>
                                                             </div>
                                                             {endpoint.responseErrors.length > 0 && (
                                                                 <div>
-                                                                    <p className="text-xs font-semibold text-gray-500 mb-1">Error Responses:</p>
+                                                                    <p className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Error Responses:</p>
                                                                     <ul className="text-xs space-y-1">
                                                                         {endpoint.responseErrors.map((err, i) => (
-                                                                            <li key={i} className="text-red-400">
+                                                                            <li key={i} className="text-[color:var(--color-accent-red)]">
                                                                                 {err.code}: {err.message}
                                                                             </li>
                                                                         ))}
@@ -381,7 +381,7 @@ export function ArchitectureTabs({
 
                                 {architecture?.sequenceDiagrams && JSON.parse(architecture.sequenceDiagrams).map((diag: any, idx: number) => (
                                     <GlassCard key={idx}>
-                                        <h3 className="text-lg font-semibold mb-4">{diag.name}</h3>
+                                        <h3 className="type-h4 mb-4">{diag.name}</h3>
                                         <Mermaid
                                             chart={diag.diagram}
                                             onFix={async (error: string) => {
@@ -426,15 +426,15 @@ export function ArchitectureTabs({
                     <div className="space-y-6">
                         {!architecture?.deploymentDiagram ? (
                             <GlassCard className="text-center py-12">
-                                <Server className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-                                <h3 className="text-xl font-semibold mb-2">Deployment Architecture Not Generated</h3>
-                                <p className="text-gray-400 mb-6">
+                                <Server className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-nebula-fg)]" />
+                                <h3 className="type-h3 mb-2">Deployment Architecture Not Generated</h3>
+                                <p className="type-body text-[color:var(--color-charcoal)] mb-6">
                                     Generate infrastructure diagram, scaling strategy, and security design
                                 </p>
                                 <Button
                                     onClick={() => handleGenerateSection("deployment")}
                                     disabled={isGenerating === "deployment"}
-                                    className="bg-purple-500 hover:bg-purple-600"
+                                    variant="nebula"
                                 >
                                     {isGenerating === "deployment" ? (
                                         <>
@@ -452,7 +452,7 @@ export function ArchitectureTabs({
                         ) : (
                             <>
                                 <GlassCard>
-                                    <h3 className="text-lg font-semibold mb-4">Infrastructure Diagram</h3>
+                                    <h3 className="type-h4 mb-4">Infrastructure Diagram</h3>
                                     <Mermaid
                                         chart={architecture.deploymentDiagram}
                                         onFix={(error: string) => handleFixDiagram(error, "deploymentDiagram", architecture.deploymentDiagram)}
@@ -461,14 +461,14 @@ export function ArchitectureTabs({
 
                                 {architecture?.scalingStrategy && (
                                     <GlassCard>
-                                        <h3 className="text-lg font-semibold mb-4">Scaling Strategy</h3>
+                                        <h3 className="type-h4 mb-4">Scaling Strategy</h3>
                                         <MessageContent content={architecture.scalingStrategy} />
                                     </GlassCard>
                                 )}
 
                                 {architecture?.securityDesign && (
                                     <GlassCard>
-                                        <h3 className="text-lg font-semibold mb-4">Security Design</h3>
+                                        <h3 className="type-h4 mb-4">Security Design</h3>
                                         <MessageContent content={architecture.securityDesign} />
                                     </GlassCard>
                                 )}

@@ -133,7 +133,7 @@ export default function MockupViewPage({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-2 border-b border-white/10">
+                <div className="flex gap-2 border-b border-[var(--color-nebula-hairline-strong)]">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         return (
@@ -141,14 +141,14 @@ export default function MockupViewPage({
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as Tab)}
                                 className={`flex items-center gap-2 px-4 py-3 font-medium transition-all relative ${activeTab === tab.id
-                                    ? "text-white"
-                                    : "text-gray-400 hover:text-gray-300"
+                                    ? "text-[color:var(--color-nebula-fg)]"
+                                    : "text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)]"
                                     }`}
                             >
                                 <Icon className="w-4 h-4" />
                                 {tab.label}
                                 {activeTab === tab.id && (
-                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-500" />
+                                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[var(--color-nebula-fg)]" />
                                 )}
                             </button>
                         );
@@ -166,42 +166,42 @@ export default function MockupViewPage({
                             ) : !currentCode ? (
                                 <GlassCard className="flex flex-col items-center justify-center py-16 text-center">
                                     <div className="flex flex-col items-center gap-4 max-w-md">
-                                        <div className="w-16 h-16 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                                            <Wand2 className="w-8 h-8 text-indigo-400" />
+                                        <div className="w-16 h-16 rounded-full bg-[var(--color-nebula-surface)] flex items-center justify-center">
+                                            <Wand2 className="w-8 h-8 text-[color:var(--color-nebula-fg)]" />
                                         </div>
-                                        <h3 className="text-xl font-semibold text-white">No UI Generated Yet</h3>
-                                        <p className="text-gray-400">
+                                        <h3 className="type-h3">No UI Generated Yet</h3>
+                                        <p className="type-body text-[color:var(--color-charcoal)]">
                                             Generate a fully functional HTML/CSS/JS user interface based on your prompt.
                                         </p>
                                         <Button
-                                            variant="glass"
+                                            variant="nebula-ghost"
                                             onClick={handleGenerateCode}
                                             disabled={isGenerating}
-                                            className="mt-4 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
+                                            className="mt-4"
                                         >
                                             <Wand2 className="w-4 h-4 mr-2" />
                                             Generate UI
                                         </Button>
                                         {error && (
-                                            <p className="text-red-400 text-sm mt-2">{error}</p>
+                                            <p className="type-small text-[color:var(--color-accent-red)] mt-2">{error}</p>
                                         )}
                                     </div>
                                 </GlassCard>
                             ) : (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold text-white">Live Preview</h3>
+                                        <h3 className="type-h4">Live Preview</h3>
                                         <Button
                                             onClick={handleGenerateCode}
                                             disabled={isGenerating}
-                                            variant="outline"
+                                            variant="nebula-ghost"
                                             size="sm"
                                         >
                                             <Wand2 className="w-4 h-4 mr-2" />
                                             Regenerate
                                         </Button>
                                     </div>
-                                    <div className="bg-white rounded-2xl border-2 border-white/10 overflow-hidden shadow-2xl">
+                                    <div className="bg-white rounded-[var(--r-lg)] border-2 border-[var(--color-nebula-hairline-strong)] overflow-hidden">
                                         <iframe
                                             title="Mockup Preview"
                                             srcDoc={currentCode}
@@ -219,10 +219,10 @@ export default function MockupViewPage({
                             {currentCode ? (
                                 <>
                                     <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-semibold text-white">Generated Code</h3>
+                                        <h3 className="type-h4">Generated Code</h3>
                                         <Button
                                             onClick={handleCopyCode}
-                                            variant="outline"
+                                            variant="nebula-ghost"
                                             size="sm"
                                         >
                                             {isCopied ? (
@@ -238,15 +238,15 @@ export default function MockupViewPage({
                                             )}
                                         </Button>
                                     </div>
-                                    <div className="bg-gray-900 rounded-2xl border border-white/10 p-6 overflow-x-auto">
-                                        <pre className="text-sm text-gray-300 font-mono">
+                                    <div className="bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] p-6 overflow-x-auto">
+                                        <pre className="text-mono text-sm text-[color:var(--color-charcoal)]">
                                             <code>{currentCode}</code>
                                         </pre>
                                     </div>
                                 </>
                             ) : (
                                 <GlassCard className="flex flex-col items-center justify-center py-16 text-center">
-                                    <p className="text-gray-400">
+                                    <p className="type-body text-[color:var(--color-charcoal)]">
                                         No code generated yet. Click &quot;Generate UI&quot; in the Preview tab.
                                     </p>
                                 </GlassCard>
@@ -257,43 +257,43 @@ export default function MockupViewPage({
                     {activeTab === "detail" && (
                         <GlassCard className="space-y-8 p-6">
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-4">Design Mockup</h3>
+                                <h3 className="type-h4 mb-4">Design Mockup</h3>
                                 {mockup.imageUrl && mockup.imageUrl !== "PENDING" ? (
-                                    <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
+                                    <div className="rounded-[var(--r-lg)] overflow-hidden border border-[var(--color-nebula-hairline-strong)]">
                                         {/* eslint-disable-next-line @next/next/no-img-element */}
-                                        <img src={mockup.imageUrl} alt="AI Generated Mockup" className="w-full h-auto max-h-[600px] object-contain bg-black/50" />
+                                        <img src={mockup.imageUrl} alt="AI Generated Mockup" className="w-full h-auto max-h-[600px] object-contain bg-[var(--color-nebula-bg)]" />
                                     </div>
                                 ) : (
-                                    <div className="p-12 border border-dashed border-white/10 rounded-xl bg-white/5 text-center text-gray-400">
+                                    <div className="p-12 border border-dashed border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] bg-[var(--color-nebula-surface)] text-center text-[color:var(--color-charcoal)]">
                                         <p>No image generated for this mockup.</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-[var(--color-nebula-hairline-strong)]">
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                    <label className="block type-small text-[color:var(--color-charcoal)] mb-2">
                                         Prompt
                                     </label>
-                                    <div className="bg-white/5 border border-white/10 rounded-lg p-4">
-                                        <p className="text-gray-300 text-sm leading-relaxed">
+                                    <div className="bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-4">
+                                        <p className="type-small text-[color:var(--color-charcoal)]">
                                             {mockup.prompt}
                                         </p>
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                    <label className="block type-small text-[color:var(--color-charcoal)] mb-2">
                                         Created
                                     </label>
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="type-small text-[color:var(--color-charcoal)]">
                                         {new Date(mockup.createdAt).toLocaleString()}
                                     </p>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-300 mb-2">
+                                    <label className="block type-small text-[color:var(--color-charcoal)] mb-2">
                                         Last Updated
                                     </label>
-                                    <p className="text-gray-400 text-sm">
+                                    <p className="type-small text-[color:var(--color-charcoal)]">
                                         {new Date(mockup.updatedAt).toLocaleString()}
                                     </p>
                                 </div>

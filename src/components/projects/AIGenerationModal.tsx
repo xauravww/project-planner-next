@@ -159,11 +159,11 @@ export function AIGenerationModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[700px] bg-zinc-900 border-white/10 text-white max-h-[85vh] overflow-hidden flex flex-col">
+            <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] text-[color:var(--color-nebula-fg)] max-h-[85vh] overflow-hidden flex flex-col">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2 text-indigo-100">
-                        <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.2)]">
-                            <Wand2 className="w-4 h-4 text-indigo-400" />
+                    <DialogTitle className="flex items-center gap-2 text-[color:var(--color-nebula-fg)]">
+                        <div className="p-1.5 rounded-[var(--r-md)] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)]">
+                            <Wand2 className="w-4 h-4 text-[color:var(--color-nebula-fg)]" />
                         </div>
                         AI Generation Setup
                     </DialogTitle>
@@ -179,11 +179,11 @@ export function AIGenerationModal({
                     )}
 
                     {error && (
-                        <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-400 mb-4">
+                        <div className="bg-[var(--color-accent-red-glow)] border border-[color:var(--color-accent-red)] rounded-[var(--r-md)] p-4 text-[color:var(--color-accent-red)] mb-4">
                             {error}
                             <Button
                                 variant="link"
-                                className="text-red-400 underline ml-2"
+                                className="text-[color:var(--color-accent-red)] underline ml-2"
                                 onClick={loadQuestions}
                             >
                                 Retry
@@ -193,28 +193,28 @@ export function AIGenerationModal({
 
                     {step === "questions" && !error && (
                         <div className="space-y-6">
-                            <p className="text-gray-400 text-sm">
+                            <p className="type-small text-[color:var(--color-charcoal)]">
                                 Help the AI generate better results by answering a few questions.
                                 You can select multiple options for each question.
                             </p>
 
                             {existingContext.length > 0 && (
-                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                                <div className="bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-4">
                                     <div className="flex items-start gap-2 mb-2">
-                                        <Info className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
+                                        <Info className="w-4 h-4 text-[color:var(--color-nebula-fg)] mt-0.5 flex-shrink-0" />
                                         <div>
-                                            <p className="text-sm font-medium text-blue-300">Using your previous preferences</p>
-                                            <p className="text-xs text-blue-400/70 mt-1">
+                                            <p className="type-small text-[color:var(--color-nebula-fg)]">Using your previous preferences</p>
+                                            <p className="type-caption mt-1">
                                                 We&apos;ve remembered your choices from other modules
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="mt-3 space-y-2 text-xs text-gray-300">
+                                    <div className="mt-3 space-y-2 text-xs text-[color:var(--color-charcoal)]">
                                         {existingContext.slice(0, 3).map((ctx, i) => (
-                                            <div key={i} className="pl-4 border-l-2 border-blue-500/30">
+                                            <div key={i} className="pl-4 border-l-2 border-[var(--color-nebula-hairline-strong)]">
                                                 <p className="font-medium">{ctx.question}</p>
-                                                <p className="text-gray-400">
-                                                    {ctx.answers.join(", ")} <span className="text-gray-500">({ctx.module})</span>
+                                                <p className="text-[color:var(--color-charcoal)]">
+                                                    {ctx.answers.join(", ")} <span className="text-[color:var(--color-ash)]">({ctx.module})</span>
                                                 </p>
                                             </div>
                                         ))}
@@ -224,16 +224,16 @@ export function AIGenerationModal({
 
                             {questions.map((q) => (
                                 <div key={q.id} className="space-y-3">
-                                    <h4 className="font-medium text-gray-200">{q.text}</h4>
+                                    <h4 className="type-h4">{q.text}</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         {q.options.map((option) => (
                                             <div
                                                 key={option}
                                                 className={`
-                                                    flex items-start space-x-3 p-3 rounded-lg border cursor-pointer transition-all
+                                                    flex items-start space-x-3 p-3 rounded-[var(--r-md)] border cursor-pointer transition-all
                                                     ${answers[q.id]?.includes(option)
-                                                        ? "bg-indigo-500/20 border-indigo-500/50"
-                                                        : "bg-white/5 border-white/10 hover:bg-white/10"}
+                                                        ? "bg-[var(--color-surface-elevated)] border-[color:var(--color-nebula-fg)]"
+                                                        : "bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] hover:bg-[var(--color-surface-elevated)]"}
                                                 `}
                                                 onClick={() => handleAnswerToggle(q.id, option)}
                                             >
@@ -245,7 +245,7 @@ export function AIGenerationModal({
                                                 />
                                                 <Label
                                                     htmlFor={`${q.id}-${option}`}
-                                                    className="text-sm font-normal text-gray-300 cursor-pointer leading-tight"
+                                                    className="text-sm font-normal text-[color:var(--color-charcoal)] cursor-pointer leading-tight"
                                                 >
                                                     {option}
                                                 </Label>
@@ -258,14 +258,14 @@ export function AIGenerationModal({
                     )}
                 </div>
 
-                <DialogFooter className="border-t border-white/10 pt-4">
-                    <Button variant="ghost" onClick={onClose} disabled={step !== "questions"}>
+                <DialogFooter className="border-t border-[var(--color-nebula-hairline-strong)] pt-4">
+                    <Button variant="nebula-ghost" onClick={onClose} disabled={step !== "questions"}>
                         Cancel
                     </Button>
                     {step === "questions" && (
                         <Button
+                            variant="nebula"
                             onClick={handleGenerateClick}
-                            className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_4_20px_rgba(79,70,229,0.3)] border border-indigo-500/30 transition-all duration-300"
                         >
                             <Wand2 className="w-4 h-4 mr-2" />
                             Generate Content

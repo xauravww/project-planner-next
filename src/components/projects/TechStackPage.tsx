@@ -139,10 +139,10 @@ export default function TechStackPageClient({
             <GlassCard className="p-5">
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-lg bg-${iconColor}-500/20 flex items-center justify-center border border-${iconColor}-500/30`}>
-                            <Code2 className={`w-5 h-5 text-${iconColor}-400`} />
+                        <div className="w-10 h-10 rounded-[var(--r-md)] bg-[var(--color-surface-elevated)] flex items-center justify-center border border-[var(--color-nebula-hairline-strong)]">
+                            <Code2 className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
                         </div>
-                        <h3 className="text-lg font-semibold text-white">{title}</h3>
+                        <h3 className="type-h4">{title}</h3>
                     </div>
                 </div>
 
@@ -152,13 +152,13 @@ export default function TechStackPageClient({
                         return (
                             <span
                                 key={idx}
-                                className={`px-3 py-1.5 bg-${iconColor}-500/10 text-${iconColor}-300 rounded-lg text-sm border border-${iconColor}-500/20 flex items-center gap-2`}
+                                className="px-3 py-1.5 bg-[var(--color-nebula-surface)] text-[color:var(--color-charcoal)] rounded-[var(--r-md)] text-sm border border-[var(--color-nebula-hairline-strong)] flex items-center gap-2"
                             >
                                 {techName}
                                 {isEditing && (
                                     <button
                                         onClick={() => removeItem(category, idx)}
-                                        className="hover:text-white transition-colors"
+                                        className="hover:text-[color:var(--color-nebula-fg)] transition-colors"
                                     >
                                         <X className="w-3 h-3" />
                                     </button>
@@ -185,24 +185,24 @@ export default function TechStackPageClient({
     return (
         <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="border-b border-white/10 px-4 lg:px-6 py-4 bg-black/20">
+            <div className="nebula-hairline-b px-4 lg:px-6 py-4 bg-[var(--color-nebula-bg)]">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="text-center lg:text-left">
-                            <h1 className="text-xl lg:text-2xl font-semibold text-white">Tech Stack</h1>
+                            <h1 className="type-h3">Tech Stack</h1>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                             {!techStack ? (
                                 <Button
-                                    variant="glass"
+                                    variant="nebula-ghost"
                                     onClick={handleGenerateClick}
                                     disabled={aiGenerateMutation.isPending}
-                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
+                                    className="text-sm px-4 py-2"
                                 >
                                     {aiGenerateMutation.isPending ? (
                                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                                     ) : (
-                                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                        <Wand2 className="w-4 h-4 mr-2" />
                                     )}
                                     <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
                                     <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
@@ -211,7 +211,7 @@ export default function TechStackPageClient({
                                 <>
                                     {isEditing ? (
                                         <>
-                                            <Button onClick={handleSave} className="bg-green-600/90 hover:bg-green-600 text-white shadow-[0_0_15px_rgba(34,197,94,0.2)] transition-all text-sm px-4 py-2">
+                                            <Button onClick={handleSave} variant="nebula" className="text-sm px-4 py-2">
                                                 <Save className="w-4 h-4 mr-2" />
                                                 <span className="hidden sm:inline">Save</span>
                                             </Button>
@@ -221,12 +221,12 @@ export default function TechStackPageClient({
                                             </Button>
                                         </>
                                     ) : (
-                                        <Button onClick={() => setIsEditing(true)} className="bg-white text-black hover:bg-gray-200 text-sm px-4 py-2">
+                                        <Button onClick={() => setIsEditing(true)} variant="nebula" className="text-sm px-4 py-2">
                                             <Pencil className="w-4 h-4 mr-2" />
                                             <span className="hidden sm:inline">Edit</span>
                                         </Button>
                                     )}
-                                    <Button onClick={handleDelete} variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-2">
+                                    <Button onClick={handleDelete} variant="ghost" className="text-[color:var(--color-accent-red)] hover:bg-[var(--color-accent-red-glow)] p-2">
                                         <Trash2 className="w-4 h-4" />
                                     </Button>
                                 </>
@@ -242,11 +242,11 @@ export default function TechStackPageClient({
                     {!techStack && !aiGenerateMutation.isPending ? (
                         <div className="flex items-center justify-center h-96">
                             <div className="text-center">
-                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Code2 className="w-8 h-8 text-gray-400" />
+                                <div className="w-16 h-16 bg-[var(--color-nebula-surface)] rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Code2 className="w-8 h-8 text-[color:var(--color-charcoal)]" />
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">No Tech Stack Defined</h3>
-                                <p className="text-gray-400">Generate your tech stack with AI</p>
+                                <h3 className="type-h3 mb-2">No Tech Stack Defined</h3>
+                                <p className="type-body text-[color:var(--color-charcoal)]">Generate your tech stack with AI</p>
                             </div>
                         </div>
                     ) : (

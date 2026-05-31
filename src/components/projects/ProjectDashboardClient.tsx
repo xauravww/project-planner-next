@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PDFExportProgress } from "./PDFExportProgress";
-import AetherBackground from "@/components/ui/aether-background";
 
 interface ProjectDashboardClientProps {
     project: any;
@@ -125,48 +124,48 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
             icon: FileText,
             href: `/projects/${project.id}/requirements`,
             count: stats.requirements,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
         {
             name: "Architecture",
             icon: Network,
             href: `/projects/${project.id}/architecture`,
             count: project.architecture ? 1 : 0,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
         {
             name: "Workflows",
             icon: Workflow,
             href: `/projects/${project.id}/workflows`,
             count: stats.workflows,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
         {
             name: "User Stories",
             icon: Target,
             href: `/projects/${project.id}/stories`,
             count: stats.userStories,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
         {
             name: "Tech Stack",
             icon: Code,
             href: `/projects/${project.id}/tech-stack`,
             count: project.techStack ? 1 : 0,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
         {
             name: "Mockups",
             icon: Database,
             href: `/projects/${project.id}/mockups`,
             count: stats.mockups,
-            color: "bg-white/5",
-            iconColor: "text-white",
+            color: "bg-[var(--color-nebula-surface)]",
+            iconColor: "text-[color:var(--color-nebula-fg)]",
         },
     ];
 
@@ -178,13 +177,8 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
             `}</style>
 
             <div className="relative min-h-screen" style={{ fontFamily: "'Space Grotesk', ui-sans-serif, system-ui, -apple-system" }}>
-                {/* WebGL Shader Background */}
-                <div className="fixed inset-0 z-0">
-                    <AetherBackground
-                        overlayGradient="linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.75) 50%, rgba(0,0,0,0.85) 100%)"
-                        className="opacity-60"
-                    />
-                </div>
+                {/* Background */}
+                <div className="fixed inset-0 z-0 bg-[var(--color-nebula-bg)]" />
 
                 {/* Content with proper padding */}
                 <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
@@ -204,21 +198,21 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                         className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6"
                     >
                         <div className="space-y-3 sm:space-y-4 flex-1 text-center lg:text-left">
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-white tracking-tight leading-tight" style={{ letterSpacing: '-0.02em' }}>
+                            <h1 className="type-display-lg text-3xl sm:text-4xl lg:text-5xl xl:text-6xl tracking-tight leading-tight" style={{ letterSpacing: '-0.02em' }}>
                                 {project.name}
                             </h1>
                             {project.description && (
-                                <p className="text-zinc-200 text-base sm:text-lg lg:text-xl max-w-3xl mx-auto lg:mx-0 leading-relaxed">
+                                <p className="type-body-lg text-[color:var(--color-charcoal)] max-w-3xl mx-auto lg:mx-0">
                                     {project.description}
                                 </p>
                             )}
-                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 text-xs sm:text-sm text-zinc-300">
-                                <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-md border border-white/20">
+                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 type-small text-[color:var(--color-charcoal)]">
+                                <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] px-3 py-2 rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)]">
                                     <Calendar className="w-4 h-4" />
                                     <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
                                 </div>
                                 {project.projectType && (
-                                    <div className="flex items-center gap-2 bg-white/10 px-3 py-2 rounded-lg backdrop-blur-md border border-white/20">
+                                    <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] px-3 py-2 rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)]">
                                         <Users className="w-4 h-4" />
                                         <span>{project.projectType}</span>
                                     </div>
@@ -226,9 +220,10 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                             </div>
                         </div>
                         <Button
+                            variant="nebula-ghost"
                             onClick={handleExport}
                             disabled={isExporting}
-                            className="bg-white/15 hover:bg-white/25 border-2 border-white/30 backdrop-blur-md transition-all duration-300 shadow-2xl text-white font-semibold w-full sm:w-auto"
+                            className="w-full sm:w-auto"
                         >
                             <Download className="w-4 h-4 mr-2" />
                             {isExporting ? 'Exporting...' : 'Export Project'}
@@ -243,20 +238,20 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
-                                className="group relative overflow-hidden rounded-xl sm:rounded-2xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-4 sm:p-5 hover:bg-white/15 hover:border-white/30 transition-all duration-300"
+                                className="group relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-4 sm:p-5 hover:bg-[var(--color-surface-elevated)] transition-all duration-300"
                             >
                                 <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl ${module.color} flex items-center justify-center shadow-lg backdrop-blur-md border border-white/20`}>
+                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-[var(--r-md)] ${module.color} flex items-center justify-center border border-[var(--color-nebula-hairline-strong)]`}>
                                         <module.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${module.iconColor}`} />
                                     </div>
                                     <div>
-                                        <div className="text-2xl sm:text-3xl font-bold text-white">{module.count}</div>
-                                        <div className="text-[10px] sm:text-xs text-zinc-200 uppercase tracking-wider font-medium">{module.name}</div>
+                                        <div className="type-h3 text-[color:var(--color-nebula-fg)]">{module.count}</div>
+                                        <div className="type-caption uppercase tracking-wider">{module.name}</div>
                                     </div>
                                 </div>
                                 {/* Decorative bottom bar */}
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-white/20 overflow-hidden">
-                                    <div className="h-full bg-white/60 w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
+                                <div className="absolute bottom-0 left-0 w-full h-1 bg-[var(--color-nebula-hairline-strong)] overflow-hidden">
+                                    <div className="h-full bg-[var(--color-nebula-fg)] w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
                                 </div>
                             </motion.div>
                         ))}
@@ -273,21 +268,21 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                                 transition={{ delay: index * 0.1, duration: 0.5 }}
                             >
                                 <Link href={module.href}>
-                                    <div className="group relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-6 sm:p-7 lg:p-8 hover:bg-white/15 hover:border-white/30 transition-all duration-500 cursor-pointer h-full shadow-xl">
+                                    <div className="group relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-6 sm:p-7 lg:p-8 hover:bg-[var(--color-surface-elevated)] transition-all duration-500 cursor-pointer h-full">
                                         <div className="flex items-start gap-4 sm:gap-5">
-                                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg backdrop-blur-md border-2 border-white/20`}>
+                                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[var(--r-lg)] ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[var(--color-nebula-hairline-strong)]`}>
                                                 <module.icon className={`w-7 h-7 sm:w-8 sm:h-8 ${module.iconColor}`} />
                                             </div>
                                             <div className="flex-1">
-                                                <h3 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">{module.name}</h3>
-                                                <p className="text-sm sm:text-base text-zinc-200 group-hover:text-white transition-colors">
+                                                <h3 className="type-h3 mb-1 sm:mb-2">{module.name}</h3>
+                                                <p className="type-body text-[color:var(--color-charcoal)] transition-colors">
                                                     {module.count} {module.count === 1 ? "item" : "items"}
                                                 </p>
                                             </div>
                                         </div>
                                         {/* Decorative bottom bar */}
-                                        <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden mt-5 sm:mt-6">
-                                            <div className="h-full bg-white/60 w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
+                                        <div className="w-full h-1 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden mt-5 sm:mt-6">
+                                            <div className="h-full bg-[var(--color-nebula-fg)] w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
                                         </div>
                                     </div>
                                 </Link>
@@ -301,14 +296,14 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.5 }}
-                        className="relative overflow-hidden rounded-2xl sm:rounded-3xl border-2 border-white/20 bg-white/10 backdrop-blur-lg p-6 sm:p-7 lg:p-8 shadow-xl"
+                        className="relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-6 sm:p-7 lg:p-8"
                     >
-                        <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4 sm:mb-6">Project Overview</h2>
-                        <div className="space-y-3 sm:space-y-4 text-zinc-200 text-base sm:text-lg leading-relaxed">
+                        <h2 className="type-h2 mb-4 sm:mb-6">Project Overview</h2>
+                        <div className="space-y-3 sm:space-y-4 type-body-lg text-[color:var(--color-charcoal)]">
                             <p>
-                                This project has <strong className="text-white font-bold">{stats.requirements}</strong> requirements,{" "}
-                                <strong className="text-white font-bold">{stats.workflows}</strong> workflows, and{" "}
-                                <strong className="text-white font-bold">{stats.userStories}</strong> user stories defined.
+                                This project has <strong className="text-[color:var(--color-nebula-fg)]">{stats.requirements}</strong> requirements,{" "}
+                                <strong className="text-[color:var(--color-nebula-fg)]">{stats.workflows}</strong> workflows, and{" "}
+                                <strong className="text-[color:var(--color-nebula-fg)]">{stats.userStories}</strong> user stories defined.
                             </p>
                             {project.architecture && (
                                 <p>Architecture documentation is available with system design and diagrams.</p>
@@ -318,7 +313,7 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                             )}
                             {stats.mockups > 0 && (
                                 <p>
-                                    <strong className="text-white font-bold">{stats.mockups}</strong> UI mockup{stats.mockups > 1 ? "s are" : " is"}{" "}
+                                    <strong className="text-[color:var(--color-nebula-fg)]">{stats.mockups}</strong> UI mockup{stats.mockups > 1 ? "s are" : " is"}{" "}
                                     ready for review.
                                 </p>
                             )}

@@ -104,13 +104,13 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md bg-gray-900/95 backdrop-blur-xl border-gray-700">
+      <DialogContent className="max-w-md bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)]">
         <DialogHeader className="text-center">
-          <DialogTitle className="text-2xl font-bold text-white flex items-center justify-center gap-2">
-            <Sparkles className="w-6 h-6 text-yellow-400" />
+          <DialogTitle className="type-h3 flex items-center justify-center gap-2">
+            <Sparkles className="w-6 h-6 text-[color:var(--color-accent-yellow)]" />
             Exporting Your Project
           </DialogTitle>
-          <DialogDescription className="text-gray-300">
+          <DialogDescription className="text-[color:var(--color-charcoal)]">
             We&apos;re creating a beautiful PDF of your project documentation
           </DialogDescription>
         </DialogHeader>
@@ -118,14 +118,14 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
         {/* Progress Section */}
         <div className="space-y-4">
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-300">{currentStepData.title}</span>
-              <span className="text-gray-400">{Math.round(currentProgress)}%</span>
+            <div className="flex justify-between type-small">
+              <span className="text-[color:var(--color-charcoal)]">{currentStepData.title}</span>
+              <span className="text-[color:var(--color-ash)]">{Math.round(currentProgress)}%</span>
             </div>
             <Progress value={currentProgress} className="h-2" />
           </div>
 
-          <div className="text-center text-sm text-gray-400">
+          <div className="text-center type-small text-[color:var(--color-ash)]">
             {currentStatus === 'completed' ? "Download ready!" :
              currentStatus === 'error' ? "Export failed" :
              "Processing your project..."}
@@ -136,9 +136,9 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
         <div className="text-center space-y-6 py-4">
           {/* Animated Icon */}
           <div className="relative inline-block">
-            <div className="absolute inset-0 bg-blue-500/20 rounded-full blur-xl animate-pulse" />
-            <div className="relative w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <IconComponent className={`w-8 h-8 text-white ${currentStatus === 'completed' ? 'animate-bounce' : 'animate-spin'}`} />
+            <div className="absolute inset-0 bg-[var(--color-nebula-hairline-strong)] rounded-full animate-pulse" />
+            <div className="relative w-16 h-16 rounded-full bg-[var(--color-nebula-fg)] flex items-center justify-center">
+              <IconComponent className={`w-8 h-8 text-[color:var(--color-nebula-bg)] ${currentStatus === 'completed' ? 'animate-bounce' : 'animate-spin'}`} />
             </div>
           </div>
 
@@ -146,45 +146,44 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
           <div className="min-h-[60px] flex items-center justify-center">
             <p
               key={currentStepIndex}
-              className="text-lg font-medium text-white animate-fade-in"
+              className="type-body-lg text-[color:var(--color-nebula-fg)] animate-fade-in"
             >
               {currentMessage}
             </p>
           </div>
 
           {/* Fun Fact */}
-          <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-            <p className="text-sm text-gray-300 animate-fade-in" key={funFactIndex}>
+          <div className="bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)]">
+            <p className="type-small text-[color:var(--color-charcoal)] animate-fade-in" key={funFactIndex}>
               {FUN_FACTS[funFactIndex]}
             </p>
           </div>
 
           {/* Project Stats */}
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
-              <div className="text-2xl font-bold text-blue-400">{projectStats.requirements}</div>
-              <div className="text-gray-400">Requirements</div>
+            <div className="bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] p-3 border border-[var(--color-nebula-hairline-strong)]">
+              <div className="type-h3 text-[color:var(--color-nebula-fg)]">{projectStats.requirements}</div>
+              <div className="text-[color:var(--color-ash)]">Requirements</div>
             </div>
-            <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
-              <div className="text-2xl font-bold text-green-400">{projectStats.workflows}</div>
-              <div className="text-gray-400">Workflows</div>
+            <div className="bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] p-3 border border-[var(--color-nebula-hairline-strong)]">
+              <div className="type-h3 text-[color:var(--color-accent-green)]">{projectStats.workflows}</div>
+              <div className="text-[color:var(--color-ash)]">Workflows</div>
             </div>
-            <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
-              <div className="text-2xl font-bold text-orange-400">{projectStats.userStories}</div>
-              <div className="text-gray-400">Stories</div>
+            <div className="bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] p-3 border border-[var(--color-nebula-hairline-strong)]">
+              <div className="type-h3 text-[color:var(--color-accent-yellow)]">{projectStats.userStories}</div>
+              <div className="text-[color:var(--color-ash)]">Stories</div>
             </div>
-            <div className="bg-gray-800/30 rounded-lg p-3 border border-gray-700">
-              <div className="text-2xl font-bold text-purple-400">{projectStats.mockups}</div>
-              <div className="text-gray-400">Mockups</div>
+            <div className="bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] p-3 border border-[var(--color-nebula-hairline-strong)]">
+              <div className="type-h3 text-[color:var(--color-nebula-fg)]">{projectStats.mockups}</div>
+              <div className="text-[color:var(--color-ash)]">Mockups</div>
             </div>
           </div>
         </div>
 
         <DialogFooter className="flex justify-center">
           <Button
-            variant="outline"
+            variant="nebula-ghost"
             onClick={onCancel}
-            className="border-gray-600 text-gray-300 hover:bg-gray-800"
           >
             <Zap className="w-4 h-4 mr-2" />
             Cancel Export

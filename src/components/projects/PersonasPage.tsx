@@ -131,7 +131,7 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/20">
+                <div className="nebula-hairline-b px-6 py-4 flex items-center justify-between bg-[var(--color-nebula-bg)]">
                     <div>
                         <Breadcrumb
                             items={[
@@ -140,27 +140,27 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                                 { label: "Personas" },
                             ]}
                         />
-                        <h1 className="text-2xl font-semibold text-white mt-2">User Personas</h1>
+                        <h1 className="type-h3 mt-2">User Personas</h1>
                     </div>
                     <div className="flex gap-3">
-                        <Button onClick={() => {
+                        <Button variant="nebula" onClick={() => {
                             setEditingId(null);
                             setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
                             setIsModalOpen(true);
-                        }} className="bg-white text-black hover:bg-gray-200">
+                        }}>
                             <Plus className="w-4 h-4 mr-2" />
                             Add Persona
                         </Button>
                         <Button
-                            variant="glass"
+                            variant="nebula-ghost"
                             onClick={() => setIsAIModalOpen(true)}
                             disabled={aiGenerateMutation.isPending}
-                            className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
+                            className="transition-all duration-300"
                         >
                             {aiGenerateMutation.isPending ? (
                                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                             ) : (
-                                <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
                             )}
                             {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                         </Button>
@@ -170,14 +170,14 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                 <div className="flex-1 overflow-auto p-6">
                     {personas.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
-                                <User className="w-10 h-10 text-gray-400" />
+                            <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mb-6">
+                                <User className="w-10 h-10 text-[color:var(--color-ash)]" />
                             </div>
-                            <h3 className="text-xl font-semibold text-white mb-2">No Personas Yet</h3>
-                            <p className="text-gray-400 max-w-md mb-6">
+                            <h3 className="type-h4 mb-2">No Personas Yet</h3>
+                            <p className="text-[color:var(--color-charcoal)] max-w-md mb-6">
                                 Create user personas to better understand your target audience and their needs.
                             </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                            <Button onClick={() => setIsModalOpen(true)} size="lg" variant="nebula" className="transition-all">
                                 <Plus className="w-5 h-5 mr-2" />
                                 Create First Persona
                             </Button>
@@ -187,30 +187,30 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                             {personas.map((persona) => (
                                 <GlassCard key={persona.id} className="p-6 relative group">
                                     <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(persona)} className="p-2 bg-white/10 hover:bg-white/20 rounded-lg text-white">
+                                        <button onClick={() => handleEdit(persona)} className="p-2 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-nebula-surface)] rounded-[var(--r-md)] text-[color:var(--color-nebula-fg)]">
                                             <Pencil className="w-4 h-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(persona.id)} className="p-2 bg-red-500/10 hover:bg-red-500/20 rounded-lg text-red-400">
+                                        <button onClick={() => handleDelete(persona.id)} className="p-2 bg-[var(--color-accent-red-glow)] hover:bg-[var(--color-accent-red-glow)] rounded-[var(--r-md)] text-[color:var(--color-accent-red)]">
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
 
                                     <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-2xl font-bold text-indigo-400">
+                                        <div className="w-16 h-16 rounded-full bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center text-2xl font-bold text-[color:var(--color-nebula-fg)]">
                                             {persona.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-white">{persona.name}</h3>
-                                            <p className="text-blue-400">{persona.role}</p>
+                                            <h3 className="text-xl font-bold text-[color:var(--color-nebula-fg)]">{persona.name}</h3>
+                                            <p className="text-[color:var(--color-accent-blue)]">{persona.role}</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4">
                                         <div>
-                                            <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2 flex items-center gap-2">
                                                 <Target className="w-4 h-4" /> Goals
                                             </h4>
-                                            <div className="text-sm text-gray-300">
+                                            <div className="text-sm text-[color:var(--color-charcoal)]">
                                                 {(() => {
                                                     try {
                                                         const goals = typeof persona.goals === 'string' ? JSON.parse(persona.goals) : persona.goals;
@@ -231,10 +231,10 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                                             </div>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2 flex items-center gap-2">
                                                 <Frown className="w-4 h-4" /> Frustrations
                                             </h4>
-                                            <div className="text-sm text-gray-300">
+                                            <div className="text-sm text-[color:var(--color-charcoal)]">
                                                 {(() => {
                                                     try {
                                                         const frustrations = typeof persona.frustrations === 'string' ? JSON.parse(persona.frustrations) : persona.frustrations;
@@ -255,8 +255,8 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
                                             </div>
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-medium text-gray-400 mb-2">Bio</h4>
-                                            <p className="text-sm text-gray-300 line-clamp-3">{persona.bio}</p>
+                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2">Bio</h4>
+                                            <p className="text-sm text-[color:var(--color-charcoal)] line-clamp-3">{persona.bio}</p>
                                         </div>
                                     </div>
                                 </GlassCard>
@@ -267,64 +267,64 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
 
                 {/* Create/Edit Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-nebula-bg)]/80 p-4">
                         <GlassCard className="w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-                            <h2 className="text-xl font-bold text-white mb-6">
+                            <h2 className="type-h4 mb-6">
                                 {editingId ? "Edit Persona" : "New Persona"}
                             </h2>
                             <div className="space-y-4">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label className="text-sm text-gray-400 mb-1 block">Name</label>
+                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Name</label>
                                         <input
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                             placeholder="e.g. Sarah Smith"
                                         />
                                     </div>
                                     <div>
-                                        <label className="text-sm text-gray-400 mb-1 block">Role</label>
+                                        <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Role</label>
                                         <input
                                             type="text"
                                             value={formData.role}
                                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                            className="w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                             placeholder="e.g. Marketing Manager"
                                         />
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Bio</label>
+                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Bio</label>
                                     <textarea
                                         value={formData.bio}
                                         onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                         placeholder="Short biography..."
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Goals</label>
+                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Goals</label>
                                     <textarea
                                         value={formData.goals}
                                         onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                         placeholder="What are they trying to achieve?"
                                     />
                                 </div>
                                 <div>
-                                    <label className="text-sm text-gray-400 mb-1 block">Frustrations</label>
+                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Frustrations</label>
                                     <textarea
                                         value={formData.frustrations}
                                         onChange={(e) => setFormData({ ...formData, frustrations: e.target.value })}
-                                        className="w-full h-24 bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-white resize-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                                        className="w-full h-24 bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-nebula-fg)]"
                                         placeholder="What are their pain points?"
                                     />
                                 </div>
                                 <div className="flex justify-end gap-3 mt-6">
                                     <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                    <Button onClick={editingId ? handleUpdate : handleCreate} className="bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.2)] transition-all">
+                                    <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="transition-all">
                                         {editingId ? "Save Changes" : "Create Persona"}
                                     </Button>
                                 </div>

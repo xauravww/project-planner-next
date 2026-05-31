@@ -133,9 +133,9 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-6xl bg-zinc-900 border-white/10 text-white h-[90vh] flex flex-col">
+            <DialogContent className="sm:max-w-6xl bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] text-[color:var(--color-nebula-fg)] h-[90vh] flex flex-col">
                 <DialogHeader>
-                    <DialogTitle className="text-2xl flex items-center justify-between">
+                    <DialogTitle className="type-h3 flex items-center justify-between">
                         <span>Mockup Details</span>
                         <div className="flex gap-2">
                             <Button
@@ -160,7 +160,7 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                     {/* Prompt Section */}
                     <div className="space-y-2 flex-shrink-0">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-medium text-gray-400">Prompt</h3>
+                            <h3 className="type-small text-[color:var(--color-charcoal)]">Prompt</h3>
                             <Button
                                 size="sm"
                                 variant="ghost"
@@ -169,8 +169,8 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                             >
                                 {copied ? (
                                     <>
-                                        <Check className="w-3 h-3 mr-2 text-green-400" />
-                                        <span className="text-xs text-green-400">Copied!</span>
+                                        <Check className="w-3 h-3 mr-2 text-[color:var(--color-accent-green)]" />
+                                        <span className="text-xs text-[color:var(--color-accent-green)]">Copied!</span>
                                     </>
                                 ) : (
                                     <>
@@ -180,23 +180,23 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                                 )}
                             </Button>
                         </div>
-                        <p className="text-gray-200 p-3 bg-white/5 rounded-lg border border-white/10 text-sm line-clamp-2 hover:line-clamp-none transition-all cursor-default">
+                        <p className="text-[color:var(--color-charcoal)] p-3 bg-[var(--color-nebula-surface)] rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)] text-sm line-clamp-2 hover:line-clamp-none transition-all cursor-default">
                             {mockup.prompt}
                         </p>
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm flex items-start gap-2 flex-shrink-0">
-                            <span className="text-red-400">⚠</span>
+                        <div className="p-3 bg-[var(--color-accent-red-glow)] border border-[color:var(--color-accent-red)] rounded-[var(--r-md)] text-[color:var(--color-accent-red)] text-sm flex items-start gap-2 flex-shrink-0">
+                            <span className="text-[color:var(--color-accent-red)]">⚠</span>
                             <span className="flex-1">{error}</span>
-                            <button onClick={() => setError(null)} className="text-red-400 hover:text-red-300">
+                            <button onClick={() => setError(null)} className="text-[color:var(--color-accent-red)] hover:text-[color:var(--color-nebula-fg)]">
                                 <X className="w-4 h-4" />
                             </button>
                         </div>
                     )}
 
                     {/* Content Section */}
-                    <div className="flex-1 bg-black/40 rounded-lg overflow-hidden border border-white/10 relative min-h-0">
+                    <div className="flex-1 bg-[var(--color-nebula-bg)] rounded-[var(--r-md)] overflow-hidden border border-[var(--color-nebula-hairline-strong)] relative min-h-0">
                         {activeTab === "preview" ? (
                             currentCode ? (
                                 <iframe
@@ -207,16 +207,16 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                                 />
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-center p-6">
-                                    <Wand2 className="w-12 h-12 text-gray-600 mb-4" />
-                                    <h3 className="text-lg font-medium text-gray-300 mb-2">No UI Generated Yet</h3>
-                                    <p className="text-gray-500 max-w-sm mb-6">
+                                    <Wand2 className="w-12 h-12 text-[color:var(--color-ash)] mb-4" />
+                                    <h3 className="type-h4 mb-2">No UI Generated Yet</h3>
+                                    <p className="type-small text-[color:var(--color-ash)] max-w-sm mb-6">
                                         Generate a fully functional HTML/CSS/JS user interface based on your prompt.
                                     </p>
                                     <Button
+                                        variant="nebula"
                                         onClick={handleGenerateCode}
                                         disabled={isGenerating}
                                         size="lg"
-                                        className="bg-blue-600 hover:bg-blue-700"
                                     >
                                         {isGenerating ? (
                                             <>
@@ -233,8 +233,8 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                                 </div>
                             )
                         ) : (
-                            <div className="h-full overflow-auto p-4 bg-[#1e1e1e]">
-                                <pre className="text-sm font-mono text-gray-300 whitespace-pre-wrap">
+                            <div className="h-full overflow-auto p-4 bg-[var(--color-nebula-bg)]">
+                                <pre className="text-sm text-mono text-[color:var(--color-charcoal)] whitespace-pre-wrap">
                                     {currentCode || "// No code generated yet"}
                                 </pre>
                             </div>
@@ -242,7 +242,7 @@ export function MockupDetailModal({ isOpen, onClose, mockup, projectId }: Mockup
                     </div>
 
                     <div className="flex justify-between items-center pt-2 flex-shrink-0">
-                        <p className="text-xs text-gray-500">
+                        <p className="type-caption">
                             Generated on {new Date(mockup.createdAt).toLocaleDateString()}
                         </p>
                         <div className="flex gap-2">

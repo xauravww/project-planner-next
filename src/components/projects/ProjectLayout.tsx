@@ -68,21 +68,21 @@ export default function ProjectLayout({ projectId, projectName, projectType, chi
             {/* Main content */}
             <main className="flex-1 overflow-y-auto overflow-x-hidden max-w-full">
                 {/* Mobile header with menu button */}
-                <div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10 bg-black/20">
-                    <div className="flex items-center space-x-2">
-                        <Link href="/dashboard" className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors">
-                            <div className="h-5 w-5 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs">
+                <div className="lg:hidden flex items-center justify-between p-4 nebula-hairline-b bg-[var(--color-nebula-bg)]">
+                    <div className="flex items-center gap-2">
+                        <Link href="/dashboard" className="flex items-center gap-2 text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors">
+                            <span className="h-5 w-5 rounded-[var(--r-sm)] bg-[var(--color-nebula-fg)] text-[var(--color-on-light)] flex items-center justify-center font-bold text-xs">
                                 N
-                            </div>
+                            </span>
                         </Link>
-                        <span className="text-gray-400">/</span>
-                        <span className="text-white font-medium truncate">{currentPageName}</span>
+                        <span className="text-[color:var(--color-ash)]">/</span>
+                        <span className="type-small text-[color:var(--color-nebula-fg)] truncate">{currentPageName}</span>
                     </div>
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setSidebarOpen(true)}
-                        className="text-white hover:bg-white/10"
+                        className="text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-surface-elevated)]"
                     >
                         <Menu className="w-5 h-5" />
                     </Button>

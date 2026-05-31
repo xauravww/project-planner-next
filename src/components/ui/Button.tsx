@@ -15,6 +15,11 @@ const buttonVariants = cva(
                 ghost: "hover:bg-accent hover:text-accent-foreground",
                 link: "text-primary underline-offset-4 hover:underline",
                 glass: "glass glass-hover text-white",
+                // Resend theme — white pill primary, elevated ghost, outline.
+                // These map to the .nebula-btn utilities in globals.css.
+                nebula: "nebula-btn nebula-btn--primary",
+                "nebula-ghost": "nebula-btn nebula-btn--ghost",
+                "nebula-outline": "nebula-btn nebula-btn--outline",
             },
             size: {
                 default: "h-10 px-4 py-2",
