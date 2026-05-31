@@ -7,9 +7,13 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+// Disable SSL for local development (localhost/127.0.0.1)
+const isLocalDB = process.env.DATABASE_URL?.includes('localhost') || 
+                  process.env.DATABASE_URL?.includes('127.0.0.1');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+  ssl: isLocalDB ? false : { rejectUnauthorized: false },
 });
 
 let embeddingPipeline = null;

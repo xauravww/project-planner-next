@@ -19,5 +19,5 @@ export default async function UserJourneysPage({ params }: { params: Promise<{ i
         orderBy: { createdAt: "desc" },
     });
 
-    return <UserJourneysPageClient params={{ id }} journeys={journeys} projectName={project?.name || "Project"} />;
+    return <UserJourneysPageClient params={{ id }} initialJourneys={journeys} projectName={project?.name || "Project"} />;
 }

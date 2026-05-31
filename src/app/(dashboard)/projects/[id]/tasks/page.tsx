@@ -19,5 +19,5 @@ export default async function TasksPage({ params }: { params: Promise<{ id: stri
         orderBy: { createdAt: "desc" },
     });
 
-    return <TasksPageClient params={{ id }} tasks={tasks} projectName={project?.name || "Project"} />;
+    return <TasksPageClient params={{ id }} initialTasks={tasks} projectName={project?.name || "Project"} />;
 }

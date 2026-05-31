@@ -1,22 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Wand2, Pencil, Trash2, Save, Code2, Plus, X } from "lucide-react";
+import { Wand2, Pencil, Trash2, Save, Code2, Plus, X, Sparkles, Loader2 } from "lucide-react";
 import { generateTechStack } from "@/actions/project";
 import { updateTechStack, deleteTechStack } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
+import { queryKeys } from "@/lib/query-client";
 
 export default function TechStackPageClient({
     project,
-    techStack,
+    initialTechStack,
 }: {
     project: any;
-    techStack: any;
+    initialTechStack: any;
 }) {
-    const [isGenerating, setIsGenerating] = useState(false);
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
 
     const parseStack = (json: string | null) => {
@@ -28,11 +33,11 @@ export default function TechStackPageClient({
     };
 
     const [formData, setFormData] = useState({
-        frontend: parseStack(techStack?.frontend),
-        backend: parseStack(techStack?.backend),
-        database: parseStack(techStack?.database),
-        devops: parseStack(techStack?.devops),
-        other: parseStack(techStack?.other),
+        frontend: parseStack(initialTechStack?.frontend),
+        backend: parseStack(initialTechStack?.backend),
+        database: parseStack(initialTechStack?.database),
+        devops: parseStack(initialTechStack?.devops),
+        other: parseStack(initialTechStack?.other),
     });
 
     const [newItem, setNewItem] = useState("");
@@ -40,31 +45,69 @@ export default function TechStackPageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
+    const { data: techStack = initialTechStack } = useQuery({
+        queryKey: queryKeys.projects.techStack(project.id),
+        queryFn: async () => initialTechStack,
+        initialData: initialTechStack,
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (data: any) => techStack?.id ? updateTechStack(techStack.id, data) : Promise.resolve({ error: "No tech stack" }),
+        onSuccess: (result) => {
+            if (result.success) {
+                toast.success("Tech stack updated");
+                setIsEditing(false);
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to update");
+            }
+        },
+        onError: () => toast.error("Failed to update tech stack"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: () => techStack?.id ? deleteTechStack(techStack.id) : Promise.resolve({ error: "No tech stack" }),
+        onSuccess: (result) => {
+            if (result.success) {
+                toast.success("Tech stack deleted");
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to delete");
+            }
+        },
+        onError: () => toast.error("Failed to delete tech stack"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateTechStack(project.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Tech stack generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.techStack(project.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to generate");
+            }
+        },
+        onError: () => toast.error("Failed to generate tech stack"),
+    });
+
     const handleGenerateClick = () => {
         setIsAIModalOpen(true);
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generateTechStack(project.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     const handleSave = async () => {
-        if (techStack?.id) {
-            await updateTechStack(techStack.id, formData);
-            setIsEditing(false);
-            window.location.reload();
-        }
+        await updateMutation.mutateAsync(formData);
     };
 
     const handleDelete = async () => {
         if (confirm("Delete tech stack?")) {
-            if (techStack?.id) {
-                await deleteTechStack(techStack.id);
-                window.location.reload();
-            }
+            await deleteMutation.mutateAsync();
         }
     };
 
@@ -153,12 +196,16 @@ export default function TechStackPageClient({
                                 <Button
                                     variant="glass"
                                     onClick={handleGenerateClick}
-                                    disabled={isGenerating}
+                                    disabled={aiGenerateMutation.isPending}
                                     className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
-                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                    {aiGenerateMutation.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                    )}
+                                    <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
                             ) : (
                                 <>
@@ -192,7 +239,7 @@ export default function TechStackPageClient({
             {/* Content */}
             <div className="flex-1 overflow-auto">
                 <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-                    {!techStack && !isGenerating ? (
+                    {!techStack && !aiGenerateMutation.isPending ? (
                         <div className="flex items-center justify-center h-96">
                             <div className="text-center">
                                 <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -216,10 +263,14 @@ export default function TechStackPageClient({
 
             <AIGenerationModal
                 isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
+                onClose={() => {
+                    setIsAIModalOpen(false);
+                    aiGenerateMutation.reset();
+                }}
                 projectId={project.id}
                 type="tech-stack"
                 onGenerate={handleAIGenerate}
+                isGenerating={aiGenerateMutation.isPending}
             />
         </div>
     );

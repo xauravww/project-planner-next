@@ -2,21 +2,45 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import puppeteer from "puppeteer-core";
-import { updateProgress, clearProgress, storePDF } from "@/lib/pdf-progress";
+import { 
+  updateProgress, 
+  clearProgress, 
+  storePDF,
+  getPDF,
+  getProgress 
+} from "@/lib/pdf-storage";
+import { pdfExportLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
     const exportId = `export_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     try {
         const session = await auth();
-        if (!session?.user) {
+        if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        // Rate limiting - 3 exports per 10 minutes per user
+        const rateLimit = await checkRateLimit(pdfExportLimiter, session.user.id);
+        if (!rateLimit.allowed) {
+            return NextResponse.json({
+                error: "Rate limit exceeded",
+                retryAfter: rateLimit.retryAfter,
+                message: `You can only export 3 PDFs per 10 minutes. Please try again in ${rateLimit.retryAfter} seconds.`
+            }, { 
+                status: 429,
+                headers: { "Retry-After": String(rateLimit.retryAfter) }
+            });
         }
 
         const { projectId } = await req.json();
 
+        if (!projectId || typeof projectId !== 'string') {
+            return NextResponse.json({ error: "Project ID required" }, { status: 400 });
+        }
+
         // Initialize progress before starting background processing
-        updateProgress(exportId, 0, 'starting', 'Initializing PDF export...');
+        await updateProgress(exportId, 0, 'starting', 'Initializing PDF export...');
 
         // Start background processing
         processPDFExport(exportId, projectId, session.user);
@@ -29,7 +53,7 @@ export async function POST(req: NextRequest) {
         });
 
     } catch (error) {
-        clearProgress(exportId);
+        await clearProgress(exportId);
         console.error('PDF generation error:', error);
         return NextResponse.json(
             { error: "Failed to generate PDF" },
@@ -38,14 +62,56 @@ export async function POST(req: NextRequest) {
     }
 }
 
+// Add GET endpoint to check progress and download PDF
+export async function GET(req: NextRequest) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const { searchParams } = new URL(req.url);
+        const exportId = searchParams.get('exportId');
+
+        if (!exportId) {
+            return NextResponse.json({ error: "Export ID required" }, { status: 400 });
+        }
+
+        const progress = await getProgress(exportId);
+
+        // If completed, return the PDF
+        if (progress.status === 'completed') {
+            const pdfData = await getPDF(exportId);
+            if (pdfData) {
+                return new NextResponse(new Uint8Array(pdfData.pdf), {
+                    headers: {
+                        'Content-Type': 'application/pdf',
+                        'Content-Disposition': `attachment; filename="export-${exportId}.pdf"`,
+                    },
+                });
+            }
+        }
+
+        // Otherwise return progress
+        return NextResponse.json(progress);
+
+    } catch (error) {
+        console.error('PDF status check error:', error);
+        return NextResponse.json(
+            { error: "Failed to check export status" },
+            { status: 500 }
+        );
+    }
+}
+
 // Background PDF processing function
-async function processPDFExport(exportId: string, projectId: string, user: any) {
+async function processPDFExport(exportId: string, projectId: string, user: { id: string }) {
     let browser;
     try {
-        updateProgress(exportId, 5, 'starting', 'Initializing PDF export...');
+        await updateProgress(exportId, 5, 'starting', 'Initializing PDF export...');
 
         // Fetch project data
-        updateProgress(exportId, 10, 'fetching', 'Gathering project data...');
+        await updateProgress(exportId, 10, 'fetching', 'Gathering project data...');
         const project = await prisma.project.findFirst({
             where: {
                 id: projectId,
@@ -62,16 +128,16 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
         });
 
         if (!project) {
-            updateProgress(exportId, 0, 'error', 'Project not found');
+            await updateProgress(exportId, 0, 'error', 'Project not found');
             return;
         }
 
-        updateProgress(exportId, 20, 'generating', 'Building beautiful layout...');
+        await updateProgress(exportId, 20, 'generating', 'Building beautiful layout...');
 
         // Generate HTML content
         const html = generateProjectHTML(project);
 
-        updateProgress(exportId, 30, 'rendering', 'Setting up browser...');
+        await updateProgress(exportId, 30, 'rendering', 'Setting up browser...');
 
         // Launch Puppeteer
         const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH ||
@@ -92,11 +158,11 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
             ],
         });
 
-        updateProgress(exportId, 35, 'rendering', 'Browser initialized...');
+        await updateProgress(exportId, 35, 'rendering', 'Browser initialized...');
 
         const page = await browser.newPage();
 
-        updateProgress(exportId, 40, 'rendering', 'Loading page content...');
+        await updateProgress(exportId, 40, 'rendering', 'Loading page content...');
 
         // Set up request interception
         await page.setRequestInterception(true);
@@ -115,7 +181,7 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
 
         page.setDefaultTimeout(90000);
 
-        updateProgress(exportId, 50, 'rendering', 'Rendering diagrams...');
+        await updateProgress(exportId, 50, 'rendering', 'Rendering diagrams...');
 
         await page.setContent(html, {
             waitUntil: 'load',
@@ -128,7 +194,7 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
         });
 
         if (mermaidDiagramCount > 0) {
-            updateProgress(exportId, 60, 'rendering', 'Processing diagrams...');
+            await updateProgress(exportId, 60, 'rendering', 'Processing diagrams...');
 
             await page.waitForFunction(() => {
                 return typeof (window as any).mermaid !== 'undefined';
@@ -149,7 +215,7 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
             }
         }
 
-        updateProgress(exportId, 70, 'rendering', 'Processing mockups...');
+        await updateProgress(exportId, 70, 'rendering', 'Processing mockups...');
 
         // Wait for iframes
         const hasIframes = await page.$$('iframe.mockup-iframe');
@@ -157,7 +223,7 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
             await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 5000)));
         }
 
-        updateProgress(exportId, 85, 'generating', 'Creating PDF document...');
+        await updateProgress(exportId, 85, 'generating', 'Creating PDF document...');
 
         // Generate PDF
         const pdf = await page.pdf({
@@ -171,17 +237,17 @@ async function processPDFExport(exportId: string, projectId: string, user: any) 
             },
         });
 
-        updateProgress(exportId, 95, 'finalizing', 'Preparing download...');
+        await updateProgress(exportId, 95, 'finalizing', 'Preparing download...');
 
         await browser.close();
 
-        updateProgress(exportId, 100, 'completed', 'PDF ready for download!');
+        await updateProgress(exportId, 100, 'completed', 'PDF ready for download!');
 
-        // Store the PDF data temporarily (in production, use cloud storage)
-        storePDF(exportId, Buffer.from(pdf));
+        // Store the PDF data
+        await storePDF(exportId, Buffer.from(pdf));
 
     } catch (error) {
-        updateProgress(exportId, 0, 'error', 'Failed to generate PDF');
+        await updateProgress(exportId, 0, 'error', 'Failed to generate PDF');
         console.error('PDF generation error:', error);
     } finally {
         if (browser) {

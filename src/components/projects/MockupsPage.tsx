@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, Trash2, Image as ImageIcon, Wand2, Code2 } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Wand2, Code2, Sparkles } from "lucide-react";
 import { createMockup, deleteMockup, deleteAllMockups } from "@/actions/crud";
 import { generateMockups, generateSingleMockup, generateMockupImage, saveProjectContext } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
 import { toast } from "sonner";
 import { AestheticLoader } from "@/components/ui/AestheticLoader";
 
@@ -37,8 +36,6 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
             router.refresh();
         }
     };
-
-    // ... params ...
 
     // Manual generation
     const handleGenerate = async () => {
@@ -126,153 +123,155 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
     const handleDeleteAllConfirm = async () => {
         await deleteAllMockups(params.id);
         setIsDeleteAllDialogOpen(false);
-        router.refresh(); // Or window.location.reload()
+        router.refresh();
     };
 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
-            <div>
-                <div className="sticky top-0 z-10 border-b border-white/10 px-6 py-4 flex items-center justify-between bg-black/60 backdrop-blur-xl">
-                    <div>
-                        <Breadcrumb
-                            items={[
-                                { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/projects/${params.id}` },
-                                { label: "Mockups" },
-                            ]}
-                        />
-                        <h1 className="text-2xl font-semibold text-white mt-2">Visual Mockups</h1>
-                    </div>
-                    <div className="flex gap-3">
-                        {mockups.length > 0 && (
-                            <Button
-                                variant="destructive"
-                                onClick={() => setIsDeleteAllDialogOpen(true)}
-                                className="bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20"
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete All
-                            </Button>
-                        )}
-                        <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-gray-200">
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Mockup
-                        </Button>
-                        <Button
-                            variant="glass"
-                            onClick={() => setIsAIModalOpen(true)}
-                            disabled={isGenerating}
-                            className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
-                        >
-                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
-                        </Button>
-                    </div>
-                </div>
+            <div className="h-full flex flex-col relative">
+                {/* Background Effects */}
+                <div className="absolute inset-0 bg-grid-white/[0.02] -z-10" />
+                <div className="absolute top-1/4 left-1/4 h-96 w-96 rounded-full bg-purple-500/5 blur-[128px] -z-10" />
 
-                <div className="p-6">
-                    {mockups.length === 0 ? (
-                        // ... empty state ...
-                        <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-                            <div className="relative group">
-                                <div className="absolute -inset-4 bg-gradient-to-r from-indigo-500/20 to-purple-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                                <div className="relative w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mb-6 backdrop-blur-sm group-hover:border-white/20 transition-colors">
-                                    <ImageIcon className="w-10 h-10 text-gray-400 group-hover:text-white transition-colors duration-300" />
+                {/* Header */}
+                <div className="border-b border-white/10 px-4 lg:px-6 py-4 lg:py-6 bg-black/40 backdrop-blur-sm">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div className="flex items-center gap-4 justify-center lg:justify-start">
+                                <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 border border-purple-500/30 flex items-center justify-center">
+                                    <ImageIcon className="w-5 h-5 lg:w-6 lg:h-6 text-purple-400" />
+                                </div>
+                                <div className="text-center lg:text-left">
+                                    <h1 className="text-xl lg:text-2xl font-bold text-white">Visual Mockups</h1>
+                                    <p className="text-sm text-muted-foreground mt-0.5">UI designs & interface previews</p>
                                 </div>
                             </div>
-                            <h3 className="text-2xl font-bold text-white mb-3">No Mockups Yet</h3>
-                            <p className="text-gray-400 max-w-md mb-8 text-lg">
-                                Transform your ideas into visuals. Use our AI to generate high-fidelity UI mockups for your project instantly.
-                            </p>
-                            <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                                {mockups.length > 0 && (
+                                    <Button
+                                        onClick={() => setIsDeleteAllDialogOpen(true)}
+                                        variant="ghost"
+                                        className="text-red-400 hover:text-white hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/20 border border-transparent hover:border-red-500/40 transition-all duration-200 text-sm px-4 py-2"
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Delete All</span>
+                                        <span className="sm:hidden">Delete</span>
+                                    </Button>
+                                )}
+                                <Button
+                                    onClick={() => setIsModalOpen(true)}
+                                    variant="glass"
+                                    className="gap-2 text-sm px-4 py-2"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    <span className="hidden sm:inline">Add Mockup</span>
+                                    <span className="sm:hidden">Add</span>
+                                </Button>
                                 <Button
                                     variant="glass"
                                     onClick={() => setIsAIModalOpen(true)}
-                                    size="lg"
-                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_20px_rgba(99,102,241,0.15)] group"
+                                    disabled={isGenerating}
+                                    className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-5 h-5 mr-2 text-indigo-400 group-hover:animate-pulse" />
-                                    Generate with AI
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    onClick={() => setIsModalOpen(true)}
-                                    size="lg"
-                                    className="border-white/10 hover:bg-white/5 text-gray-300 hover:text-white"
-                                >
-                                    <Plus className="w-5 h-4 mr-2" />
-                                    Manual Entry
+                                    <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
+                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
                                 </Button>
                             </div>
                         </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {mockups.map((mockup) => (
-                                <GlassCard
-                                    key={mockup.id}
-                                    className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] p-0"
-                                    onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
-                                >
-                                    <div className="aspect-[4/3] bg-black/40 relative">
+                    </div>
+                </div>
 
-                                        {mockup.code ? (
-                                            // Show live iframe preview if code exists
-                                            <iframe
-                                                title="Mockup preview"
-                                                srcDoc={mockup.code}
-                                                className="w-full h-full border-0 pointer-events-none"
-                                                sandbox="allow-scripts allow-same-origin"
-                                            />
-                                        ) : mockup.imageUrl && mockup.imageUrl !== "PENDING" ? (
-                                            // Show image if available and not pending
-                                            // eslint-disable-next-line @next/next/no-img-element
-                                            <img
-                                                src={mockup.imageUrl}
-                                                alt="Mockup preview"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            // Show placeholder or Generate Button if pending
-                                            <div className="w-full h-full flex flex-col items-center justify-center bg-black/50 p-4 text-center">
-                                                <ImageIcon className="w-8 h-8 text-indigo-400 mb-3 opacity-80" />
-                                                <p className="text-xs text-gray-400 mb-4 line-clamp-2 px-2">{mockup.prompt}</p>
-                                                <Button
-                                                    size="sm"
-                                                    variant="glass"
-                                                    onClick={(e) => handleGenerateImage(mockup.id, e)}
-                                                    className="border-indigo-500/30 hover:bg-indigo-500/20 relative z-20"
-                                                >
-                                                    <Wand2 className="w-3 h-3 mr-2" />
-                                                    Generate Image
-                                                </Button>
-                                            </div>
-                                        )}
-                                        {/* Overlay on hover - minimal, just status and delete */}
-                                        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                            {mockup.code && (
-                                                <div className="absolute top-4 left-4 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-400 text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
-                                                    <Code2 className="w-3 h-3" />
-                                                    <span>UI Generated</span>
+                {/* Content */}
+                <div className="flex-1 overflow-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
+                    <div className="p-0 w-full mx-auto box-border">
+                        {mockups.length === 0 ? (
+                            <div className="flex items-center justify-center h-full p-4 sm:p-8">
+                                <div className="max-w-sm sm:max-w-md text-center px-4">
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-purple-500/20">
+                                        <ImageIcon className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" />
+                                    </div>
+                                    <h3 className="text-xl sm:text-2xl font-bold text-white mb-3">No Mockups Defined</h3>
+                                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 leading-relaxed break-words">
+                                        Create visual mockups for your project with AI assistance. We&apos;ll help you generate high-fidelity UI designs and interface previews.
+                                    </p>
+                                    <Button
+                                        variant="glass"
+                                        onClick={() => setIsAIModalOpen(true)}
+                                        size="lg"
+                                        className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm sm:text-base px-3 sm:px-4 py-2 whitespace-nowrap"
+                                    >
+                                        <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
+                                        <span className="hidden xs:inline">Generate with AI</span>
+                                        <span className="xs:hidden">Generate</span>
+                                    </Button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-4 sm:p-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {mockups.map((mockup) => (
+                                        <GlassCard
+                                            key={mockup.id}
+                                            className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] p-0"
+                                            onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
+                                        >
+                                            <div className="aspect-[4/3] bg-black/40 relative">
+                                                {mockup.code ? (
+                                                    <iframe
+                                                        title="Mockup preview"
+                                                        srcDoc={mockup.code}
+                                                        className="w-full h-full border-0 pointer-events-none"
+                                                        sandbox="allow-scripts allow-same-origin"
+                                                    />
+                                                ) : mockup.imageUrl && mockup.imageUrl !== "PENDING" ? (
+                                                    // eslint-disable-next-line @next/next/no-img-element
+                                                    <img
+                                                        src={mockup.imageUrl}
+                                                        alt="Mockup preview"
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex flex-col items-center justify-center bg-black/50 p-4 text-center">
+                                                        <ImageIcon className="w-8 h-8 text-indigo-400 mb-3 opacity-80" />
+                                                        <p className="text-xs text-gray-400 mb-4 line-clamp-2 px-2">{mockup.prompt}</p>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="glass"
+                                                            onClick={(e) => handleGenerateImage(mockup.id, e)}
+                                                            className="border-indigo-500/30 hover:bg-indigo-500/20 relative z-20"
+                                                        >
+                                                            <Wand2 className="w-3 h-3 mr-2" />
+                                                            Generate Image
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                                <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    {mockup.code && (
+                                                        <div className="absolute top-4 left-4 px-3 py-1 bg-green-500/20 border border-green-500/50 rounded-full text-green-400 text-xs font-medium flex items-center gap-1 backdrop-blur-sm">
+                                                            <Code2 className="w-3 h-3" />
+                                                            <span>UI Generated</span>
+                                                        </div>
+                                                    )}
+                                                    <button
+                                                        onClick={(e) => handleDeleteClick(mockup.id, e)}
+                                                        className="absolute top-4 right-4 p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 transition-colors backdrop-blur-sm"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </div>
-                                            )}
-                                            <button
-                                                onClick={(e) => handleDeleteClick(mockup.id, e)}
-                                                className="absolute top-4 right-4 p-2 bg-red-500/20 hover:bg-red-500/40 rounded-full text-red-400 transition-colors backdrop-blur-sm"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div className="p-3 bg-black/20">
-                                        <p className="text-xs text-gray-400">
-                                            {/* Use absolute date format to avoid hydration mismatch */}
-                                            {new Date(mockup.createdAt).toISOString().split('T')[0]}
-                                        </p>
-                                    </div>
-                                </GlassCard>
-                            ))}
-                        </div>
-                    )}
+                                            </div>
+                                            <div className="p-3 bg-black/20">
+                                                <p className="text-xs text-gray-400">
+                                                    {new Date(mockup.createdAt).toISOString().split('T')[0]}
+                                                </p>
+                                            </div>
+                                        </GlassCard>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 {/* Generation Modal */}

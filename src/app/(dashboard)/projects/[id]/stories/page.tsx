@@ -31,7 +31,7 @@ export default async function UserStoriesPage({ params }: { params: Promise<{ id
                 <div className="flex-1 overflow-auto">
                     <UserStoriesPageClient
                         project={result.project}
-                        stories={result.project.userStories || []}
+                        initialStories={result.project.userStories || []}
                     />
                 </div>
             </div>

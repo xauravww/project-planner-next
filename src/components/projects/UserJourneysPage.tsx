@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, Map, Trash2, Pencil, ArrowRight, Wand2 } from "lucide-react";
+import { Plus, Map, Trash2, Pencil, ArrowRight, Wand2, Loader2 } from "lucide-react";
 import { createUserJourney, updateUserJourney, deleteUserJourney } from "@/actions/crud";
 import { generateUserJourneys } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
@@ -11,31 +14,80 @@ import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { MessageContent } from "@/components/chat/MessageContent";
 import { ImproveButton } from "@/components/ui/ImproveButton";
+import { queryKeys } from "@/lib/query-client";
 
-export default function UserJourneysPage({ params, journeys, projectName }: { params: { id: string }; journeys: any[]; projectName: string }) {
+export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: any[]; projectName: string }) {
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: "",
         steps: "",
     });
 
+    const { data: journeys = initialJourneys } = useQuery({
+        queryKey: queryKeys.projects.journeys(params.id),
+        queryFn: async () => initialJourneys,
+        initialData: initialJourneys,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (data: any) => createUserJourney(params.id, data),
+        onSuccess: () => {
+            toast.success("Journey created");
+            setIsModalOpen(false);
+            setFormData({ title: "", steps: "" });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to create journey"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updateUserJourney(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Journey updated");
+            setEditingId(null);
+            setFormData({ title: "", steps: "" });
+            setIsModalOpen(false);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update journey"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteUserJourney(id),
+        onSuccess: () => {
+            toast.success("Journey deleted");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete journey"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateUserJourneys(params.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Journeys generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.journeys(params.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error("Failed to generate");
+            }
+        },
+        onError: () => toast.error("Failed to generate journeys"),
+    });
+
     const handleCreate = async () => {
         if (!formData.title) return;
-        await createUserJourney(params.id, formData);
-        setIsModalOpen(false);
-        setFormData({ title: "", steps: "" });
-        window.location.reload();
+        await createMutation.mutateAsync(formData);
     };
 
     const handleUpdate = async () => {
         if (!editingId) return;
-        await updateUserJourney(editingId, formData);
-        setEditingId(null);
-        setFormData({ title: "", steps: "" });
-        window.location.reload();
+        await updateMutation.mutateAsync({ id: editingId, data: formData });
     };
 
     const handleEdit = (journey: any) => {
@@ -49,16 +101,12 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
 
     const handleDelete = async (id: string) => {
         if (confirm("Delete this journey?")) {
-            await deleteUserJourney(id);
-            window.location.reload();
+            await deleteMutation.mutateAsync(id);
         }
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generateUserJourneys(params.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     return (
@@ -87,11 +135,15 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
                         <Button
                             variant="glass"
                             onClick={() => setIsAIModalOpen(true)}
-                            disabled={isGenerating}
+                            disabled={aiGenerateMutation.isPending}
                             className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                         >
-                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
+                            {aiGenerateMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                                <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                            )}
+                            {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                         </Button>
                     </div>
                 </div>
@@ -193,10 +245,14 @@ export default function UserJourneysPage({ params, journeys, projectName }: { pa
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
+                onClose={() => {
+                    setIsAIModalOpen(false);
+                    aiGenerateMutation.reset();
+                }}
                 projectId={params.id}
                 type="journeys"
                 onGenerate={handleAIGenerate}
+                isGenerating={aiGenerateMutation.isPending}
             />
         </ProjectLayout>
     );

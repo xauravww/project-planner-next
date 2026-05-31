@@ -28,6 +28,7 @@ interface AIGenerationModalProps {
     type: "requirements" | "architecture" | "workflows" | "stories" | "tech-stack" |
     "tasks" | "personas" | "journeys" | "mockups" | "business-rules" | "team";
     onGenerate: (answers: Array<{ question: string; selected: string[] }>) => Promise<void>;
+    isGenerating?: boolean;
 }
 
 export function AIGenerationModal({
@@ -36,42 +37,61 @@ export function AIGenerationModal({
     projectId,
     type,
     onGenerate,
+    isGenerating: isGeneratingProp = false,
 }: AIGenerationModalProps) {
-    const [step, setStep] = useState<"loading" | "questions" | "generating">("loading");
+    const [step, setStep] = useState<"loading" | "questions" | "generating" | "error">("loading");
     const [questions, setQuestions] = useState<Question[]>([]);
     const [answers, setAnswers] = useState<Record<string, string[]>>({});
     const [existingContext, setExistingContext] = useState<ExistingContext[]>([]);
     const [error, setError] = useState<string | null>(null);
+    const [progressMessage, setProgressMessage] = useState<string>("");
+    const [retryCount, setRetryCount] = useState(0);
 
     const loadQuestions = useCallback(async () => {
         try {
             setError(null);
+            setStep("loading");
             const result = await generateGenerationQuestions(projectId, type);
             if (result.error) {
                 setError(result.error);
+                setStep("error");
                 return;
             }
-            if (result.questions) {
+            if (result.questions && result.questions.length > 0) {
                 setQuestions(result.questions);
                 setExistingContext(result.existingContext || []);
                 setStep("questions");
-                // Initialize answers
-                const initialAnswers: Record<string, string[]> = {};
-                result.questions.forEach((q: Question) => {
-                    initialAnswers[q.id] = [];
+                // Initialize answers if not already set
+                setAnswers(prev => {
+                    const initialAnswers: Record<string, string[]> = { ...prev };
+                    result.questions.forEach((q: Question) => {
+                        if (!initialAnswers[q.id]) {
+                            initialAnswers[q.id] = [];
+                        }
+                    });
+                    return initialAnswers;
                 });
-                setAnswers(initialAnswers);
+            } else {
+                // No questions needed, go straight to generation
+                setStep("questions");
+                setQuestions([]);
             }
         } catch (err) {
-            setError("Failed to load questions");
+            setError("Failed to load questions. Please try again.");
+            setStep("error");
         }
     }, [projectId, type]);
 
     useEffect(() => {
-        if (isOpen && step === "loading") {
-            loadQuestions();
+        if (isOpen) {
+            // Reset state when opening
+            if (questions.length === 0) {
+                loadQuestions();
+            } else {
+                setStep("questions");
+            }
         }
-    }, [isOpen, step]);
+    }, [isOpen]);
 
     const handleAnswerToggle = (questionId: string, option: string) => {
         setAnswers(prev => {
@@ -92,6 +112,8 @@ export function AIGenerationModal({
 
     const handleGenerateClick = async () => {
         setStep("generating");
+        setProgressMessage("Preparing your answers...");
+        
         try {
             const formattedAnswers = questions
                 .map(q => ({
@@ -101,6 +123,7 @@ export function AIGenerationModal({
                 .filter(a => a.selected.length > 0);
 
             // Save answers to context
+            setProgressMessage("Saving your preferences...");
             for (const q of questions) {
                 if (answers[q.id] && answers[q.id].length > 0) {
                     await saveProjectContext(
@@ -113,13 +136,25 @@ export function AIGenerationModal({
                 }
             }
 
-            // Close modal immediately to prevent re-triggering
-            onClose();
+            setProgressMessage("AI is generating your content...");
             await onGenerate(formattedAnswers);
-        } catch (err) {
-            setError("Failed to generate content");
-            setStep("questions");
+            
+            // Only close on success
+            onClose();
+        } catch (err: any) {
+            setError(err.message || "Failed to generate content. Please try again.");
+            setStep("error");
         }
+    };
+
+    const handleRetry = () => {
+        if (step === "error" && error?.includes("questions")) {
+            loadQuestions();
+        } else {
+            // Retry generation - keep answers
+            handleGenerateClick();
+        }
+        setRetryCount(c => c + 1);
     };
 
     return (

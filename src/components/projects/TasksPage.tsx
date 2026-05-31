@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Plus, LayoutGrid, List as ListIcon, Calendar, User, CheckCircle2, Circle, Trash2, Wand2, Clock } from "lucide-react";
+import { Plus, LayoutGrid, List as ListIcon, Calendar, User, CheckCircle2, Circle, Trash2, Wand2, Clock, Loader2 } from "lucide-react";
 import { createTask, updateTask, deleteTask } from "@/actions/crud";
 import { generateTasks } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { queryKeys } from "@/lib/query-client";
 
 const STATUS_COLS = [
     { id: "TODO", label: "To Do", color: "bg-gray-500" },
@@ -23,11 +27,12 @@ const PRIORITY_COLORS: Record<string, string> = {
     HIGH: "text-red-400 bg-red-500/10 border-red-500/20",
 };
 
-export default function TasksPage({ params, tasks, projectName }: { params: { id: string }; tasks: any[]; projectName: string }) {
+export default function TasksPage({ params, initialTasks, projectName }: { params: { id: string }; initialTasks: any[]; projectName: string }) {
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [viewMode, setViewMode] = useState<"board" | "list">("board");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [newTask, setNewTask] = useState({
         title: "",
         description: "",
@@ -37,15 +42,64 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
         dueDate: "",
     });
 
+    const { data: tasks = initialTasks } = useQuery({
+        queryKey: queryKeys.projects.tasks(params.id),
+        queryFn: async () => initialTasks,
+        initialData: initialTasks,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (data: any) => createTask(params.id, data),
+        onSuccess: () => {
+            toast.success("Task created");
+            setIsModalOpen(false);
+            setNewTask({ title: "", description: "", status: "TODO", priority: "MEDIUM", assignee: "", dueDate: "" });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to create task"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updateTask(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Task updated");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update task"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteTask(id),
+        onSuccess: () => {
+            toast.success("Task deleted");
+            setDeleteModalOpen(false);
+            setTaskToDelete(null);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete task"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateTasks(params.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Tasks generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(params.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error("Failed to generate");
+            }
+        },
+        onError: () => toast.error("Failed to generate tasks"),
+    });
+
     const handleCreate = async () => {
         if (!newTask.title) return;
-        await createTask(params.id, {
+        await createMutation.mutateAsync({
             ...newTask,
             dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined,
         });
-        setIsModalOpen(false);
-        setNewTask({ title: "", description: "", status: "TODO", priority: "MEDIUM", assignee: "", dueDate: "" });
-        window.location.reload();
     };
 
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -58,23 +112,16 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
 
     const confirmDelete = async () => {
         if (taskToDelete) {
-            await deleteTask(taskToDelete);
-            setDeleteModalOpen(false);
-            setTaskToDelete(null);
-            window.location.reload();
+            await deleteMutation.mutateAsync(taskToDelete);
         }
     };
 
     const handleStatusChange = async (taskId: string, newStatus: string) => {
-        await updateTask(taskId, { status: newStatus });
-        window.location.reload();
+        await updateMutation.mutateAsync({ id: taskId, data: { status: newStatus } });
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generateTasks(params.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     return (
@@ -124,11 +171,15 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
                     <Button
                         variant="glass"
                         onClick={() => setIsAIModalOpen(true)}
-                        disabled={isGenerating}
+                        disabled={aiGenerateMutation.isPending}
                         className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                     >
-                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                        {isGenerating ? "Generating..." : "Generate with AI"}
+                        {aiGenerateMutation.isPending ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ) : (
+                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                        )}
+                        {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                     </Button>
                 </div>
 
@@ -365,10 +416,14 @@ export default function TasksPage({ params, tasks, projectName }: { params: { id
 
                 <AIGenerationModal
                     isOpen={isAIModalOpen}
-                    onClose={() => setIsAIModalOpen(false)}
+                    onClose={() => {
+                        setIsAIModalOpen(false);
+                        aiGenerateMutation.reset();
+                    }}
                     projectId={params.id}
                     type="tasks"
                     onGenerate={handleAIGenerate}
+                    isGenerating={aiGenerateMutation.isPending}
                 />
 
                 <DeleteModal

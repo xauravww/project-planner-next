@@ -1,24 +1,29 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Plus, Pencil, Trash2, Wand2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Wand2, Sparkles, Loader2 } from "lucide-react";
 import { generateWorkflows } from "@/actions/project";
 import { createWorkflow, updateWorkflow, deleteWorkflow } from "@/actions/crud";
 import { MessageContent } from "@/components/chat/MessageContent";
 import CanvasViewer from "@/components/ui/CanvasViewer";
 import { AIGenerationModal } from "./AIGenerationModal";
+import { queryKeys } from "@/lib/query-client";
 
 export default function WorkflowsPageClient({
     project,
-    workflows,
+    initialWorkflows,
 }: {
     project: any;
-    workflows: any[];
+    initialWorkflows: any[];
 }) {
-    const [isGenerating, setIsGenerating] = useState(false);
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
@@ -29,15 +34,59 @@ export default function WorkflowsPageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
+    const { data: workflows = initialWorkflows } = useQuery({
+        queryKey: queryKeys.projects.workflows(project.id),
+        queryFn: async () => initialWorkflows,
+        initialData: initialWorkflows,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (vars: { projectId: string; data: any }) => createWorkflow(vars.projectId, vars.data),
+        onSuccess: () => {
+            toast.success("Workflow created");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to create workflow"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updateWorkflow(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Workflow updated");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update workflow"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteWorkflow(id),
+        onSuccess: () => {
+            toast.success("Workflow deleted");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete workflow"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateWorkflows(project.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success(`Generated ${result.count} workflows`);
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.workflows(project.id) });
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to generate workflows");
+            }
+        },
+        onError: () => toast.error("Failed to generate workflows"),
+    });
+
     const handleGenerateClick = () => {
         setIsAIModalOpen(true);
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generateWorkflows(project.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -54,15 +103,14 @@ export default function WorkflowsPageClient({
         }
 
         if (editingId) {
-            await updateWorkflow(editingId, { ...formData, content: contentToSave });
+            await updateMutation.mutateAsync({ id: editingId, data: { ...formData, content: contentToSave } });
             setEditingId(null);
         } else {
-            await createWorkflow(project.id, { ...formData, content: contentToSave });
+            await createMutation.mutateAsync({ projectId: project.id, data: { ...formData, content: contentToSave } });
             setIsAdding(false);
         }
 
         setFormData({ title: "", content: "", diagram: "" });
-        window.location.reload();
     };
 
     const handleEdit = (wf: any) => {
@@ -85,8 +133,7 @@ export default function WorkflowsPageClient({
 
     const handleDelete = async (id: string) => {
         if (confirm("Delete this workflow?")) {
-            await deleteWorkflow(id);
-            window.location.reload();
+            await deleteMutation.mutateAsync(id);
         }
     };
 
@@ -135,12 +182,16 @@ export default function WorkflowsPageClient({
                                 <Button
                                     variant="glass"
                                     onClick={handleGenerateClick}
-                                    disabled={isGenerating}
+                                    disabled={aiGenerateMutation.isPending}
                                     className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
-                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                    {aiGenerateMutation.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                    )}
+                                    <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
                             </div>
                         )}
@@ -216,12 +267,34 @@ export default function WorkflowsPageClient({
                     {/* Workflows List */}
                     {workflows.length === 0 && !isAdding ? (
                         <div className="flex items-center justify-center h-96">
-                            <div className="text-center">
-                                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <Wand2 className="w-8 h-8 text-gray-400" />
+                            <div className="text-center max-w-md mx-auto px-4">
+                                <div className="w-20 h-20 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-indigo-500/30">
+                                    <Sparkles className="w-10 h-10 text-indigo-400" />
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">No Workflows Yet</h3>
-                                <p className="text-gray-400">Add manually or let AI generate them</p>
+                                <h3 className="text-2xl font-bold text-white mb-3">No Workflows Yet</h3>
+                                <p className="text-gray-400 mb-6">Generate workflows with AI or add them manually</p>
+                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                    <Button
+                                        onClick={handleGenerateClick}
+                                        disabled={aiGenerateMutation.isPending}
+                                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-500/25"
+                                    >
+                                        {aiGenerateMutation.isPending ? (
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        ) : (
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                        )}
+                                        Generate with AI
+                                    </Button>
+                                    <Button
+                                        onClick={() => setIsAdding(true)}
+                                        variant="outline"
+                                        className="border-white/20 text-white hover:bg-white/10"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        Add Manually
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ) : !isAdding && !editingId && (
@@ -273,10 +346,14 @@ export default function WorkflowsPageClient({
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
+                onClose={() => {
+                    setIsAIModalOpen(false);
+                    aiGenerateMutation.reset();
+                }}
                 projectId={project.id}
                 type="workflows"
                 onGenerate={handleAIGenerate}
+                isGenerating={aiGenerateMutation.isPending}
             />
         </div>
     );

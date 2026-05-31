@@ -9,10 +9,12 @@ export const serverOpenai = {
         completions: {
             create: async ({ messages, stream }: { messages: any[], stream?: boolean, model?: string, max_tokens?: number }) => {
                 const url = `${baseURL}/chat/completions`;
-                const headers = {
+                const headers: Record<string, string> = {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
                 };
+                if (token) {
+                    headers["Authorization"] = `Bearer ${token}`;
+                }
 
                 // Remove 'model' property as requested by user - server handles it
                 const body = JSON.stringify({

@@ -31,7 +31,7 @@ export default async function WorkflowsPage({ params }: { params: Promise<{ id: 
                 <div className="flex-1 overflow-auto">
                     <WorkflowsPageClient
                         project={result.project}
-                        workflows={result.project.workflows || []}
+                        initialWorkflows={result.project.workflows || []}
                     />
                 </div>
             </div>

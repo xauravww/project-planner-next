@@ -1,8 +1,19 @@
-import { NextAuthOptions } from "next-auth";
+import { NextAuthOptions, Session, User as NextAuthUser } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+
+// Extend session type to include user id
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+    };
+  }
+}
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -17,20 +28,24 @@ export const authOptions: NextAuthOptions = {
                     return null;
                 }
 
+                // Rate limit by IP would go here, but we don't have access to req
+                // Implement in middleware instead
+
                 const user = await prisma.user.findUnique({
                     where: { email: credentials.email },
                 });
 
-                if (!user) {
-                    return null;
-                }
-
+                // Use constant-time comparison to prevent timing attacks
+                // Always run bcrypt even if user not found (on dummy hash)
+                const dummyHash = "$2a$10$dummy.hash.for.timing.attack.prevention";
+                const passwordToCompare = user?.password || dummyHash;
+                
                 const passwordsMatch = await bcrypt.compare(
                     credentials.password,
-                    user.password
+                    passwordToCompare
                 );
 
-                if (!passwordsMatch) {
+                if (!user || !passwordsMatch) {
                     return null;
                 }
 
@@ -57,12 +72,12 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ session, token }) {
             if (session.user) {
-                (session.user as any).id = token.id;
+                session.user.id = token.id as string;
             }
             return session;
         },
     },
-    secret: process.env.NEXTAUTH_SECRET || "development-secret-change-in-production",
+    secret: process.env.NEXTAUTH_SECRET,
 };
 
 export const auth = () => getServerSession(authOptions);

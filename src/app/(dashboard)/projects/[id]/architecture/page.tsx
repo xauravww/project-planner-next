@@ -31,7 +31,7 @@ export default async function ArchitecturePage({ params }: { params: Promise<{ i
                 <div className="flex-1 overflow-auto overflow-x-hidden">
                     <ArchitecturePageClient
                         project={result.project}
-                        architecture={result.project.architecture}
+                        initialArchitecture={result.project.architecture}
                         staleStatus={result.project.staleStatus ? JSON.parse(result.project.staleStatus) : {}}
                     />
                 </div>

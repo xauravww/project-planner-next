@@ -1,17 +1,20 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Plus, Users, Trash2, Pencil, Mail, Shield } from "lucide-react";
 import { createMember, updateMember, deleteMember } from "@/actions/crud";
-import { generateTeamMembers } from "@/actions/project";
-import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { queryKeys } from "@/lib/query-client";
 
-export default function TeamPage({ params, members, projectName }: { params: { id: string }; members: any[]; projectName: string }) {
+export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: any[]; projectName: string }) {
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -22,20 +25,54 @@ export default function TeamPage({ params, members, projectName }: { params: { i
         email: "",
     });
 
+    const { data: members = initialMembers } = useQuery({
+        queryKey: queryKeys.projects.team(params.id),
+        queryFn: async () => initialMembers,
+        initialData: initialMembers,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (data: any) => createMember(params.id, data),
+        onSuccess: () => {
+            toast.success("Team member added");
+            setIsModalOpen(false);
+            setFormData({ name: "", role: "", email: "" });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to add member"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updateMember(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Team member updated");
+            setEditingId(null);
+            setFormData({ name: "", role: "", email: "" });
+            setIsModalOpen(false);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update member"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteMember(id),
+        onSuccess: () => {
+            toast.success("Team member removed");
+            setDeleteModalOpen(false);
+            setMemberToDelete(null);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to remove member"),
+    });
+
     const handleCreate = async () => {
         if (!formData.name || !formData.email) return;
-        await createMember(params.id, formData);
-        setIsModalOpen(false);
-        setFormData({ name: "", role: "", email: "" });
-        window.location.reload();
+        await createMutation.mutateAsync(formData);
     };
 
     const handleUpdate = async () => {
         if (!editingId) return;
-        await updateMember(editingId, formData);
-        setEditingId(null);
-        setFormData({ name: "", role: "", email: "" });
-        window.location.reload();
+        await updateMutation.mutateAsync({ id: editingId, data: formData });
     };
 
     const handleEdit = (member: any) => {
@@ -55,10 +92,7 @@ export default function TeamPage({ params, members, projectName }: { params: { i
 
     const confirmDelete = async () => {
         if (memberToDelete) {
-            await deleteMember(memberToDelete);
-            setDeleteModalOpen(false);
-            setMemberToDelete(null);
-            window.location.reload();
+            await deleteMutation.mutateAsync(memberToDelete);
         }
     };
 

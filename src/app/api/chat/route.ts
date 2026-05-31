@@ -1,11 +1,39 @@
 
 import { serverOpenai } from "@/lib/ai-client";
+import { chatLimiter, checkRateLimit } from "@/lib/rate-limit";
+import { auth } from "@/auth";
 
 // Use Node.js runtime for better compatibility with local servers
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
     try {
+        // Check authentication
+        const session = await auth();
+        if (!session?.user?.id) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        // Rate limiting - per user
+        const rateLimit = await checkRateLimit(chatLimiter, session.user.id);
+        if (!rateLimit.allowed) {
+            return new Response(
+                JSON.stringify({ 
+                    error: "Rate limit exceeded", 
+                    retryAfter: rateLimit.retryAfter 
+                }), {
+                    status: 429,
+                    headers: { 
+                        "Content-Type": "application/json",
+                        "Retry-After": String(rateLimit.retryAfter),
+                    },
+                }
+            );
+        }
+
         const { messages } = await req.json();
 
         // Add system message for simple, conversational guidance

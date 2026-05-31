@@ -5,6 +5,16 @@ import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { serverOpenai } from "@/lib/ai-client";
 import { generateEmbedding } from "@/lib/embeddings";
+import { sanitizeHtml, validateContentSafety } from "@/lib/sanitize";
+import { 
+  requirementsArraySchema, 
+  userStoriesArraySchema,
+  workflowsArraySchema,
+  validateAIOutput,
+} from "@/lib/ai-schemas";
+import { withTransaction, withRetry } from "@/lib/transactions";
+import { aiGenerationLimiter, checkRateLimit } from "@/lib/rate-limit";
+import type { z } from "zod";
 
 // Context Management Functions
 export async function getProjectContext(projectId: string) {
@@ -209,17 +219,30 @@ function parseAIResponse(content: string, fallback: any = []) {
     }
 }
 
-export async function generateRequirements(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
+export async function generateRequirements(
+    projectId: string, 
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-    try {
+    // Rate limiting
+    const rateLimit = await checkRateLimit(aiGenerationLimiter, session.user.id);
+    if (!rateLimit.allowed) {
+        return { 
+            error: `Rate limit exceeded. Please try again in ${rateLimit.retryAfter} seconds.`,
+            retryAfter: rateLimit.retryAfter 
+        };
+    }
+
+    // Retry logic for AI call
+    const aiResult = await withRetry(async () => {
         const project = await prisma.project.findFirst({
-            where: { id: projectId, userId: (session.user as any).id },
+            where: { id: projectId, userId: session.user.id },
         });
 
         if (!project) {
-            return { error: "Project not found" };
+            throw new Error("Project not found");
         }
 
         const response = await serverOpenai.chat.completions.create({
@@ -230,38 +253,77 @@ export async function generateRequirements(projectId: string, qaPairs?: Array<{ 
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""
-                        }Generate requirements.`,
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate requirements.`,
                 },
             ],
+            max_tokens: 4000,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const requirements = parseAIResponse(aiResponse, [{
-            title: "Analysis Results",
-            content: aiResponse,
-            type: "functional",
-            priority: "must-have",
-        }]);
+        
+        // Validate AI output with Zod
+        const parsed = parseAIResponse(aiResponse, []);
+        const validation = validateAIOutput(requirementsArraySchema, parsed);
+        
+        if (!validation.success) {
+            throw new Error(`AI output validation failed: ${validation.error}`);
+        }
 
+        return { project, requirements: validation.data };
+    }, 3);
+
+    if (!aiResult.success) {
+        console.error("Generate requirements error:", aiResult.error);
+        return { error: aiResult.error };
+    }
+
+    const { project, requirements } = aiResult.data;
+
+    // Check content safety
+    const unsafeContent = requirements.find(
+        r => !validateContentSafety(r.title) || !validateContentSafety(r.content)
+    );
+    if (unsafeContent) {
+        console.error("Potentially unsafe content detected in AI output");
+        return { error: "Generated content failed safety checks" };
+    }
+
+    // Transaction: Create all requirements atomically
+    const transactionResult = await withTransaction(async (tx) => {
+        const createdRequirements = [];
+        
         for (const req of requirements) {
-            await prisma.requirement.create({
+            // Sanitize content before storage
+            const sanitizedTitle = sanitizeHtml(req.title);
+            const sanitizedContent = sanitizeHtml(req.content);
+            
+            const created = await tx.requirement.create({
                 data: {
                     projectId,
-                    title: req.title,
-                    content: typeof req.content === 'object' ? JSON.stringify(req.content) : req.content,
+                    title: sanitizedTitle,
+                    content: sanitizedContent,
                     type: req.type || "functional",
                     priority: req.priority || "should-have",
                 },
             });
+            createdRequirements.push(created);
         }
+        
+        return createdRequirements;
+    });
 
-        revalidatePath(`/projects/${projectId}/requirements`);
-        return { success: true };
-    } catch (error) {
-        console.error("Generate requirements error:", error);
-        return { error: "Failed to generate requirements" };
+    if (!transactionResult.success) {
+        return { error: `Failed to save requirements: ${transactionResult.error}` };
     }
+
+    // Generate embeddings asynchronously (non-blocking)
+    for (const req of transactionResult.data) {
+        generateEmbedding(`${req.title} ${req.content}`, 'Requirement', req.id)
+            .catch(err => console.error("Embedding generation failed:", err));
+    }
+
+    revalidatePath(`/projects/${projectId}/requirements`);
+    return { success: true, count: transactionResult.data.length };
 }
 
 export async function saveProjectContext(
@@ -379,83 +441,170 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
 // Similar functions for workflows, user stories, tech stack...
 // I'll create abbreviated versions to save space
 
-export async function generateWorkflows(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
+export async function generateWorkflows(
+    projectId: string, 
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-    try {
+    // Rate limiting
+    const rateLimit = await checkRateLimit(aiGenerationLimiter, session.user.id);
+    if (!rateLimit.allowed) {
+        return { 
+            error: `Rate limit exceeded. Please try again in ${rateLimit.retryAfter} seconds.`,
+            retryAfter: rateLimit.retryAfter 
+        };
+    }
+
+    const aiResult = await withRetry(async () => {
         const project = await prisma.project.findFirst({
-            where: { id: projectId, userId: (session.user as any).id },
+            where: { id: projectId, userId: session.user.id },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content:
-                        "Generate 2-3 key workflows for this project. Return ONLY a valid JSON array with objects containing: title, content (JSON with a 'steps' field containing an ARRAY OF STRINGS), diagram (optional mermaid code). STRICT RULE: The 'steps' must be simple strings, not objects. Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
+                    content: "Generate 2-3 key workflows for this project. Return ONLY a valid JSON array with objects containing: title, content (JSON with a 'steps' field containing an ARRAY OF STRINGS), diagram (optional mermaid code). STRICT RULE: The 'steps' must be simple strings, not objects. Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""
-                        }`,
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}`,
                 },
             ],
+            max_tokens: 4000,
         });
 
-        const workflows = parseAIResponse(response.choices[0]?.message?.content || "[]");
-
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        const workflows = parseAIResponse(aiResponse, []);
+        
+        // Validate workflows
         for (const wf of workflows) {
-            const workflow = await prisma.workflow.create({
-                data: {
-                    projectId,
-                    title: wf.title,
-                    content: typeof wf.content === "string" ? wf.content : JSON.stringify(wf.content),
-                    diagram: wf.diagram,
-                },
-            });
-
-            generateEmbedding(`${wf.title} ${workflow.content}`, 'Workflow', workflow.id);
+            if (!wf.title || typeof wf.title !== 'string') {
+                throw new Error("Invalid workflow: missing title");
+            }
+            if (!validateContentSafety(wf.title) || !validateContentSafety(wf.content)) {
+                throw new Error("Workflow content failed safety checks");
+            }
         }
 
-        revalidatePath(`/projects/${projectId}/workflows`);
-        return { success: true };
-    } catch (_error) {
-        console.error(_error);
-        return { error: "Failed to generate workflows" };
+        return { project, workflows };
+    }, 3);
+
+    if (!aiResult.success) {
+        return { error: aiResult.error };
     }
+
+    const { workflows } = aiResult.data;
+
+    // Transaction: Create all workflows atomically
+    const transactionResult = await withTransaction(async (tx) => {
+        const createdWorkflows = [];
+        
+        for (const wf of workflows) {
+            const sanitizedTitle = sanitizeHtml(wf.title);
+            const sanitizedContent = typeof wf.content === "string" 
+                ? sanitizeHtml(wf.content) 
+                : JSON.stringify(wf.content);
+            
+            const created = await tx.workflow.create({
+                data: {
+                    projectId,
+                    title: sanitizedTitle,
+                    content: sanitizedContent,
+                    diagram: wf.diagram ? sanitizeHtml(wf.diagram) : null,
+                },
+            });
+            createdWorkflows.push(created);
+        }
+        
+        return createdWorkflows;
+    });
+
+    if (!transactionResult.success) {
+        return { error: `Failed to save workflows: ${transactionResult.error}` };
+    }
+
+    // Generate embeddings asynchronously
+    for (const workflow of transactionResult.data) {
+        generateEmbedding(`${workflow.title} ${workflow.content}`, 'Workflow', workflow.id)
+            .catch(err => console.error("Embedding generation failed:", err));
+    }
+
+    revalidatePath(`/projects/${projectId}/workflows`);
+    return { success: true, count: transactionResult.data.length };
 }
 
-export async function generateUserStories(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
+export async function generateUserStories(
+    projectId: string, 
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
     const session = await auth();
-    if (!session?.user) return { error: "Unauthorized" };
+    if (!session?.user?.id) return { error: "Unauthorized" };
 
-    try {
+    // Rate limiting
+    const rateLimit = await checkRateLimit(aiGenerationLimiter, session.user.id);
+    if (!rateLimit.allowed) {
+        return { 
+            error: `Rate limit exceeded. Please try again in ${rateLimit.retryAfter} seconds.`,
+            retryAfter: rateLimit.retryAfter 
+        };
+    }
+
+    const aiResult = await withRetry(async () => {
         const project = await prisma.project.findFirst({
-            where: { id: projectId, userId: (session.user as any).id },
+            where: { id: projectId, userId: session.user.id },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
                 {
                     role: "system",
-                    content:
-                        "Generate 4-6 user stories. Return ONLY a valid JSON array with objects containing: title, content, acceptanceCriteria, priority, storyPoints. STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
+                    content: "Generate 4-6 user stories. Return ONLY a valid JSON array with objects containing: title, content, acceptanceCriteria, priority, storyPoints. STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""
-                        }`,
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}`,
                 },
             ],
+            max_tokens: 4000,
         });
 
-        const stories = parseAIResponse(response.choices[0]?.message?.content || "[]");
+        const aiResponse = response.choices[0]?.message?.content || "[]";
+        const stories = parseAIResponse(aiResponse, []);
+        
+        // Validate stories with Zod schema
+        const validation = validateAIOutput(userStoriesArraySchema, stories);
+        if (!validation.success) {
+            throw new Error(`AI output validation failed: ${validation.error}`);
+        }
 
+        return { project, stories: validation.data };
+    }, 3);
+
+    if (!aiResult.success) {
+        return { error: aiResult.error };
+    }
+
+    const { stories } = aiResult.data;
+
+    // Check content safety
+    const unsafeContent = stories.find(
+        s => !validateContentSafety(s.title) || !validateContentSafety(s.content)
+    );
+    if (unsafeContent) {
+        return { error: "Generated content failed safety checks" };
+    }
+
+    // Transaction: Create all user stories atomically
+    const transactionResult = await withTransaction(async (tx) => {
+        const createdStories = [];
+        
         for (const story of stories) {
             // Handle acceptanceCriteria - convert array to string if needed
             let acceptanceCriteria = story.acceptanceCriteria;
@@ -463,26 +612,38 @@ export async function generateUserStories(projectId: string, qaPairs?: Array<{ q
                 acceptanceCriteria = acceptanceCriteria.join('\n');
             }
 
-            const userStory = await prisma.userStory.create({
+            const sanitizedTitle = sanitizeHtml(story.title);
+            const sanitizedContent = sanitizeHtml(story.content);
+            const sanitizedCriteria = acceptanceCriteria ? sanitizeHtml(acceptanceCriteria) : null;
+
+            const created = await tx.userStory.create({
                 data: {
                     projectId,
-                    title: story.title,
-                    content: story.content,
-                    acceptanceCriteria,
+                    title: sanitizedTitle,
+                    content: sanitizedContent,
+                    acceptanceCriteria: sanitizedCriteria,
                     priority: story.priority || "should-have",
                     storyPoints: story.storyPoints,
                 },
             });
-
-            generateEmbedding(`${story.title} ${story.content}`, 'UserStory', userStory.id);
+            createdStories.push(created);
         }
+        
+        return createdStories;
+    });
 
-        revalidatePath(`/projects/${projectId}/stories`);
-        return { success: true };
-    } catch (_error) {
-        console.error(_error);
-        return { error: "Failed to generate user stories" };
+    if (!transactionResult.success) {
+        return { error: `Failed to save user stories: ${transactionResult.error}` };
     }
+
+    // Generate embeddings asynchronously
+    for (const story of transactionResult.data) {
+        generateEmbedding(`${story.title} ${story.content}`, 'UserStory', story.id)
+            .catch(err => console.error("Embedding generation failed:", err));
+    }
+
+    revalidatePath(`/projects/${projectId}/stories`);
+    return { success: true, count: transactionResult.data.length };
 }
 
 export async function generateTechStack(projectId: string, qaPairs?: Array<{ question: string; selected: string[] }>) {
@@ -912,6 +1073,7 @@ export async function generateMockupImage(mockupId: string) {
                 'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AI_TOKEN}`
             },
             body: JSON.stringify({
+                model: "gpt-image",
                 prompt: mockup.prompt + ", high quality UI design, clean, vector style, dribbble",
                 n: 1,
                 size: "1024x1024",
@@ -926,41 +1088,51 @@ export async function generateMockupImage(mockupId: string) {
         }
 
         const imageData = await imageResponse.json();
+        // Check for both URL and b64_json
+        const directUrl = imageData.data?.[0]?.url;
         const b64Json = imageData.data?.[0]?.b64_json;
 
-        if (!b64Json) {
-            console.error("No base64 data returned from AI API");
+        if (!directUrl && !b64Json) {
+            console.error("No URL or base64 data returned from AI API");
             return { error: "No image data returned" };
         }
 
-        console.log("Uploading to ImgBB...");
-        // Upload to ImgBB
-        const imgbbApiKey = process.env.IMGBB_API_KEY;
-        if (!imgbbApiKey) {
-            console.error("ImgBB API Key missing (IMGBB_API_KEY)");
-            return { error: "ImgBB API Key missing" };
-        }
+        let imageUrl: string;
 
-        const formData = new FormData();
-        formData.append("image", b64Json);
+        // If we have a direct URL, use it
+        if (directUrl) {
+            console.log("Using direct URL from image API");
+            imageUrl = directUrl;
+        } else {
+            // Otherwise upload base64 to ImgBB
+            console.log("Uploading to ImgBB...");
+            const imgbbApiKey = process.env.IMGBB_API_KEY;
+            if (!imgbbApiKey) {
+                console.error("ImgBB API Key missing (IMGBB_API_KEY)");
+                return { error: "ImgBB API Key missing" };
+            }
 
-        const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-            method: "POST",
-            body: formData,
-        });
+            const formData = new FormData();
+            formData.append("image", b64Json);
 
-        if (!uploadResponse.ok) {
-            const errText = await uploadResponse.text();
-            console.error(`ImgBB upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
-            return { error: `ImgBB upload failed: ${uploadResponse.statusText}` };
-        }
+            const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                method: "POST",
+                body: formData,
+            });
 
-        const uploadData = await uploadResponse.json();
-        const imageUrl = uploadData.data?.url;
+            if (!uploadResponse.ok) {
+                const errText = await uploadResponse.text();
+                console.error(`ImgBB upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
+                return { error: `ImgBB upload failed: ${uploadResponse.statusText}` };
+            }
 
-        if (!imageUrl) {
-            console.error("No URL returned from ImgBB");
-            return { error: "No URL returned from ImgBB" };
+            const uploadData = await uploadResponse.json();
+            imageUrl = uploadData.data?.url;
+
+            if (!imageUrl) {
+                console.error("No URL returned from ImgBB");
+                return { error: "No URL returned from ImgBB" };
+            }
         }
 
         console.log("Saving new image URL:", imageUrl);
@@ -1099,63 +1271,65 @@ export async function generateSingleMockup(projectId: string, prompt: string) {
     }
 
     try {
-        console.log("Calling AI API for single mockup...");
-        const imageResponse = await fetch(`${process.env.NEXT_PUBLIC_AI_API_URL}/v1/images/generations`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.NEXT_PUBLIC_AI_TOKEN}`
-            },
-            body: JSON.stringify({
-                prompt: prompt + ", high quality UI design, clean, vector style, dribbble",
-                n: 1,
-                size: "1024x1024",
-                response_format: "b64_json"
-            })
+        console.log("Generating image using AI API...");
+        const { generateImage } = await import("@/lib/image-gen");
+
+        // Generate image using the new utility with gpt-image model
+        const imageData = await generateImage({
+            prompt: prompt + ", high quality UI design, clean, vector style, dribbble",
+            model: "gpt-image"
         });
 
-        if (!imageResponse.ok) {
-            const errText = await imageResponse.text();
-            console.error(`Image generation failed: ${imageResponse.status} ${imageResponse.statusText}`, errText);
-            return { error: `Image generation failed: ${imageResponse.statusText}` };
-        }
-
-        const imageData = await imageResponse.json();
+        // Check for both URL and b64_json
+        const directUrl = imageData.data?.[0]?.url;
         const b64Json = imageData.data?.[0]?.b64_json;
 
-        if (!b64Json) {
-            console.error("No base64 data returned from AI API");
+        if (!directUrl && !b64Json) {
+            console.error("No URL or base64 data returned from AI API");
             return { error: "No image data returned from API" };
         }
 
-        console.log("Uploading to ImgBB...");
-        // Upload to ImgBB
-        const imgbbApiKey = process.env.IMGBB_API_KEY;
-        if (!imgbbApiKey) {
-            console.error("ImgBB API Key missing (IMGBB_API_KEY)");
-            return { error: "ImgBB API Key missing" };
-        }
+        let publicUrl: string;
 
-        const formData = new FormData();
-        formData.append("image", b64Json);
+        // If we have a direct URL, use it
+        if (directUrl) {
+            console.log("Using direct URL from image API");
+            publicUrl = directUrl;
+        } else {
+            // Otherwise upload base64 to ImgBB
+            console.log("Uploading to ImgBB...");
+            const imgbbApiKey = process.env.IMGBB_API_KEY;
+            if (!imgbbApiKey) {
+                console.error("ImgBB API Key missing (IMGBB_API_KEY)");
+                return { error: "ImgBB API Key missing" };
+            }
 
-        const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-            method: "POST",
-            body: formData,
-        });
+            if (!b64Json) {
+                console.error("No base64 data available for upload");
+                return { error: "No base64 data available" };
+            }
 
-        if (!uploadResponse.ok) {
-            const errText = await uploadResponse.text();
-            console.error(`Image storage failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
-            return { error: `Image storage failed: ${uploadResponse.statusText}` };
-        }
+            const formData = new FormData();
+            formData.append("image", b64Json);
 
-        const uploadData = await uploadResponse.json();
-        const publicUrl = uploadData.data?.url;
+            const uploadResponse = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                method: "POST",
+                body: formData,
+            });
 
-        if (!publicUrl) {
-            console.error("Failed to get public URL from storage");
-            return { error: "Failed to get public URL from storage" };
+            if (!uploadResponse.ok) {
+                const errText = await uploadResponse.text();
+                console.error(`Image storage failed: ${uploadResponse.status} ${uploadResponse.statusText}`, errText);
+                return { error: `Image storage failed: ${uploadResponse.statusText}` };
+            }
+
+            const uploadData = await uploadResponse.json();
+            publicUrl = uploadData.data?.url;
+
+            if (!publicUrl) {
+                console.error("Failed to get public URL from storage");
+                return { error: "Failed to get public URL from storage" };
+            }
         }
 
         console.log("Creating new mockup with URL:", publicUrl);

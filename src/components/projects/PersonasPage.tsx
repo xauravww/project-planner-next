@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X, Wand2 } from "lucide-react";
+import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X, Wand2, Loader2 } from "lucide-react";
 import { createPersona, updatePersona, deletePersona } from "@/actions/crud";
 import { generatePersonas } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { queryKeys } from "@/lib/query-client";
 
-export default function PersonasPage({ params, personas, projectName }: { params: { id: string }; personas: any[]; projectName: string }) {
+export default function PersonasPage({ params, initialPersonas, projectName }: { params: { id: string }; initialPersonas: any[]; projectName: string }) {
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         name: "",
@@ -23,20 +28,67 @@ export default function PersonasPage({ params, personas, projectName }: { params
         bio: "",
     });
 
+    const { data: personas = initialPersonas } = useQuery({
+        queryKey: queryKeys.projects.personas(params.id),
+        queryFn: async () => initialPersonas,
+        initialData: initialPersonas,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (data: any) => createPersona(params.id, data),
+        onSuccess: () => {
+            toast.success("Persona created");
+            setIsModalOpen(false);
+            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to create persona"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updatePersona(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Persona updated");
+            setEditingId(null);
+            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
+            setIsModalOpen(false);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update persona"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deletePersona(id),
+        onSuccess: () => {
+            toast.success("Persona deleted");
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete persona"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generatePersonas(params.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Personas generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.personas(params.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error("Failed to generate");
+            }
+        },
+        onError: () => toast.error("Failed to generate personas"),
+    });
+
     const handleCreate = async () => {
         if (!formData.name) return;
-        await createPersona(params.id, formData);
-        setIsModalOpen(false);
-        setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-        window.location.reload();
+        await createMutation.mutateAsync(formData);
     };
 
     const handleUpdate = async () => {
         if (!editingId) return;
-        await updatePersona(editingId, formData);
-        setEditingId(null);
-        setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-        window.location.reload();
+        await updateMutation.mutateAsync({ id: editingId, data: formData });
     };
 
     const handleEdit = (persona: any) => {
@@ -68,16 +120,12 @@ export default function PersonasPage({ params, personas, projectName }: { params
 
     const handleDelete = async (id: string) => {
         if (confirm("Delete this persona?")) {
-            await deletePersona(id);
-            window.location.reload();
+            await deleteMutation.mutateAsync(id);
         }
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generatePersonas(params.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     return (
@@ -106,11 +154,15 @@ export default function PersonasPage({ params, personas, projectName }: { params
                         <Button
                             variant="glass"
                             onClick={() => setIsAIModalOpen(true)}
-                            disabled={isGenerating}
+                            disabled={aiGenerateMutation.isPending}
                             className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)]"
                         >
-                            <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                            {isGenerating ? "Generating..." : "Generate with AI"}
+                            {aiGenerateMutation.isPending ? (
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            ) : (
+                                <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                            )}
+                            {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
                         </Button>
                     </div>
                 </div>
@@ -283,10 +335,14 @@ export default function PersonasPage({ params, personas, projectName }: { params
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
+                onClose={() => {
+                    setIsAIModalOpen(false);
+                    aiGenerateMutation.reset();
+                }}
                 projectId={params.id}
                 type="personas"
                 onGenerate={handleAIGenerate}
+                isGenerating={aiGenerateMutation.isPending}
             />
         </ProjectLayout>
     );

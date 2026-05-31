@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network } from "lucide-react";
+import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateArchitecture } from "@/actions/project";
 import { updateArchitecture, deleteArchitecture } from "@/actions/crud";
@@ -13,53 +16,90 @@ import CanvasViewer from "@/components/ui/CanvasViewer";
 import { AIGenerationModal } from "./AIGenerationModal";
 import { ArchitectureTabs } from "./ArchitectureTabs";
 import { StaleModuleBanner } from "@/components/ui/StaleModuleBanner";
+import { queryKeys } from "@/lib/query-client";
 
 export default function ArchitecturePageClient({
     project,
-    architecture,
+    initialArchitecture,
     staleStatus = {},
 }: {
     project: any;
-    architecture: any;
+    initialArchitecture: any;
     staleStatus?: Record<string, any>;
 }) {
-    const [isGenerating, setIsGenerating] = useState(false);
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isEditing, setIsEditing] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const [activeView, setActiveView] = useState<"overview" | "highLevel" | "lowLevel" | "functional" | "diagram">("overview");
     const [formData, setFormData] = useState({
-        content: architecture?.content || "",
-        highLevel: architecture?.highLevel || "",
-        lowLevel: architecture?.lowLevel || "",
-        functionalDecomposition: architecture?.functionalDecomposition || "",
-        diagram: architecture?.diagram || "",
+        content: initialArchitecture?.content || "",
+        highLevel: initialArchitecture?.highLevel || "",
+        lowLevel: initialArchitecture?.lowLevel || "",
+        functionalDecomposition: initialArchitecture?.functionalDecomposition || "",
+        diagram: initialArchitecture?.diagram || "",
     });
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+
+    const { data: architecture = initialArchitecture } = useQuery({
+        queryKey: queryKeys.projects.architecture(project.id),
+        queryFn: async () => initialArchitecture,
+        initialData: initialArchitecture,
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (data: any) => architecture?.id ? updateArchitecture(architecture.id, data) : Promise.resolve({ error: "No architecture" }),
+        onSuccess: (result) => {
+            if (result.success) {
+                toast.success("Architecture updated");
+                setIsEditing(false);
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to update");
+            }
+        },
+        onError: () => toast.error("Failed to update architecture"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: () => architecture?.id ? deleteArchitecture(architecture.id) : Promise.resolve({ error: "No architecture" }),
+        onSuccess: (result) => {
+            if (result.success) {
+                toast.success("Architecture deleted");
+                setDeleteModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to delete");
+            }
+        },
+        onError: () => toast.error("Failed to delete architecture"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateArchitecture(project.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Architecture generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.architecture(project.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error(result.error || "Failed to generate architecture");
+            }
+        },
+        onError: () => toast.error("Failed to generate architecture"),
+    });
 
     const handleGenerateClick = () => {
         setIsAIModalOpen(true);
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        try {
-            await generateArchitecture(project.id, answers);
-            setIsAIModalOpen(false); // Close modal before reload
-            window.location.reload();
-        } catch (error) {
-            console.error("Generation failed:", error);
-            setIsGenerating(false);
-        }
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     const handleSave = async () => {
-        if (architecture?.id) {
-            await updateArchitecture(architecture.id, formData);
-            setIsEditing(false);
-            window.location.reload();
-        }
+        await updateMutation.mutateAsync(formData);
     };
 
     const handleDelete = () => {
@@ -68,36 +108,7 @@ export default function ArchitecturePageClient({
     };
 
     const confirmDelete = async () => {
-        console.log("confirmDelete called");
-        if (architecture?.id) {
-            setIsDeleting(true);
-            try {
-                console.log("Deleting architecture:", architecture.id);
-                const result = await deleteArchitecture(architecture.id);
-                console.log("Delete result:", result);
-
-                if (result.error) {
-                    console.error("Delete failed:", result.error);
-                    alert("Failed to delete architecture: " + result.error);
-                    setDeleteModalOpen(false);
-                    setIsDeleting(false);
-                    return;
-                }
-
-                console.log("Delete successful, closing modal");
-                setDeleteModalOpen(false);
-                window.location.reload();
-            } catch (error) {
-                console.error("Delete error:", error);
-                alert("An error occurred while deleting the architecture");
-                setDeleteModalOpen(false);
-                setIsDeleting(false);
-            }
-        } else {
-            console.error("No architecture ID found");
-            alert("No architecture found to delete");
-            setDeleteModalOpen(false);
-        }
+        await deleteMutation.mutateAsync();
     };
 
     return (
@@ -124,12 +135,16 @@ export default function ArchitecturePageClient({
                                 <Button
                                     variant="glass"
                                     onClick={handleGenerateClick}
-                                    disabled={isGenerating}
+                                    disabled={aiGenerateMutation.isPending}
                                     className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
-                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
-                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                    {aiGenerateMutation.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="w-4 h-4 mr-2 text-indigo-400" />
+                                    )}
+                                    <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
                             ) : (
                                 <>
@@ -174,7 +189,7 @@ export default function ArchitecturePageClient({
             {/* Content */}
             <div className="flex-1 overflow-auto overflow-x-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 <div className="p-0 w-full mx-auto box-border">
-                    {!architecture && !isGenerating ? (
+                    {!architecture && !aiGenerateMutation.isPending ? (
                         <div className="flex items-center justify-center h-full p-4 sm:p-8">
                             <div className="max-w-sm sm:max-w-md text-center px-4">
                                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-purple-500/20">
@@ -196,7 +211,7 @@ export default function ArchitecturePageClient({
                                 </Button>
                             </div>
                         </div>
-                    ) : isGenerating ? (
+                    ) : aiGenerateMutation.isPending ? (
                         <div className="flex items-center justify-center h-full">
                             <div className="text-center px-4">
                                 <div className="w-12 h-12 sm:w-16 sm:h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4" />
@@ -231,10 +246,14 @@ export default function ArchitecturePageClient({
                 </div>
                 <AIGenerationModal
                     isOpen={isAIModalOpen}
-                    onClose={() => setIsAIModalOpen(false)}
+                    onClose={() => {
+                        setIsAIModalOpen(false);
+                        aiGenerateMutation.reset();
+                    }}
                     projectId={project.id}
                     type="architecture"
                     onGenerate={handleAIGenerate}
+                    isGenerating={aiGenerateMutation.isPending}
                 />
             </div>
 
@@ -245,7 +264,7 @@ export default function ArchitecturePageClient({
                 title="Delete Architecture"
                 description="Are you sure you want to delete this architecture documentation? This action cannot be undone and will permanently remove all architecture data from your project."
                 confirmText="Delete Architecture"
-                isDeleting={isDeleting}
+                isDeleting={deleteMutation.isPending}
             />
         </div >
     );

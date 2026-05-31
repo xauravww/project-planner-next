@@ -4,6 +4,7 @@ import "./globals.css";
 import "./animations.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,8 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn(inter.className, "min-h-screen bg-background text-foreground")}>
-        {children}
-        <Toaster position="bottom-right" richColors />
+        <QueryProvider>
+          {children}
+          <Toaster position="bottom-right" richColors />
+        </QueryProvider>
       </body>
     </html>
   );

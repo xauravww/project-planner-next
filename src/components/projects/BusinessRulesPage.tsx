@@ -1,20 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Plus, Scale, Trash2, Pencil, AlertCircle, Wand2 } from "lucide-react";
+import { Plus, Scale, Trash2, Pencil, AlertCircle, Wand2, Sparkles, Loader2 } from "lucide-react";
 import { createBusinessRule, updateBusinessRule, deleteBusinessRule } from "@/actions/crud";
 import { generateBusinessRules } from "@/actions/project";
 import { AIGenerationModal } from "./AIGenerationModal";
 import ProjectLayout from "@/components/projects/ProjectLayout";
 import Breadcrumb from "@/components/ui/Breadcrumb";
+import { queryKeys } from "@/lib/query-client";
 
-export default function BusinessRulesPage({ params, rules, projectName }: { params: { id: string }; rules: any[]; projectName: string }) {
+export default function BusinessRulesPage({ params, initialRules, projectName }: { params: { id: string }; initialRules: any[]; projectName: string }) {
+    const queryClient = useQueryClient();
+    const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -25,20 +30,69 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
         action: "",
     });
 
+    const { data: rules = initialRules } = useQuery({
+        queryKey: queryKeys.projects.businessRules(params.id),
+        queryFn: async () => initialRules,
+        initialData: initialRules,
+    });
+
+    const createMutation = useMutation({
+        mutationFn: (data: any) => createBusinessRule(params.id, data),
+        onSuccess: () => {
+            toast.success("Business rule created");
+            setIsModalOpen(false);
+            setFormData({ title: "", description: "", condition: "", action: "" });
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to create business rule"),
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: (vars: { id: string; data: any }) => updateBusinessRule(vars.id, vars.data),
+        onSuccess: () => {
+            toast.success("Business rule updated");
+            setEditingId(null);
+            setFormData({ title: "", description: "", condition: "", action: "" });
+            setIsModalOpen(false);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to update business rule"),
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: (id: string) => deleteBusinessRule(id),
+        onSuccess: () => {
+            toast.success("Business rule deleted");
+            setDeleteModalOpen(false);
+            setRuleToDelete(null);
+            router.refresh();
+        },
+        onError: () => toast.error("Failed to delete business rule"),
+    });
+
+    const aiGenerateMutation = useMutation({
+        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateBusinessRules(params.id, answers),
+        onSuccess: async (result) => {
+            if (result.success) {
+                toast.success("Business rules generated");
+                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.businessRules(params.id) });
+                setIsAIModalOpen(false);
+                router.refresh();
+            } else {
+                toast.error("Failed to generate");
+            }
+        },
+        onError: () => toast.error("Failed to generate business rules"),
+    });
+
     const handleCreate = async () => {
         if (!formData.title) return;
-        await createBusinessRule(params.id, formData);
-        setIsModalOpen(false);
-        setFormData({ title: "", description: "", condition: "", action: "" });
-        window.location.reload();
+        await createMutation.mutateAsync(formData);
     };
 
     const handleUpdate = async () => {
         if (!editingId) return;
-        await updateBusinessRule(editingId, formData);
-        setEditingId(null);
-        setFormData({ title: "", description: "", condition: "", action: "" });
-        window.location.reload();
+        await updateMutation.mutateAsync({ id: editingId, data: formData });
     };
 
     const handleEdit = (rule: any) => {
@@ -59,18 +113,12 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
 
     const confirmDelete = async () => {
         if (ruleToDelete) {
-            await deleteBusinessRule(ruleToDelete);
-            setDeleteModalOpen(false);
-            setRuleToDelete(null);
-            window.location.reload();
+            await deleteMutation.mutateAsync(ruleToDelete);
         }
     };
 
     const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        setIsGenerating(true);
-        await generateBusinessRules(params.id, answers);
-        setIsGenerating(false);
-        window.location.reload();
+        await aiGenerateMutation.mutateAsync(answers);
     };
 
     return (
@@ -103,12 +151,16 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
                                 <Button
                                     variant="glass"
                                     onClick={() => setIsAIModalOpen(true)}
-                                    disabled={isGenerating}
+                                    disabled={aiGenerateMutation.isPending}
                                     className="border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/10 hover:text-indigo-200 hover:border-indigo-500/50 transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.1)] text-sm px-4 py-2"
                                 >
-                                    <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
-                                    <span className="hidden sm:inline">{isGenerating ? "Generating..." : "Generate with AI"}</span>
-                                    <span className="sm:hidden">{isGenerating ? "Generating..." : "AI Generate"}</span>
+                                    {aiGenerateMutation.isPending ? (
+                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    ) : (
+                                        <Wand2 className="w-4 h-4 mr-2 text-indigo-400" />
+                                    )}
+                                    <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
+                                    <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
                                 </Button>
                             </div>
                         </div>
@@ -245,10 +297,14 @@ export default function BusinessRulesPage({ params, rules, projectName }: { para
             </div>
             <AIGenerationModal
                 isOpen={isAIModalOpen}
-                onClose={() => setIsAIModalOpen(false)}
+                onClose={() => {
+                    setIsAIModalOpen(false);
+                    aiGenerateMutation.reset();
+                }}
                 projectId={params.id}
                 type="business-rules"
                 onGenerate={handleAIGenerate}
+                isGenerating={aiGenerateMutation.isPending}
             />
 
             <DeleteModal

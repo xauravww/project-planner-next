@@ -19,5 +19,5 @@ export default async function TeamPage({ params }: { params: Promise<{ id: strin
         orderBy: { createdAt: "desc" },
     });
 
-    return <TeamPageClient params={{ id }} members={members} projectName={project?.name || "Project"} />;
+    return <TeamPageClient params={{ id }} initialMembers={members} projectName={project?.name || "Project"} />;
 }

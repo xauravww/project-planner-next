@@ -31,7 +31,7 @@ export default async function RequirementsPage({ params }: { params: Promise<{ i
                 <div className="flex-1 overflow-auto">
                     <RequirementsPageClient
                         project={result.project}
-                        requirements={result.project.requirements || []}
+                        initialRequirements={result.project.requirements || []}
                     />
                 </div>
             </div>

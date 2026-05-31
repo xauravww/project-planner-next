@@ -1,28 +1,100 @@
 const EMBEDDING_SERVICE_URL = process.env.EMBEDDING_SERVICE_URL || 'http://localhost:3001';
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000;
 
-export async function generateEmbedding(text: string, table: string, id: string): Promise<void> {
+/**
+ * Generate embedding with retry logic
+ */
+export async function generateEmbedding(
+    text: string, 
+    table: string, 
+    id: string,
+    retryCount: number = 0
+): Promise<{ success: boolean; error?: string }> {
     try {
+        // Validate inputs
+        if (!text || !table || !id) {
+            console.warn('Invalid embedding generation params:', { text: !!text, table, id });
+            return { success: false, error: 'Invalid parameters' };
+        }
+
+        // Truncate very long text to avoid service overload
+        const truncatedText = text.length > 8000 ? text.slice(0, 8000) + '...' : text;
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
         const response = await fetch(`${EMBEDDING_SERVICE_URL}/generate-embeddings`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ text, table, id }),
+            body: JSON.stringify({ text: truncatedText, table, id }),
+            signal: controller.signal,
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error(`Embedding service error: ${response.statusText}`);
+            throw new Error(`Embedding service error: ${response.status} ${response.statusText}`);
         }
 
-        // Service stores directly in DB, no return needed
-    } catch (error) {
-        console.error('Failed to generate embedding:', error);
-        // Continue without embedding - graceful degradation
+        return { success: true };
+    } catch (error: any) {
+        console.error(`Embedding generation failed (attempt ${retryCount + 1}/${MAX_RETRIES}):`, error.message);
+        
+        // Retry logic
+        if (retryCount < MAX_RETRIES - 1) {
+            const delay = RETRY_DELAY * Math.pow(2, retryCount);
+            console.log(`Retrying embedding generation in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return generateEmbedding(text, table, id, retryCount + 1);
+        }
+        
+        // Graceful degradation - log but don't fail the operation
+        console.error('Embedding generation failed after retries');
+        return { success: false, error: error.message };
     }
 }
 
-export async function generateEmbeddings(texts: string[], table: string, ids: string[]): Promise<void> {
-    await Promise.all(texts.map((text, index) => generateEmbedding(text, table, ids[index])));
+/**
+ * Generate multiple embeddings with concurrency control
+ */
+export async function generateEmbeddings(
+    texts: string[], 
+    table: string, 
+    ids: string[],
+    concurrency: number = 3
+): Promise<{ success: number; failed: number }> {
+    const results = { success: 0, failed: 0 };
+    
+    // Process in batches to avoid overwhelming the service
+    for (let i = 0; i < texts.length; i += concurrency) {
+        const batch = texts.slice(i, i + concurrency).map((text, index) => 
+            generateEmbedding(text, table, ids[i + index])
+        );
+        
+        const batchResults = await Promise.all(batch);
+        
+        for (const result of batchResults) {
+            if (result.success) {
+                results.success++;
+            } else {
+                results.failed++;
+            }
+        }
+        
+        // Small delay between batches
+        if (i + concurrency < texts.length) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
+    }
+    
+    if (results.failed > 0) {
+        console.warn(`Embedding generation: ${results.success} succeeded, ${results.failed} failed`);
+    }
+    
+    return results;
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {

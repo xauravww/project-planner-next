@@ -19,5 +19,5 @@ export default async function PersonasPage({ params }: { params: Promise<{ id: s
         orderBy: { createdAt: "desc" },
     });
 
-    return <PersonasPageClient params={{ id }} personas={personas} projectName={project?.name || "Project"} />;
+    return <PersonasPageClient params={{ id }} initialPersonas={personas} projectName={project?.name || "Project"} />;
 }

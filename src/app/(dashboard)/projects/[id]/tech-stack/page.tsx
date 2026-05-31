@@ -31,7 +31,7 @@ export default async function TechStackPage({ params }: { params: Promise<{ id: 
                 <div className="flex-1 overflow-auto">
                     <TechStackPageClient
                         project={result.project}
-                        techStack={result.project.techStack}
+                        initialTechStack={result.project.techStack}
                     />
                 </div>
             </div>

@@ -19,5 +19,5 @@ export default async function BusinessRulesPage({ params }: { params: Promise<{ 
         orderBy: { createdAt: "desc" },
     });
 
-    return <BusinessRulesPageClient params={{ id }} rules={rules} projectName={project?.name || "Project"} />;
+    return <BusinessRulesPageClient params={{ id }} initialRules={rules} projectName={project?.name || "Project"} />;
 }
