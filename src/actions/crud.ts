@@ -896,6 +896,24 @@ export async function deleteMember(id: string) {
     }
 }
 
+export async function deleteAllMembers(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.member.deleteMany({
+            where: {
+                projectId,
+                project: { userId: session.user.id }
+            }
+        });
+        revalidatePath(`/projects/${projectId}/team`);
+        return { success: true };
+    } catch (_error) {
+        return { error: "Failed to delete all members" };
+    }
+}
+
 // AI TEXT IMPROVEMENT
 export async function improveText(text: string, context?: string) {
     const session = await auth();
