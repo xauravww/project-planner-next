@@ -16,7 +16,10 @@ import {
     X,
     LayoutDashboard,
     Plus,
+    Home,
+    LogOut,
 } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import { GlassCard } from "@/components/ui/GlassCard";
 
@@ -172,8 +175,17 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                 </nav>
             </div>
 
-            {/* Settings at bottom */}
-            <div className="p-3 nebula-hairline-t">
+            {/* Settings and home at bottom */}
+            <div className="p-3 nebula-hairline-t space-y-1">
+                <Link href="/">
+                    <Button
+                        variant="ghost"
+                        className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
+                    >
+                        <Home className="w-4 h-4 mr-2" />
+                        Go to homepage
+                    </Button>
+                </Link>
                 <Link href={`/projects/${projectId}/settings`}>
                     <Button
                         variant="ghost"
@@ -183,6 +195,14 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                         Settings
                     </Button>
                 </Link>
+                <Button
+                    variant="ghost"
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-accent-red)] hover:bg-[var(--color-nebula-surface)]"
+                >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign out
+                </Button>
             </div>
         </aside>
     );

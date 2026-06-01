@@ -39,6 +39,70 @@ interface APIEndpoint {
     responseErrors: Array<{ code: number; message: string }>;
 }
 
+// Helper to parse content that might be JSON-wrapped (handles nested JSON)
+const parseContent = (content: string | null | undefined, depth = 0): string => {
+    if (!content) return "";
+    if (depth > 3) return content; // Prevent infinite recursion
+    
+    const trimmed = content.trim();
+    if (!trimmed) return "";
+    
+    // If it doesn't start with { or [, it's not JSON
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+        return trimmed;
+    }
+    
+    try {
+        const parsed = JSON.parse(trimmed);
+        
+        // If it's an array, return formatted
+        if (Array.isArray(parsed)) {
+            return parsed.map(item => typeof item === "string" ? item : JSON.stringify(item)).join("\n\n");
+        }
+        
+        // If it's an object, check for content field
+        if (typeof parsed === "object" && parsed !== null) {
+            // If content field exists and is a string, recursively parse it
+            if (parsed.content && typeof parsed.content === "string") {
+                // Check if content itself is JSON
+                const contentTrimmed = parsed.content.trim();
+                if (contentTrimmed.startsWith("{") || contentTrimmed.startsWith("[")) {
+                    return parseContent(contentTrimmed, depth + 1);
+                }
+                return parsed.content;
+            }
+            
+            // Look for other common content fields
+            const contentFields = ["text", "description", "body", "overview", "details"];
+            for (const field of contentFields) {
+                if (parsed[field] && typeof parsed[field] === "string") {
+                    return parsed[field];
+                }
+            }
+            
+            // If no content field found, but has highLevel/lowLevel, format nicely
+            if (parsed.highLevel || parsed.lowLevel || parsed.functionalDecomposition) {
+                const parts = [];
+                if (parsed.highLevel) parts.push(`## High-Level Architecture\n\n${parsed.highLevel}`);
+                if (parsed.lowLevel) parts.push(`## Low-Level Details\n\n${parsed.lowLevel}`);
+                if (parsed.functionalDecomposition) parts.push(`## Functional Decomposition\n\n${parsed.functionalDecomposition}`);
+                return parts.join("\n\n");
+            }
+            
+            // Otherwise format the object nicely
+            return Object.entries(parsed)
+                .filter(([_, value]) => typeof value === "string" && value.trim())
+                .map(([key, value]) => `**${key}**: ${value}`)
+                .join("\n\n");
+        }
+        
+        return String(parsed);
+    } catch {
+        // Not valid JSON, return cleaned text
+        return trimmed;
+    }
+};
+
 export function ArchitectureTabs({
     projectId,
     architecture,
@@ -110,13 +174,29 @@ export function ArchitectureTabs({
         }
     };
 
-    const databaseTables: DatabaseTable[] = architecture?.databaseSchema
-        ? JSON.parse(architecture.databaseSchema)
-        : [];
+    // Safely parse database schema with error handling
+    const databaseTables: DatabaseTable[] = (() => {
+        if (!architecture?.databaseSchema) return [];
+        try {
+            const parsed = JSON.parse(architecture.databaseSchema);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            console.error("Failed to parse database schema");
+            return [];
+        }
+    })();
 
-    const apiEndpoints: APIEndpoint[] = architecture?.apiSpec
-        ? JSON.parse(architecture.apiSpec)
-        : [];
+    // Safely parse API spec with error handling
+    const apiEndpoints: APIEndpoint[] = (() => {
+        if (!architecture?.apiSpec) return [];
+        try {
+            const parsed = JSON.parse(architecture.apiSpec);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch {
+            console.error("Failed to parse API spec");
+            return [];
+        }
+    })();
 
     return (
         <div className="space-y-6 overflow-x-hidden w-full h-full p-4 sm:p-6">
@@ -156,7 +236,7 @@ export function ArchitectureTabs({
                                 />
                             ) : (
                                 architecture?.content ? (
-                                    <MessageContent content={architecture.content} />
+                                    <MessageContent content={parseContent(architecture.content)} />
                                 ) : (
                                     <p className="type-body text-[color:var(--color-charcoal)]">No architecture generated yet</p>
                                 )
@@ -192,7 +272,7 @@ export function ArchitectureTabs({
                                         placeholder="Enter high-level architecture details..."
                                     />
                                 ) : (
-                                    <MessageContent content={architecture?.highLevel || ""} />
+                                    <MessageContent content={parseContent(architecture?.highLevel)} />
                                 )}
                             </GlassCard>
                         )}
@@ -379,7 +459,17 @@ export function ArchitectureTabs({
                                     ))}
                                 </div>
 
-                                {architecture?.sequenceDiagrams && JSON.parse(architecture.sequenceDiagrams).map((diag: any, idx: number) => (
+                                {(() => {
+                                    if (!architecture?.sequenceDiagrams) return null;
+                                    let diagrams: any[] = [];
+                                    try {
+                                        diagrams = JSON.parse(architecture.sequenceDiagrams);
+                                        if (!Array.isArray(diagrams)) return null;
+                                    } catch {
+                                        console.error("Failed to parse sequence diagrams");
+                                        return null;
+                                    }
+                                    return diagrams.map((diag: any, idx: number) => (
                                     <GlassCard key={idx}>
                                         <h3 className="type-h4 mb-4">{diag.name}</h3>
                                         <Mermaid
@@ -415,7 +505,7 @@ export function ArchitectureTabs({
                                             }}
                                         />
                                     </GlassCard>
-                                ))}
+                                )); })()}
                             </>
                         )}
                     </div>
@@ -462,14 +552,14 @@ export function ArchitectureTabs({
                                 {architecture?.scalingStrategy && (
                                     <GlassCard>
                                         <h3 className="type-h4 mb-4">Scaling Strategy</h3>
-                                        <MessageContent content={architecture.scalingStrategy} />
+                                        <MessageContent content={parseContent(architecture.scalingStrategy)} />
                                     </GlassCard>
                                 )}
 
                                 {architecture?.securityDesign && (
                                     <GlassCard>
                                         <h3 className="type-h4 mb-4">Security Design</h3>
-                                        <MessageContent content={architecture.securityDesign} />
+                                        <MessageContent content={parseContent(architecture.securityDesign)} />
                                     </GlassCard>
                                 )}
                             </>

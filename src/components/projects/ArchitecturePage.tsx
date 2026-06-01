@@ -41,19 +41,25 @@ export default function ArchitecturePageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-    const { data: architecture = initialArchitecture } = useQuery({
+    // Fetch architecture data from server
+    const { data: architecture = initialArchitecture, refetch } = useQuery({
         queryKey: queryKeys.projects.architecture(project.id),
-        queryFn: async () => initialArchitecture,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${project.id}/architecture`);
+            if (!res.ok) throw new Error("Failed to fetch architecture");
+            return res.json();
+        },
         initialData: initialArchitecture,
     });
 
     const updateMutation = useMutation({
         mutationFn: (data: any) => architecture?.id ? updateArchitecture(architecture.id, data) : Promise.resolve({ error: "No architecture" }),
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Architecture updated");
                 setIsEditing(false);
-                router.refresh();
+                // Refetch to update UI
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to update");
             }
@@ -63,11 +69,12 @@ export default function ArchitecturePageClient({
 
     const deleteMutation = useMutation({
         mutationFn: () => architecture?.id ? deleteArchitecture(architecture.id) : Promise.resolve({ error: "No architecture" }),
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Architecture deleted");
                 setDeleteModalOpen(false);
-                router.refresh();
+                // Refetch to update UI
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to delete");
             }
@@ -80,9 +87,9 @@ export default function ArchitecturePageClient({
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Architecture generated");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.architecture(project.id) });
                 setIsAIModalOpen(false);
-                router.refresh();
+                // Refetch to update UI
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to generate architecture");
             }

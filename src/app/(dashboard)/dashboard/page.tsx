@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getProjects } from "@/actions/project";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Plus, FolderKanban, Search, Filter, ArrowUpRight, Clock, MoreVertical } from "lucide-react";
+import { Plus, FolderKanban, Search, Filter, ArrowUpRight, Clock, MoreVertical, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { DeleteProjectButton } from "@/components/projects/DeleteProjectButton";
@@ -48,6 +48,12 @@ export default async function DashboardPage() {
                         <p className="type-subtitle">Here&apos;s what&apos;s happening with your projects today.</p>
                     </div>
                     <div className="flex items-center gap-3">
+                        <Link href="/">
+                            <Button variant="nebula-ghost">
+                                <Home className="mr-2 h-4 w-4" />
+                                Home
+                            </Button>
+                        </Link>
                         <Button variant="nebula-ghost">
                             <Clock className="mr-2 h-4 w-4" />
                             Recent activity

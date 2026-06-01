@@ -5,6 +5,7 @@ import "./animations.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import { AuthProvider } from "@/components/providers/SessionProvider";
 
 // Resend-style 3-family stack:
 // - Inter        → all UI and marketing body (stand-in for ABC Favorit)
@@ -33,8 +34,10 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={cn(inter.variable, fraunces.variable, geistMono.variable, inter.className, "min-h-screen bg-background text-foreground")}>
         <QueryProvider>
-          {children}
-          <Toaster position="bottom-right" richColors />
+          <AuthProvider>
+            {children}
+            <Toaster position="bottom-right" richColors />
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

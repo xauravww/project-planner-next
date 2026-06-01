@@ -43,49 +43,52 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
         dueDate: "",
     });
 
-    const { data: tasks = initialTasks } = useQuery({
+    const { data: tasks = initialTasks, refetch } = useQuery({
         queryKey: queryKeys.projects.tasks(params.id),
-        queryFn: async () => initialTasks,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${params.id}/tasks`);
+            if (!res.ok) throw new Error("Failed to fetch tasks");
+            return res.json();
+        },
         initialData: initialTasks,
     });
 
     const createMutation = useMutation({
         mutationFn: (data: any) => createTask(params.id, data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Task created");
             setIsModalOpen(false);
             setNewTask({ title: "", description: "", status: "TODO", priority: "MEDIUM", assignee: "", dueDate: "" });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to create task"),
     });
 
     const updateMutation = useMutation({
         mutationFn: (vars: { id: string; data: any }) => updateTask(vars.id, vars.data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Task updated");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to update task"),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => deleteTask(id),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Task deleted");
             setDeleteModalOpen(false);
             setTaskToDelete(null);
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete task"),
     });
 
     const deleteAllMutation = useMutation({
         mutationFn: (projectId: string) => deleteAllTasks(projectId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("All tasks deleted");
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(params.id) });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete all tasks"),
     });
@@ -95,9 +98,8 @@ export default function TasksPage({ params, initialTasks, projectName }: { param
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Tasks generated");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.tasks(params.id) });
                 setIsAIModalOpen(false);
-                router.refresh();
+                await refetch();
             } else {
                 toast.error("Failed to generate");
             }

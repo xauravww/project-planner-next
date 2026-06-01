@@ -26,51 +26,55 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
         email: "",
     });
 
-    const { data: members = initialMembers } = useQuery({
+    const { data: members = initialMembers, refetch } = useQuery({
         queryKey: queryKeys.projects.team(params.id),
-        queryFn: async () => initialMembers,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${params.id}/team`);
+            if (!res.ok) throw new Error("Failed to fetch team members");
+            return res.json();
+        },
         initialData: initialMembers,
     });
 
     const createMutation = useMutation({
         mutationFn: (data: any) => createMember(params.id, data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Team member added");
             setIsModalOpen(false);
             setFormData({ name: "", role: "", email: "" });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to add member"),
     });
 
     const updateMutation = useMutation({
         mutationFn: (vars: { id: string; data: any }) => updateMember(vars.id, vars.data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Team member updated");
             setEditingId(null);
             setFormData({ name: "", role: "", email: "" });
             setIsModalOpen(false);
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to update member"),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => deleteMember(id),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Team member removed");
             setDeleteModalOpen(false);
             setMemberToDelete(null);
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to remove member"),
     });
 
     const deleteAllMutation = useMutation({
         mutationFn: (projectId: string) => deleteAllMembers(projectId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("All team members removed");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to remove all members"),
     });

@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 
 type NavItem = { name: string; href: string };
@@ -23,6 +24,8 @@ const AUTH = {
 export function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [open, setOpen] = useState(false);
+    const { data: session, status } = useSession();
+    const isLoggedIn = status === "authenticated";
 
     useEffect(() => {
         const onScroll = () => setIsScrolled(window.scrollY > 20);
@@ -74,12 +77,41 @@ export function Navbar() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-3">
-                        <Link href={AUTH.signIn.href} className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors">
-                            {AUTH.signIn.label}
-                        </Link>
-                        <Link href={AUTH.signUp.href} className="nebula-btn nebula-btn--primary">
-                            {AUTH.signUp.label}
-                        </Link>
+                        {isLoggedIn ? (
+                            <>
+                                <Link 
+                                    href="/dashboard" 
+                                    className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors flex items-center gap-1"
+                                >
+                                    <LayoutDashboard className="w-4 h-4" />
+                                    Dashboard
+                                </Link>
+                                <div className="flex items-center gap-2 pl-3 border-l border-[var(--color-nebula-hairline-strong)]">
+                                    <div className="w-8 h-8 rounded-full bg-[var(--color-nebula-fg)]/10 flex items-center justify-center">
+                                        <User className="w-4 h-4 text-[color:var(--color-nebula-fg)]" />
+                                    </div>
+                                    <span className="text-sm text-[color:var(--color-nebula-fg)]">
+                                        {session?.user?.name || session?.user?.email?.split('@')[0]}
+                                    </span>
+                                    <button 
+                                        onClick={() => signOut({ callbackUrl: '/' })}
+                                        className="p-2 hover:bg-[var(--color-surface-elevated)] rounded-lg transition-colors ml-1"
+                                        title="Sign out"
+                                    >
+                                        <LogOut className="w-4 h-4 text-[color:var(--color-ash)]" />
+                                    </button>
+                                </div>
+                            </>
+                        ) : (
+                            <>
+                                <Link href={AUTH.signIn.href} className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors">
+                                    {AUTH.signIn.label}
+                                </Link>
+                                <Link href={AUTH.signUp.href} className="nebula-btn nebula-btn--primary">
+                                    {AUTH.signUp.label}
+                                </Link>
+                            </>
+                        )}
                     </div>
 
                     <button
@@ -115,12 +147,38 @@ export function Navbar() {
                             </Link>
                         ))}
                         <div className="flex flex-col w-full gap-3 max-w-xs pt-8 nebula-hairline-t">
-                            <Link href={AUTH.signIn.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--ghost justify-center">
-                                {AUTH.signIn.label}
-                            </Link>
-                            <Link href={AUTH.signUp.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--primary justify-center">
-                                {AUTH.signUp.label}
-                            </Link>
+                            {isLoggedIn ? (
+                                <>
+                                    <Link href="/dashboard" onClick={() => setOpen(false)} className="nebula-btn nebula-btn--ghost justify-center flex items-center gap-2">
+                                        <LayoutDashboard className="w-4 h-4" />
+                                        Dashboard
+                                    </Link>
+                                    <div className="flex items-center justify-center gap-2 py-3">
+                                        <div className="w-8 h-8 rounded-full bg-[var(--color-nebula-fg)]/10 flex items-center justify-center">
+                                            <User className="w-4 h-4 text-[color:var(--color-nebula-fg)]" />
+                                        </div>
+                                        <span className="text-sm text-[color:var(--color-nebula-fg)]">
+                                            {session?.user?.name || session?.user?.email?.split('@')[0]}
+                                        </span>
+                                    </div>
+                                    <button 
+                                        onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
+                                        className="nebula-btn nebula-btn--ghost justify-center flex items-center gap-2 text-red-400"
+                                    >
+                                        <LogOut className="w-4 h-4" />
+                                        Sign out
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <Link href={AUTH.signIn.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--ghost justify-center">
+                                        {AUTH.signIn.label}
+                                    </Link>
+                                    <Link href={AUTH.signUp.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--primary justify-center">
+                                        {AUTH.signUp.label}
+                                    </Link>
+                                </>
+                            )}
                         </div>
                     </motion.div>
                 )}

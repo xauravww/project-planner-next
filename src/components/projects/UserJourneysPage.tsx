@@ -29,50 +29,53 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
         steps: "",
     });
 
-    const { data: journeys = initialJourneys } = useQuery({
+    const { data: journeys = initialJourneys, refetch } = useQuery({
         queryKey: queryKeys.projects.journeys(params.id),
-        queryFn: async () => initialJourneys,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${params.id}/journeys`);
+            if (!res.ok) throw new Error("Failed to fetch journeys");
+            return res.json();
+        },
         initialData: initialJourneys,
     });
 
     const createMutation = useMutation({
         mutationFn: (data: any) => createUserJourney(params.id, data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Journey created");
             setIsModalOpen(false);
             setFormData({ title: "", steps: "" });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to create journey"),
     });
 
     const updateMutation = useMutation({
         mutationFn: (vars: { id: string; data: any }) => updateUserJourney(vars.id, vars.data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Journey updated");
             setEditingId(null);
             setFormData({ title: "", steps: "" });
             setIsModalOpen(false);
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to update journey"),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => deleteUserJourney(id),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Journey deleted");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete journey"),
     });
 
     const deleteAllMutation = useMutation({
         mutationFn: (projectId: string) => deleteAllUserJourneys(projectId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("All journeys deleted");
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.journeys(params.id) });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete all journeys"),
     });
@@ -82,9 +85,8 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Journeys generated");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.journeys(params.id) });
                 setIsAIModalOpen(false);
-                router.refresh();
+                await refetch();
             } else {
                 toast.error("Failed to generate");
             }

@@ -17,27 +17,28 @@ type Plan = {
 const plans: Plan[] = [
     {
         name: "Starter",
-        price: "$0",
-        period: "/ month",
+        price: "FREE",
+        period: "",
         description: "Perfect for hobby projects and solo founders.",
         features: ["1 project", "Basic AI planning", "Standard export", "Community support"],
-        cta: "Start free",
+        cta: "Get started",
     },
     {
         name: "Pro",
-        price: "$29",
-        period: "/ month",
+        price: "FREE",
+        period: "",
         description: "For serious builders shipping production apps.",
         features: ["Unlimited projects", "Advanced AI models", "Full code scaffolding", "Priority support", "Team collaboration"],
-        cta: "Get Pro",
+        cta: "Get started",
         popular: true,
     },
     {
         name: "Enterprise",
-        price: "Custom",
+        price: "FREE",
+        period: "",
         description: "For larger teams that need more.",
         features: ["SSO & security", "Custom AI training", "Dedicated success manager", "SLA guarantee", "On-premise deploy"],
-        cta: "Contact sales",
+        cta: "Get started",
     },
 ];
 
@@ -48,8 +49,14 @@ export function Pricing() {
                 <SectionHeader
                     title="Simple, fair"
                     accent="pricing"
-                    subtitle="Pick the plan that fits. No hidden fees, cancel anytime."
+                    subtitle="Everything is FREE for a limited time during our launch. No credit card required."
                 />
+
+                <div className="text-center mb-8">
+                    <span className="inline-block px-4 py-2 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-sm font-medium">
+                        Limited time offer — Regular pricing starts soon
+                    </span>
+                </div>
 
                 <div className="grid gap-[var(--space-xl)] lg:grid-cols-3 max-w-6xl mx-auto">
                     {plans.map((plan) => (
@@ -62,20 +69,20 @@ export function Pricing() {
                                 <span
                                     className="absolute -top-3 left-1/2 -translate-x-1/2 nebula-pill"
                                     style={{
-                                        background: "var(--color-nebula-fg)",
-                                        color: "var(--color-on-light)",
-                                        borderColor: "var(--color-nebula-fg)",
+                                        background: "var(--color-accent-green)",
+                                        color: "var(--color-nebula-bg)",
+                                        borderColor: "var(--color-accent-green)",
                                     }}
                                 >
-                                    Most popular
+                                    Recommended
                                 </span>
                             )}
 
                             <div className="space-y-3">
                                 <h3 className="type-h3">{plan.name}</h3>
-                                <div className="flex items-baseline gap-1">
+                                <div className="flex items-baseline gap-2">
                                     <span
-                                        className="text-[color:var(--color-nebula-fg)]"
+                                        className="text-[color:var(--color-accent-green)]"
                                         style={{
                                             fontFamily: "var(--font-serif), serif",
                                             fontSize: "var(--nebula-display-lg)",
@@ -85,7 +92,9 @@ export function Pricing() {
                                     >
                                         {plan.price}
                                     </span>
-                                    {plan.period && <span className="type-small">{plan.period}</span>}
+                                    <span className="text-xs text-amber-300/80 font-medium bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                        Limited time
+                                    </span>
                                 </div>
                                 <p className="type-body">{plan.description}</p>
                             </div>

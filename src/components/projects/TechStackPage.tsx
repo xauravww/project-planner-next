@@ -46,19 +46,23 @@ export default function TechStackPageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-    const { data: techStack = initialTechStack } = useQuery({
+    const { data: techStack = initialTechStack, refetch } = useQuery({
         queryKey: queryKeys.projects.techStack(project.id),
-        queryFn: async () => initialTechStack,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${project.id}/tech-stack`);
+            if (!res.ok) throw new Error("Failed to fetch tech stack");
+            return res.json();
+        },
         initialData: initialTechStack,
     });
 
     const updateMutation = useMutation({
         mutationFn: (data: any) => techStack?.id ? updateTechStack(techStack.id, data) : Promise.resolve({ error: "No tech stack" }),
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Tech stack updated");
                 setIsEditing(false);
-                router.refresh();
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to update");
             }
@@ -68,10 +72,10 @@ export default function TechStackPageClient({
 
     const deleteMutation = useMutation({
         mutationFn: () => techStack?.id ? deleteTechStack(techStack.id) : Promise.resolve({ error: "No tech stack" }),
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Tech stack deleted");
-                router.refresh();
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to delete");
             }
@@ -84,9 +88,8 @@ export default function TechStackPageClient({
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success("Tech stack generated");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.techStack(project.id) });
                 setIsAIModalOpen(false);
-                router.refresh();
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to generate");
             }

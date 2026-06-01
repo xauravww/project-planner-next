@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import {
     LayoutDashboard,
@@ -10,6 +11,7 @@ import {
     GitBranch,
     Settings,
     LogOut,
+    Home,
     type LucideIcon,
 } from "lucide-react";
 
@@ -59,8 +61,18 @@ export function Sidebar() {
                 })}
             </nav>
 
-            <div className="absolute bottom-3 left-0 right-0 p-3">
-                <button className="flex w-full items-center gap-3 rounded-[var(--r-md)] px-3.5 py-2.5 type-small text-[color:var(--color-charcoal)] hover:bg-[var(--color-nebula-surface)] hover:text-[color:var(--color-accent-red)] transition-colors">
+            <div className="absolute bottom-3 left-0 right-0 p-3 space-y-1">
+                <Link 
+                    href="/"
+                    className="flex w-full items-center gap-3 rounded-[var(--r-md)] px-3.5 py-2.5 type-small text-[color:var(--color-charcoal)] hover:bg-[var(--color-nebula-surface)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+                >
+                    <Home className="h-4 w-4" />
+                    Go to homepage
+                </Link>
+                <button 
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="flex w-full items-center gap-3 rounded-[var(--r-md)] px-3.5 py-2.5 type-small text-[color:var(--color-charcoal)] hover:bg-[var(--color-nebula-surface)] hover:text-[color:var(--color-accent-red)] transition-colors"
+                >
                     <LogOut className="h-4 w-4" />
                     Sign out
                 </button>

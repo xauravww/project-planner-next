@@ -36,9 +36,13 @@ export default function UserStoriesPageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-    const { data: stories = initialStories } = useQuery({
+    const { data: stories = initialStories, refetch } = useQuery({
         queryKey: queryKeys.projects.userStories(project.id),
-        queryFn: async () => initialStories,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${project.id}/stories`);
+            if (!res.ok) throw new Error("Failed to fetch user stories");
+            return res.json();
+        },
         initialData: initialStories,
     });
 
@@ -60,9 +64,9 @@ export default function UserStoriesPageClient({
             queryClient.setQueryData(queryKeys.projects.userStories(project.id), context?.previousStories);
             toast.error("Failed to create user story");
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("User story created");
-            router.refresh();
+            await refetch();
         },
     });
 
@@ -79,9 +83,9 @@ export default function UserStoriesPageClient({
             queryClient.setQueryData(queryKeys.projects.userStories(project.id), context?.previousStories);
             toast.error("Failed to update user story");
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("User story updated");
-            router.refresh();
+            await refetch();
         },
     });
 
@@ -97,9 +101,9 @@ export default function UserStoriesPageClient({
             queryClient.setQueryData(queryKeys.projects.userStories(project.id), context?.previousStories);
             toast.error("Failed to delete user story");
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("User story deleted");
-            router.refresh();
+            await refetch();
         },
     });
 
@@ -115,9 +119,9 @@ export default function UserStoriesPageClient({
             queryClient.setQueryData(queryKeys.projects.userStories(projectId), context?.previousStories);
             toast.error("Failed to delete all user stories");
         },
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("All user stories deleted");
-            router.refresh();
+            await refetch();
         },
     });
 
@@ -126,8 +130,7 @@ export default function UserStoriesPageClient({
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success(`Generated ${result.count} user stories`);
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.userStories(project.id) });
-                router.refresh();
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to generate user stories");
             }

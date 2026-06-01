@@ -36,45 +36,48 @@ export default function WorkflowsPageClient({
 
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
-    const { data: workflows = initialWorkflows } = useQuery({
+    const { data: workflows = initialWorkflows, refetch } = useQuery({
         queryKey: queryKeys.projects.workflows(project.id),
-        queryFn: async () => initialWorkflows,
+        queryFn: async () => {
+            const res = await fetch(`/api/projects/${project.id}/workflows`);
+            if (!res.ok) throw new Error("Failed to fetch workflows");
+            return res.json();
+        },
         initialData: initialWorkflows,
     });
 
     const createMutation = useMutation({
         mutationFn: (vars: { projectId: string; data: any }) => createWorkflow(vars.projectId, vars.data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Workflow created");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to create workflow"),
     });
 
     const updateMutation = useMutation({
         mutationFn: (vars: { id: string; data: any }) => updateWorkflow(vars.id, vars.data),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Workflow updated");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to update workflow"),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => deleteWorkflow(id),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("Workflow deleted");
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete workflow"),
     });
 
     const deleteAllMutation = useMutation({
         mutationFn: (projectId: string) => deleteAllWorkflows(projectId),
-        onSuccess: () => {
+        onSuccess: async () => {
             toast.success("All workflows deleted");
-            queryClient.invalidateQueries({ queryKey: queryKeys.projects.workflows(project.id) });
-            router.refresh();
+            await refetch();
         },
         onError: () => toast.error("Failed to delete all workflows"),
     });
@@ -84,8 +87,7 @@ export default function WorkflowsPageClient({
         onSuccess: async (result) => {
             if (result.success) {
                 toast.success(`Generated ${result.count} workflows`);
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.workflows(project.id) });
-                router.refresh();
+                await refetch();
             } else {
                 toast.error(result.error || "Failed to generate workflows");
             }

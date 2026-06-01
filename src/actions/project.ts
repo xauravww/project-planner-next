@@ -186,9 +186,16 @@ export async function generateGenerationQuestions(projectId: string, type?: stri
 // Helper to clean and parse AI JSON responses
 function parseAIResponse(content: string, fallback: any = []) {
     try {
-        // Find the first occurrence of { or [ and the last occurrence of } or ]
-        const firstBracket = content.indexOf('{');
-        const firstSquareBracket = content.indexOf('[');
+        // Step 1: Remove control characters that break JSON parsing
+        // eslint-disable-next-line no-control-regex
+        let cleaned = content.replace(/[\x00-\x1F\x7F-\x9F]/g, '');
+        
+        // Step 2: Remove markdown code blocks
+        cleaned = cleaned.replace(/```json\n?|```\n?/g, "").trim();
+        
+        // Step 3: Find the first occurrence of { or [ and the last occurrence of } or ]
+        const firstBracket = cleaned.indexOf('{');
+        const firstSquareBracket = cleaned.indexOf('[');
 
         let startIndex = -1;
         let isArray = false;
@@ -203,18 +210,19 @@ function parseAIResponse(content: string, fallback: any = []) {
 
         if (startIndex === -1) {
             // No JSON found, try standard parsing as fallback
-            return JSON.parse(content.replace(/```json\n?|```\n?/g, "").trim());
+            return JSON.parse(cleaned);
         }
 
-        const lastIndex = isArray ? content.lastIndexOf(']') : content.lastIndexOf('}');
+        const lastIndex = isArray ? cleaned.lastIndexOf(']') : cleaned.lastIndexOf('}');
         if (lastIndex === -1 || lastIndex < startIndex) {
-            return JSON.parse(content.replace(/```json\n?|```\n?/g, "").trim());
+            return JSON.parse(cleaned);
         }
 
-        const jsonStr = content.substring(startIndex, lastIndex + 1);
+        const jsonStr = cleaned.substring(startIndex, lastIndex + 1);
         return JSON.parse(jsonStr);
     } catch (error) {
         console.error("Failed to parse AI response:", error);
+        console.error("Raw content snippet:", content.substring(0, 200));
         return fallback;
     }
 }
@@ -417,8 +425,17 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
             diagram: "graph TD\nA[Frontend] --> B[Backend]\nB --> C[Database]",
         });
 
-        const architecture = await prisma.architecture.create({
-            data: {
+        // Use upsert to handle existing architecture records
+        const architecture = await prisma.architecture.upsert({
+            where: { projectId },
+            update: {
+                content: archData.content,
+                highLevel: archData.highLevel,
+                lowLevel: archData.lowLevel,
+                functionalDecomposition: archData.functionalDecomposition,
+                systemDiagram: archData.diagram,
+            },
+            create: {
                 projectId,
                 content: archData.content,
                 highLevel: archData.highLevel,
