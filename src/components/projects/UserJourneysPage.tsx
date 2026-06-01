@@ -18,7 +18,16 @@ import { queryKeys } from "@/lib/query-client";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
-export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: any[]; projectName: string }) {
+interface Journey {
+    id: string;
+    title: string;
+    steps: string;
+    projectId: string;
+    createdAt: string | Date;
+    updatedAt: string | Date;
+}
+
+export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: Journey[]; projectName: string }) {
     const queryClient = useQueryClient();
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,7 +38,7 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
         steps: "",
     });
 
-    const { data: journeys = initialJourneys, refetch } = useQuery({
+    const { data: journeys = initialJourneys, refetch } = useQuery<Journey[]>({
         queryKey: queryKeys.projects.journeys(params.id),
         queryFn: async () => {
             const res = await fetch(`/api/projects/${params.id}/journeys`);

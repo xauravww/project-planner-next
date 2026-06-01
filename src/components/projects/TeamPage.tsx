@@ -20,11 +20,12 @@ interface Member {
     role: string;
     email: string;
     projectId: string;
-    createdAt: string;
-    updatedAt: string;
+    avatar?: string | null;
+    createdAt: string | Date;
+    updatedAt: string | Date;
 }
 
-export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: Member[]; projectName: string }) {
+export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: any[]; projectName: string }) {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);

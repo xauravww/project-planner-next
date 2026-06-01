@@ -11,7 +11,7 @@ const shakeVariants1 = {
             duration: 0.8,
             repeat: Infinity,
             repeatType: "loop" as const,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
         },
     },
 };
@@ -23,7 +23,7 @@ const shakeVariants2 = {
             duration: 1.2,
             repeat: Infinity,
             repeatType: "loop" as const,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
         },
     },
 };
@@ -35,7 +35,7 @@ const shakeVariants3 = {
             duration: 0.5,
             repeat: Infinity,
             repeatType: "loop" as const,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
         },
     },
 };
@@ -47,7 +47,7 @@ const shakeVariants4 = {
             duration: 1.5,
             repeat: Infinity,
             repeatType: "loop" as const,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
         },
     },
 };
@@ -59,7 +59,7 @@ const shakeVariants5 = {
             duration: 0.7,
             repeat: Infinity,
             repeatType: "loop" as const,
-            ease: "easeInOut",
+            ease: "easeInOut" as const,
         },
     },
 };
