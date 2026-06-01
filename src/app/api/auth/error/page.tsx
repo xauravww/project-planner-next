@@ -5,8 +5,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { AuthShell } from "@/components/auth/AuthShell";
 import { AlertTriangle, Clock } from "lucide-react";
+import { Suspense } from "react";
 
-export default function AuthErrorPage() {
+function AuthErrorContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
 
@@ -88,5 +89,21 @@ export default function AuthErrorPage() {
         </div>
       </div>
     </AuthShell>
+  );
+}
+
+export default function AuthErrorPage() {
+  return (
+    <Suspense fallback={
+      <AuthShell title="Authentication error" subtitle="Loading error details...">
+        <div className="flex flex-col items-center gap-[var(--space-xl)]">
+          <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: "var(--color-accent-red-glow)" }}>
+            <AlertTriangle className="w-7 h-7 text-[color:var(--color-accent-red)]" />
+          </div>
+        </div>
+      </AuthShell>
+    }>
+      <AuthErrorContent />
+    </Suspense>
   );
 }
