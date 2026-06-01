@@ -14,7 +14,17 @@ import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
-export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: any[]; projectName: string }) {
+interface Member {
+    id: string;
+    name: string;
+    role: string;
+    email: string;
+    projectId: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export default function TeamPage({ params, initialMembers, projectName }: { params: { id: string }; initialMembers: Member[]; projectName: string }) {
     const router = useRouter();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
@@ -26,7 +36,7 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
         email: "",
     });
 
-    const { data: members = initialMembers, refetch } = useQuery({
+    const { data: members = initialMembers, refetch } = useQuery<Member[]>({
         queryKey: queryKeys.projects.team(params.id),
         queryFn: async () => {
             const res = await fetch(`/api/projects/${params.id}/team`);
