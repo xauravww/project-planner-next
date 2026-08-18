@@ -86,7 +86,7 @@ Be thorough - include all necessary tables, fields, types, constraints, indexes,
         await prisma.architecture.update({
             where: { projectId },
             data: {
-                erDiagram: dbData.erDiagram,
+                legacyErDiagram: dbData.erDiagram,
                 databaseSchema: JSON.stringify(dbData.tables),
             },
         });
@@ -181,7 +181,7 @@ Include all CRUD operations and important workflows.`
             where: { projectId },
             data: {
                 apiSpec: JSON.stringify(apiData.endpoints),
-                sequenceDiagrams: JSON.stringify(apiData.sequenceDiagrams),
+                lldSequenceDiagrams: JSON.stringify(apiData.sequenceDiagrams),
             },
         });
 
@@ -249,7 +249,7 @@ Return ONLY a valid JSON object. STRICT RULE: Do not include any conversational 
         await prisma.architecture.update({
             where: { projectId },
             data: {
-                deploymentDiagram: deployData.deploymentDiagram,
+                legacyDeploymentDiagram: deployData.deploymentDiagram,
                 scalingStrategy: deployData.scalingStrategy,
                 securityDesign: deployData.securityDesign,
             },

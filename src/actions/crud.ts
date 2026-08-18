@@ -338,12 +338,12 @@ export async function updateArchitecture(
         highLevel?: string;
         lowLevel?: string;
         functionalDecomposition?: string;
-        systemDiagram?: string;
-        erDiagram?: string;
-        sequenceDiagrams?: string;
-        dataFlowDiagram?: string;
-        deploymentDiagram?: string;
-        componentDiagram?: string;
+        legacySystemDiagram?: string;
+        legacyErDiagram?: string;
+        lldSequenceDiagrams?: string;
+        hldDataFlowDiagram?: string;
+        legacyDeploymentDiagram?: string;
+        legacyComponentDiagram?: string;
         databaseSchema?: string;
         apiSpec?: string;
         techStack?: string;

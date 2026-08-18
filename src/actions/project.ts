@@ -433,7 +433,7 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                 highLevel: archData.highLevel,
                 lowLevel: archData.lowLevel,
                 functionalDecomposition: archData.functionalDecomposition,
-                systemDiagram: archData.diagram,
+                legacySystemDiagram: archData.diagram,
             },
             create: {
                 projectId,
@@ -441,7 +441,7 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
                 highLevel: archData.highLevel,
                 lowLevel: archData.lowLevel,
                 functionalDecomposition: archData.functionalDecomposition,
-                systemDiagram: archData.diagram,
+                legacySystemDiagram: archData.diagram,
             },
         });
 

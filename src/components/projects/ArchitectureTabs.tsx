@@ -243,7 +243,7 @@ export function ArchitectureTabs({
                             )}
                         </GlassCard>
 
-                        {architecture?.systemDiagram && (
+                        {architecture?.legacySystemDiagram && (
                             <GlassCard>
                                 <h3 className="type-h4 mb-4">System Diagram</h3>
                                 {isEditing ? (
@@ -255,8 +255,8 @@ export function ArchitectureTabs({
                                     />
                                 ) : null}
                                 <Mermaid
-                                    chart={isEditing ? formData?.diagram : architecture.systemDiagram}
-                                    onFix={(error: string) => handleFixDiagram(error, "systemDiagram", isEditing ? formData?.diagram : architecture.systemDiagram)}
+                                    chart={isEditing ? formData?.diagram : architecture.legacySystemDiagram}
+                                    onFix={(error: string) => handleFixDiagram(error, "legacySystemDiagram", isEditing ? formData?.diagram : architecture.legacySystemDiagram)}
                                 />
                             </GlassCard>
                         )}
@@ -282,7 +282,7 @@ export function ArchitectureTabs({
                 {/* Database Tab */}
                 {activeTab === "database" && (
                     <div className="space-y-6">
-                        {!architecture?.erDiagram ? (
+                        {!architecture?.legacyErDiagram ? (
                             <GlassCard className="text-center py-12">
                                 <Database className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-nebula-fg)]" />
                                 <h3 className="type-h3 mb-2">Database Schema Not Generated</h3>
@@ -312,8 +312,8 @@ export function ArchitectureTabs({
                                 <GlassCard>
                                     <h3 className="type-h4 mb-4">Entity-Relationship Diagram</h3>
                                     <Mermaid
-                                        chart={architecture.erDiagram}
-                                        onFix={(error) => handleFixDiagram(error, "erDiagram", architecture.erDiagram)}
+                                        chart={architecture.legacyErDiagram}
+                                        onFix={(error) => handleFixDiagram(error, "legacyErDiagram", architecture.legacyErDiagram)}
                                     />
                                 </GlassCard>
 
@@ -460,10 +460,10 @@ export function ArchitectureTabs({
                                 </div>
 
                                 {(() => {
-                                    if (!architecture?.sequenceDiagrams) return null;
+                                    if (!architecture?.legacySequenceDiagrams) return null;
                                     let diagrams: any[] = [];
                                     try {
-                                        diagrams = JSON.parse(architecture.sequenceDiagrams);
+                                        diagrams = JSON.parse(architecture.legacySequenceDiagrams);
                                         if (!Array.isArray(diagrams)) return null;
                                     } catch {
                                         console.error("Failed to parse sequence diagrams");
@@ -484,11 +484,11 @@ export function ArchitectureTabs({
                                                     }
 
                                                     // Update specific diagram in the array
-                                                    const diagrams = JSON.parse(architecture.sequenceDiagrams);
+                                                    const diagrams = JSON.parse(architecture.legacySequenceDiagrams);
                                                     diagrams[idx].diagram = result.diagram;
 
                                                     const updateResult = await updateArchitecture(architecture.id, {
-                                                        sequenceDiagrams: JSON.stringify(diagrams)
+                                                        lldSequenceDiagrams: JSON.stringify(diagrams)
                                                     });
 
                                                     if (updateResult.error) {
@@ -514,7 +514,7 @@ export function ArchitectureTabs({
                 {/* Deployment Tab */}
                 {activeTab === "deployment" && (
                     <div className="space-y-6">
-                        {!architecture?.deploymentDiagram ? (
+                        {!architecture?.legacyDeploymentDiagram ? (
                             <GlassCard className="text-center py-12">
                                 <Server className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-nebula-fg)]" />
                                 <h3 className="type-h3 mb-2">Deployment Architecture Not Generated</h3>
@@ -544,8 +544,8 @@ export function ArchitectureTabs({
                                 <GlassCard>
                                     <h3 className="type-h4 mb-4">Infrastructure Diagram</h3>
                                     <Mermaid
-                                        chart={architecture.deploymentDiagram}
-                                        onFix={(error: string) => handleFixDiagram(error, "deploymentDiagram", architecture.deploymentDiagram)}
+                                        chart={architecture.legacyDeploymentDiagram}
+                                        onFix={(error: string) => handleFixDiagram(error, "legacyDeploymentDiagram", architecture.legacyDeploymentDiagram)}
                                     />
                                 </GlassCard>
 

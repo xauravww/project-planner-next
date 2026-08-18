@@ -86,7 +86,7 @@ model Architecture {
   containers           String?  // JSON: C4 containers [{id, name, type, technology, responsibilities, ports}]
   contextDiagram       String?  // Mermaid: System context (C4 L1)
   containerDiagram     String?  // Mermaid: Container diagram (C4 L2)
-  dataFlowDiagram      String?  // Mermaid: Data flow (HLD)
+  hldDataFlowDiagram   String?  // Mermaid: Data flow (HLD) - renamed to avoid conflict with legacy
   dynamicDiagram       String?  // Mermaid: Runtime collaboration/sequence (HLD)
   deploymentTopology   String?  // JSON: Regions, clusters, networking (HLD)
   adrs                 String?  // JSON: Architecture Decision Records [{id, title, status, context, decision, consequences}]
@@ -94,7 +94,7 @@ model Architecture {
   // LLD Structured Data (per container)
   components           String?  // JSON: C4 components per container [{containerId, components: [...]}]
   classDiagrams        String?  // JSON: Domain models per container
-  sequenceDiagrams     String?  // JSON: API sequences per endpoint
+  lldSequenceDiagrams  String?  // JSON: API sequences per endpoint - renamed to avoid conflict with legacy
   activityDiagrams     String?  // JSON: Business logic flows
   stateMachines        String?  // JSON: State machines per entity
   timingDiagrams       String?  // JSON: Latency budgets, SLA
@@ -102,13 +102,13 @@ model Architecture {
   apiContracts         String?  // JSON: OpenAPI 3.0 per service
   deploymentSpecs      String?  // JSON: Docker/K8s per service
   
-  // Legacy diagram fields (backward compat) - renamed to avoid conflicts
-  legacySystemDiagram    String?  // Main system architecture (Mermaid)
-  legacyErDiagram        String?  // Database ER diagram (Mermaid)
-  legacySequenceDiagrams String?  // API sequence diagrams (JSON array of Mermaid diagrams)
-  legacyDataFlowDiagram  String?  // Data flow diagram (Mermaid)
-  legacyDeploymentDiagram String? // Infrastructure/deployment (Mermaid)
-  legacyComponentDiagram String?  // Component relationships (Mermaid)
+  // Legacy diagram fields (backward compat) - use @map to keep DB column names
+  legacySystemDiagram    String?  @map("systemDiagram")      // Main system architecture (Mermaid)
+  legacyErDiagram        String?  @map("erDiagram")          // Database ER diagram (Mermaid)
+  legacySequenceDiagrams String?  @map("sequenceDiagrams")   // API sequence diagrams (JSON array of Mermaid diagrams)
+  legacyDataFlowDiagram  String?  @map("dataFlowDiagram")    // Data flow diagram (Mermaid)
+  legacyDeploymentDiagram String? @map("deploymentDiagram")  // Infrastructure/deployment (Mermaid)
+  legacyComponentDiagram String?  @map("componentDiagram")   // Component relationships (Mermaid)
   
   // Other structured data
   databaseSchema       String?  // JSON: { tables: [{ name, fields, relationships }] }
