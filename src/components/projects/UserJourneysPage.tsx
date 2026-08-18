@@ -259,7 +259,7 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                                     type="text"
                                     value={formData.title}
                                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                     placeholder="e.g., User Onboarding Flow"
                                 />
                             </div>
@@ -276,7 +276,7 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                                 <textarea
                                     value={formData.steps}
                                     onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
-                                    className="w-full h-64 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors text-mono text-sm"
+                                    className="w-full h-64 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors text-mono text-sm"
                                     placeholder={`Example:\n1. User lands on homepage\n2. Clicks 'Get Started' button\n3. Completes profile setup\n4. Receives welcome email\n5. Begins using the platform`}
                                 />
                             </div>
@@ -284,7 +284,7 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                         <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
                             <div className="flex gap-3 justify-end w-full">
                                 <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                <Button variant="nebula" onClick={editingId ? handleUpdate : handleCreate} className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                <Button variant="nebula" onClick={editingId ? handleUpdate : handleCreate} className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
                                     {editingId ? "Save Changes" : "Create Journey"}
                                 </Button>
                             </div>

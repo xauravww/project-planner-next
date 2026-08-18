@@ -7,7 +7,7 @@ const token = process.env.NEXT_PUBLIC_AI_TOKEN || process.env.NEXT_PUBLIC_AI_API
 export const serverOpenai = {
     chat: {
         completions: {
-            create: async ({ messages, stream }: { messages: any[], stream?: boolean, model?: string, max_tokens?: number }) => {
+            create: async ({ messages, stream, model }: { messages: any[], stream?: boolean, model?: string, max_tokens?: number }) => {
                 const url = `${baseURL}/chat/completions`;
                 const headers: Record<string, string> = {
                     "Content-Type": "application/json",
@@ -16,8 +16,8 @@ export const serverOpenai = {
                     headers["Authorization"] = `Bearer ${token}`;
                 }
 
-                // Remove 'model' property as requested by user - server handles it
                 const body = JSON.stringify({
+                    model: model || process.env.AI_MODEL || "auto/best-chat",
                     messages,
                     stream: !!stream
                 });

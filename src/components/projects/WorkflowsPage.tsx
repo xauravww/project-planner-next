@@ -266,7 +266,7 @@ export default function WorkflowsPageClient({
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         required
-                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-[color:var(--color-accent-orange)] transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -276,7 +276,7 @@ export default function WorkflowsPageClient({
                                     <textarea
                                         value={formData.content}
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                         rows={6}
                                         required
                                         placeholder="Step 1: User logs in&#10;Step 2: User clicks dashboard..."
@@ -289,7 +289,7 @@ export default function WorkflowsPageClient({
                                     <textarea
                                         value={formData.diagram}
                                         onChange={(e) => setFormData({ ...formData, diagram: e.target.value })}
-                                        className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-mono text-[color:var(--color-nebula-fg-soft)] text-sm resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                         rows={8}
                                         placeholder="flowchart TD&#10;  A[Start] --> B[Process]&#10;  B --> C[End]"
                                     />
@@ -308,7 +308,7 @@ export default function WorkflowsPageClient({
                                         >
                                             Cancel
                                         </Button>
-                                        <Button type="submit" variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                        <Button type="submit" variant="nebula" className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
                                             {editingId ? "Update Workflow" : "Create Workflow"}
                                         </Button>
                                     </div>

@@ -222,41 +222,41 @@ export function MessageContent({ content }: { content: string }) {
                     }
 
                     return (
-                        <code className="bg-blue-500/10 px-1.5 py-0.5 rounded text-sm font-mono text-blue-300 border border-blue-500/20" {...props}>
+                        <code className="bg-[var(--color-accent-orange-glow)] px-1.5 py-0.5 rounded text-sm font-mono text-[color:var(--color-accent-orange)] border border-[var(--color-accent-orange)]/30" {...props}>
                             {children}
                         </code>
                     );
                 },
-                p: ({ children }) => <p className="mb-4 last:mb-0 leading-relaxed text-gray-200">{children}</p>,
-                ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2 text-gray-200">{children}</ul>,
-                ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-2 text-gray-200">{children}</ol>,
+                p: ({ children }) => <p className="mb-4 last:mb-0 leading-relaxed text-[color:var(--color-nebula-fg-soft)]">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-2 text-[color:var(--color-nebula-fg-soft)]">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-2 text-[color:var(--color-nebula-fg-soft)]">{children}</ol>,
                 li: ({ children }) => <li className="leading-relaxed">{children}</li>,
-                h1: ({ children }) => <h1 className="text-3xl font-bold mb-4 mt-8 text-white border-b border-white/10 pb-2">{children}</h1>,
-                h2: ({ children }) => <h2 className="text-2xl font-bold mb-3 mt-6 text-white">{children}</h2>,
-                h3: ({ children }) => <h3 className="text-xl font-semibold mb-2 mt-5 text-white">{children}</h3>,
-                h4: ({ children }) => <h4 className="text-lg font-semibold mb-2 mt-4 text-gray-100">{children}</h4>,
+                h1: ({ children }) => <h1 className="text-3xl font-bold mb-4 mt-8 text-[color:var(--color-nebula-fg)] border-b border-[var(--color-nebula-hairline-strong)] pb-2">{children}</h1>,
+                h2: ({ children }) => <h2 className="text-2xl font-bold mb-3 mt-6 text-[color:var(--color-nebula-fg)]">{children}</h2>,
+                h3: ({ children }) => <h3 className="text-xl font-semibold mb-2 mt-5 text-[color:var(--color-nebula-fg)]">{children}</h3>,
+                h4: ({ children }) => <h4 className="text-lg font-semibold mb-2 mt-4 text-[color:var(--color-charcoal)]">{children}</h4>,
                 blockquote: ({ children }) => (
-                    <blockquote className="border-l-4 border-blue-500 bg-blue-500/5 pl-4 py-2 my-4 text-gray-300 italic rounded-r">
+                    <blockquote className="border-l-2 border-[var(--color-accent-orange)] bg-[var(--color-accent-orange-glow)]/10 pl-4 py-2 my-4 text-[color:var(--color-charcoal)] italic rounded-r">
                         {children}
                     </blockquote>
                 ),
                 a: ({ href, children }) => (
-                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline underline-offset-2">
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-[color:var(--color-accent-orange)] hover:text-[color:var(--color-accent-orange)]/80 underline underline-offset-2">
                         {children}
                     </a>
                 ),
                 table: ({ children }) => (
-                    <div className="overflow-x-auto my-6 rounded-lg border border-white/10">
+                    <div className="overflow-x-auto my-6 rounded-lg border border-[var(--color-nebula-hairline-strong)]">
                         <table className="min-w-full border-collapse text-sm">
                             {children}
                         </table>
                     </div>
                 ),
-                thead: ({ children }) => <thead className="bg-white/5 border-b border-white/10">{children}</thead>,
-                tbody: ({ children }) => <tbody className="divide-y divide-white/5">{children}</tbody>,
-                tr: ({ children }) => <tr className="hover:bg-white/5 transition-colors">{children}</tr>,
-                th: ({ children }) => <th className="p-3 text-left font-semibold text-gray-200 border-r border-white/5 last:border-r-0">{children}</th>,
-                td: ({ children }) => <td className="p-3 text-gray-300 border-r border-white/5 last:border-r-0">{children}</td>,
+                thead: ({ children }) => <thead className="bg-[var(--color-surface-elevated)] border-b border-[var(--color-nebula-hairline-strong)]">{children}</thead>,
+                tbody: ({ children }) => <tbody className="divide-y divide-[var(--color-nebula-hairline-strong)]">{children}</tbody>,
+                tr: ({ children }) => <tr className="hover:bg-[var(--color-surface-elevated)] transition-colors">{children}</tr>,
+                th: ({ children }) => <th className="p-3 text-left font-semibold text-[color:var(--color-nebula-fg-soft)] border-r border-[var(--color-nebula-hairline-strong)] last:border-r-0">{children}</th>,
+                td: ({ children }) => <td className="p-3 text-[color:var(--color-charcoal)] border-r border-[var(--color-nebula-hairline-strong)] last:border-r-0">{children}</td>,
                 hr: () => <hr className="my-6 border-white/10" />,
                 strong: ({ children }) => <strong className="font-bold text-white">{children}</strong>,
                 em: ({ children }) => <em className="italic text-gray-200">{children}</em>,

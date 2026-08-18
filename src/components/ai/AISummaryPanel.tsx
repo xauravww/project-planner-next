@@ -60,15 +60,15 @@ export default function AISummaryPanel({
     };
 
     return (
-        <div className="bg-white/5 border border-white/10 rounded-lg p-6">
+        <div className="bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] p-6">
             <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-white">AI Summary</h3>
+                <h3 className="type-h4 text-[color:var(--color-nebula-fg)]">AI Summary</h3>
                 <div className="flex gap-2">
                     {!isEditing && !currentSummary && (
                         <Button
                             onClick={handleGenerate}
                             disabled={isGenerating}
-                            className="bg-gradient-to-r from-purple-600 to-pink-600"
+                            className="bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0"
                             size="sm"
                         >
                             <Sparkles className="w-4 h-4 mr-2" />
@@ -98,7 +98,7 @@ export default function AISummaryPanel({
                     )}
                     {isEditing && (
                         <>
-                            <Button onClick={handleSave} size="sm" className="bg-green-600">
+                            <Button onClick={handleSave} size="sm" className="bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0">
                                 <Save className="w-4 h-4 mr-2" />
                                 Save
                             </Button>
@@ -115,13 +115,13 @@ export default function AISummaryPanel({
                 <textarea
                     value={summary}
                     onChange={(e) => setSummary(e.target.value)}
-                    className="w-full h-32 bg-black/20 border border-white/10 rounded p-3 text-white resize-none focus:outline-none focus:border-purple-500"
+                    className="w-full h-32 bg-[var(--color-surface-deep)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)]"
                     placeholder="Write or edit the summary..."
                 />
             ) : currentSummary ? (
-                <p className="text-gray-300 text-sm leading-relaxed">{currentSummary}</p>
+                <p className="type-small text-[color:var(--color-charcoal)] leading-relaxed">{currentSummary}</p>
             ) : (
-                <p className="text-gray-500 text-sm italic">
+                <p className="type-caption italic">
                     No summary yet. Click &quot;Generate Summary&quot; to create one with AI.
                 </p>
             )}

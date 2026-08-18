@@ -439,10 +439,10 @@ function generateProjectHTML(project: any): string {
             margin-bottom: 12px;
         }
 
-        h1 { font-size: 28px; border-bottom: 3px solid #2b6cb0; padding-bottom: 8px; margin-bottom: 20px; }
-        h2 { font-size: 22px; color: #2b6cb0; margin-top: 30px; }
-        h3 { font-size: 18px; color: #2c5282; }
-        h4 { font-size: 16px; color: #2c5282; font-weight: 500; }
+        h1 { font-size: 28px; border-bottom: 3px solid #e0651a; padding-bottom: 8px; margin-bottom: 20px; }
+        h2 { font-size: 22px; color: #e0651a; margin-top: 30px; }
+        h3 { font-size: 18px; color: #e0651a; }
+        h4 { font-size: 16px; color: #e0651a; font-weight: 500; }
 
         p {
             margin-bottom: 12px;
@@ -462,7 +462,7 @@ function generateProjectHTML(project: any): string {
         }
 
         blockquote {
-            border-left: 4px solid #3182ce;
+            border-left: 3px solid #ff801f;
             padding: 12px 20px;
             margin: 20px 0;
             background: #f7fafc;
@@ -475,7 +475,7 @@ function generateProjectHTML(project: any): string {
         em { color: #4a5568; }
 
         a {
-            color: #3182ce;
+            color: #e0651a;
             text-decoration: underline;
             text-decoration-thickness: 1px;
         }
@@ -527,7 +527,7 @@ function generateProjectHTML(project: any): string {
             font-size: 42px;
             font-weight: 700;
             margin-bottom: 24px;
-            color: #2b6cb0;
+            color: #e0651a;
             text-shadow: 0 1px 2px rgba(0,0,0,0.1);
             position: relative;
             z-index: 1;
@@ -560,10 +560,10 @@ function generateProjectHTML(project: any): string {
 
         .toc h1 {
             font-size: 28px;
-            color: #2b6cb0;
+            color: #e0651a;
             margin-bottom: 40px;
             padding-bottom: 12px;
-            border-bottom: 3px solid #2b6cb0;
+            border-bottom: 3px solid #e0651a;
             text-align: center;
         }
 
@@ -572,7 +572,7 @@ function generateProjectHTML(project: any): string {
             margin: 8px 0;
             background: white;
             border-radius: 6px;
-            border-left: 4px solid #3182ce;
+            border-left: 3px solid #ff801f;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -601,7 +601,7 @@ function generateProjectHTML(project: any): string {
         }
 
         .section-header {
-            background: linear-gradient(135deg, #2b6cb0 0%, #2c5282 100%);
+            background: linear-gradient(135deg, #e0651a 0%, #e0651a 100%);
             color: white;
             padding: 24px 40px;
             margin: -40px 0 40px 0;
@@ -627,7 +627,7 @@ function generateProjectHTML(project: any): string {
 
         .subsection-title {
             font-size: 20px;
-            color: #2b6cb0;
+            color: #e0651a;
             margin-bottom: 16px;
             padding-bottom: 8px;
             border-bottom: 2px solid #bee3f8;
@@ -639,7 +639,7 @@ function generateProjectHTML(project: any): string {
             padding: 24px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-left: 4px solid #3182ce;
+            border-left: 3px solid #ff801f;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: box-shadow 0.2s ease;
@@ -698,7 +698,7 @@ function generateProjectHTML(project: any): string {
         .tech-category-title {
             font-size: 18px;
             font-weight: 600;
-            color: #2b6cb0;
+            color: #e0651a;
             margin-bottom: 16px;
             padding-bottom: 8px;
             border-bottom: 2px solid #bee3f8;
@@ -712,13 +712,13 @@ function generateProjectHTML(project: any): string {
             color: #4a5568;
             background: #f7fafc;
             border-radius: 6px;
-            border-left: 3px solid #3182ce;
+            border-left: 3px solid #ff801f;
             font-weight: 500;
         }
 
         .tech-item::before {
             content: "▸ ";
-            color: #3182ce;
+            color: #e0651a;
             font-weight: bold;
             margin-right: 4px;
         }

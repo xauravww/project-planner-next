@@ -208,8 +208,8 @@ export function ArchitectureTabs({
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-[var(--r-md)] transition-all whitespace-nowrap border-b-2 ${activeTab === tab.id
-                                ? "border-[var(--color-nebula-fg)] text-[color:var(--color-nebula-fg)]"
+                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-[var(--r-md)] transition-all whitespace-nowrap border-b border-[var(--color-nebula-hairline-strong)] ${activeTab === tab.id
+                                ? "border-[color:var(--color-accent-orange)] text-[color:var(--color-nebula-fg)]"
                                 : "border-transparent text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)]"
                                 }`}
                         >

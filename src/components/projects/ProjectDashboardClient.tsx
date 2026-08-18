@@ -171,12 +171,7 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
 
     return (
         <>
-            {/* Font import (Space Grotesk) */}
-            <style jsx global>{`
-                @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&display=swap');
-            `}</style>
-
-            <div className="relative min-h-screen" style={{ fontFamily: "'Space Grotesk', ui-sans-serif, system-ui, -apple-system" }}>
+            <div className="relative min-h-screen font-[var(--font-sans)]">
                 {/* Background */}
                 <div className="fixed inset-0 z-0 bg-[var(--color-nebula-bg)]" />
 

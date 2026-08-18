@@ -26,47 +26,47 @@ const EXPORT_STEPS = [
   {
     icon: FileText,
     title: "Gathering project data",
-    message: "🔍 Unearthing your project treasures...",
+    message: "Unearthing your project treasures...",
     duration: 2000,
   },
   {
     icon: Palette,
     title: "Building beautiful layout",
-    message: "🎨 Painting your documentation masterpiece...",
+    message: "Painting your documentation masterpiece...",
     duration: 3000,
   },
   {
     icon: BarChart3,
     title: "Rendering diagrams",
-    message: "📊 Giving life to your diagrams and charts...",
+    message: "Giving life to your diagrams and charts...",
     duration: 5000,
   },
   {
     icon: Monitor,
     title: "Processing mockups",
-    message: "🎭 Polishing your UI mockups to perfection...",
+    message: "Polishing your UI mockups to perfection...",
     duration: 4000,
   },
   {
     icon: FileCheck,
     title: "Creating PDF document",
-    message: "📋 Weaving everything into a professional PDF...",
+    message: "Weaving everything into a professional PDF...",
     duration: 8000,
   },
   {
     icon: Download,
     title: "Preparing download",
-    message: "✅ Your project export is ready to shine! ✨",
+    message: "Your project export is ready to shine!",
     duration: 1000,
   },
 ];
 
 const FUN_FACTS = [
-  "💡 Professional PDFs can include up to 100+ pages of documentation!",
-  "🎯 Your PDF will look great on any device or printer! 📱🖨️",
-  "⚡ PDFs maintain perfect formatting across all platforms!",
-  "🌟 Your documentation is about to become a masterpiece!",
-  "🚀 Ready to share your project vision with the world!",
+  "Professional PDFs can include up to 100+ pages of documentation!",
+  "Your PDF will look great on any device or printer!",
+  "PDFs maintain perfect formatting across all platforms!",
+  "Your documentation is about to become a masterpiece!",
+  "Ready to share your project vision with the world!",
 ];
 
 export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData }: PDFExportProgressProps) {
@@ -138,7 +138,7 @@ export function PDFExportProgress({ isOpen, onCancel, projectStats, progressData
           <div className="relative inline-block">
             <div className="absolute inset-0 bg-[var(--color-nebula-hairline-strong)] rounded-full animate-pulse" />
             <div className="relative w-16 h-16 rounded-full bg-[var(--color-nebula-fg)] flex items-center justify-center">
-              <IconComponent className={`w-8 h-8 text-[color:var(--color-nebula-bg)] ${currentStatus === 'completed' ? 'animate-bounce' : 'animate-spin'}`} />
+              <IconComponent className={`w-8 h-8 text-[color:var(--color-nebula-bg)] ${currentStatus === 'completed' ? 'animate-pulse' : 'animate-spin'}`} />
             </div>
           </div>
 

@@ -236,7 +236,7 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                                             type="text"
                                             value={formData.name}
                                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                             placeholder="John Doe"
                                         />
                                     </div>
@@ -246,7 +246,7 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                                             type="email"
                                             value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                             placeholder="john@example.com"
                                         />
                                     </div>
@@ -256,7 +256,7 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                                             type="text"
                                             value={formData.role}
                                             onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-indigo-500 transition-colors"
+                                            className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                             placeholder="e.g. Developer"
                                         />
                                     </div>
@@ -264,7 +264,7 @@ export default function TeamPage({ params, initialMembers, projectName }: { para
                                 <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
                                     <div className="flex gap-3 justify-end w-full">
                                         <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                        <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                        <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
                                             {editingId ? "Save Changes" : "Add Member"}
                                         </Button>
                                     </div>

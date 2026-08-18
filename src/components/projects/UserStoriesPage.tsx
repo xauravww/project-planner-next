@@ -290,7 +290,7 @@ export default function UserStoriesPageClient({
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                         required
                                         placeholder="As a user, I want to..."
-                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                        className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-[color:var(--color-accent-orange)] transition-colors"
                                     />
                                 </div>
                                 <div>
@@ -298,7 +298,7 @@ export default function UserStoriesPageClient({
                                     <textarea
                                         value={formData.content}
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                         rows={3}
                                         required
                                     />
@@ -310,7 +310,7 @@ export default function UserStoriesPageClient({
                                     <textarea
                                         value={formData.acceptanceCriteria}
                                         onChange={(e) => setFormData({ ...formData, acceptanceCriteria: e.target.value })}
-                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                         rows={4}
                                         placeholder="- User can see login button&#10;- User gets error on invalid input"
                                     />
@@ -322,7 +322,7 @@ export default function UserStoriesPageClient({
                                             <select
                                                 value={formData.priority}
                                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                                className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] appearance-none focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer"
+                                                className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-[color:var(--color-nebula-fg)] appearance-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors cursor-pointer"
                                             >
                                                 <option value="must-have" className="bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]">Must Have</option>
                                                 <option value="should-have" className="bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]">Should Have</option>
@@ -341,7 +341,7 @@ export default function UserStoriesPageClient({
                                             onChange={(e) => setFormData({ ...formData, storyPoints: Number(e.target.value) })}
                                             min={1}
                                             max={13}
-                                            className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-indigo-500 transition-colors"
+                                            className="bg-white/5 border-[var(--color-nebula-hairline-strong)] focus:border-[color:var(--color-accent-orange)] transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -365,7 +365,7 @@ export default function UserStoriesPageClient({
                                         >
                                             Cancel
                                         </Button>
-                                        <Button type="submit" variant="nebula" className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]">
+                                        <Button type="submit" variant="nebula" className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
                                             {editingId ? "Update User Story" : "Create User Story"}
                                         </Button>
                                     </div>

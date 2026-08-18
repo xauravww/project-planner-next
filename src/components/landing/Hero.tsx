@@ -30,9 +30,9 @@ export function Hero() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.3 }}
-                    className="mb-8 text-4xl font-extrabold tracking-tight text-white sm:text-6xl md:text-7xl lg:text-8xl"
+                className="mb-8 type-display-xl text-[color:var(--color-nebula-fg)] sm:text-6xl md:text-7xl lg:text-8xl"
                 >
-                    Plan Like a <span className="text-gradient">Visionary</span>
+                    Plan Like a <span className="type-italic-accent">Visionary</span>
                 </motion.h1>
 
                 <motion.p
@@ -51,7 +51,7 @@ export function Hero() {
                     className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
                 >
                     <Link href="/signup" className="w-full sm:w-auto">
-                        <Button size="lg" className="h-14 w-full sm:w-auto min-w-[200px] bg-gradient-to-r from-blue-600 to-purple-600 text-lg font-semibold hover:from-blue-700 hover:to-purple-700 border-0 shadow-lg shadow-blue-500/25 rounded-xl">
+                        <Button size="lg" className="h-14 w-full sm:w-auto min-w-[200px] bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-lg font-semibold text-[color:var(--color-nebula-bg)] border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)] rounded-xl">
                             Start Building <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </Link>

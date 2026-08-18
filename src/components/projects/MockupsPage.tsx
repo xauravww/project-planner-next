@@ -288,7 +288,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     value={prompt}
                                     onChange={(e) => setPrompt(e.target.value)}
                                     placeholder="E.g., A dark mode dashboard with sales charts and a sidebar navigation..."
-                                    className="w-full h-32 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-indigo-500 transition-colors"
+                                    className="w-full h-32 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] p-3 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
                                 />
                             </div>
                         </div>
@@ -306,7 +306,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                     variant="nebula"
                                     onClick={handleGenerate}
                                     disabled={!prompt || isGenerating}
-                                    className="px-6 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white border-0 shadow-[0_0_15px_rgba(99,102,241,0.4)] hover:shadow-[0_0_25px_rgba(99,102,241,0.6)]"
+                                    className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]"
                                 >
                                     {isGenerating ? (
                                         <>
