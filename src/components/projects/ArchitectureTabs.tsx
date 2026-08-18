@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Sparkles, Database, Code, Server as ServerIcon, FileText, Layers } from "lucide-react";
+import { Sparkles, Database, Code, Server as ServerIcon, FileText, Layers, Download, Copy, Check, Code2, Image, Settings } from "lucide-react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import Mermaid from "@/components/ui/Mermaid";
 import { generateDatabaseSection, generateAPISection, generateDeploymentSection, fixMermaidDiagram } from "@/actions/architecture-sections";
@@ -240,6 +240,114 @@ function HLDCheckItem({ label, status, count }: { label: string; status: boolean
     );
 }
 
+
+
+// Diagram Export Dropdown
+function DiagramExportMenu({ diagramCode, title, type = "mermaid" }: { 
+    diagramCode: string; 
+    title: string;
+    type?: "mermaid" | "plantuml" | "openapi";
+}) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const exportMermaid = () => {
+        const blob = new Blob([diagramCode], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title.toLowerCase().replace(/\s+/g, "-")}.mmd`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const exportPlantUML = () => {
+        // Convert Mermaid to PlantUML (basic conversion)
+        const plantUML = `@startuml
+${diagramCode}
+@enduml`;
+        const blob = new Blob([plantUML], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${title.toLowerCase().replace(/\s+/g, "-")}.puml`;
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const exportPNG = () => {
+        // Open in mermaid.live for PNG export
+        const encoded = encodeURIComponent(diagramCode);
+        window.open(`https://mermaid.live/edit#pako:${encoded}`, "_blank");
+    };
+
+    const copyToClipboard = async () => {
+        await navigator.clipboard.writeText(diagramCode);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    return (
+        <div className="relative">
+            <Button
+                variant="nebula-ghost"
+                size="sm"
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)]"
+            >
+                <Settings className="w-4 h-4" />
+            </Button>
+            
+            {isOpen && (
+                <>
+                    <div 
+                        className="fixed inset-0 z-10" 
+                        onClick={() => setIsOpen(false)} 
+                    />
+                    <div className="absolute right-0 top-full mt-1 z-20 GlassCard rounded-xl border border-[var(--color-nebula-hairline-strong)] py-1 min-w-[180px] shadow-lg">
+                        <div className="px-3 py-2 border-b border-[var(--color-nebula-hairline-strong)] text-xs text-[color:var(--color-ash)]">
+                            Export: {title}
+                        </div>
+                        <button
+                            onClick={exportMermaid}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]"
+                        >
+                            <FileText className="w-4 h-4" />
+                            Mermaid (.mmd)
+                        </button>
+                        <button
+                            onClick={exportPlantUML}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]"
+                        >
+                            <Code2 className="w-4 h-4" />
+                            PlantUML (.puml)
+                        </button>
+                        <button
+                            onClick={exportPNG}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]"
+                        >
+                            <Image className="w-4 h-4" />
+                            PNG via Mermaid Live
+                        </button>
+                        <div className="border-t border-[var(--color-nebula-hairline-strong)] my-1" />
+                        <button
+                            onClick={copyToClipboard}
+                            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-left hover:bg-[var(--color-nebula-surface)] text-[color:var(--color-nebula-fg)]"
+                        >
+                            <Copy className="w-4 h-4" />
+                            {copied ? (
+                                <>Copied! <Check className="w-4 h-4 text-[var(--color-accent-green)]" /></>
+                            ) : (
+                                <>Copy to Clipboard</>
+                            )}
+                        </button>
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
+
 export function ArchitectureTabs({
     projectId,
     architecture,
@@ -440,10 +548,17 @@ export function ArchitectureTabs({
                                         placeholder="Enter Mermaid diagram code..."
                                     />
                                 ) : null}
-                                <Mermaid
-                                    chart={isEditing ? formData?.diagram : architecture.legacySystemDiagram}
-                                    onFix={(error: string) => handleFixDiagram(error, "legacySystemDiagram", isEditing ? formData?.diagram : architecture.legacySystemDiagram)}
-                                />
+                                <div className="flex flex-col h-full">
+                                    <div className="flex items-center justify-end p-2">
+                                        <DiagramExportMenu diagramCode={isEditing ? formData?.diagram : architecture.legacySystemDiagram} title="System Diagram" />
+                                    </div>
+                                    <div className="flex-1 flex items-center justify-center p-2 overflow-auto">
+                                        <Mermaid
+                                            chart={isEditing ? formData?.diagram : architecture.legacySystemDiagram}
+                                            onFix={(error: string) => handleFixDiagram(error, "legacySystemDiagram", isEditing ? formData?.diagram : architecture.legacySystemDiagram)}
+                                        />
+                                    </div>
+                                </div>
                             </GlassCard>
                         )}
 
@@ -497,10 +612,17 @@ export function ArchitectureTabs({
                             <>
                                 <GlassCard>
                                     <h3 className="type-h4 mb-4">Entity-Relationship Diagram</h3>
-                                    <Mermaid
-                                        chart={architecture.legacyErDiagram}
-                                        onFix={(error) => handleFixDiagram(error, "legacyErDiagram", architecture.legacyErDiagram)}
-                                    />
+                                    <div className="flex flex-col h-full">
+                                        <div className="flex items-center justify-end p-2">
+                                            <DiagramExportMenu diagramCode={architecture.legacyErDiagram} title="ER Diagram" />
+                                        </div>
+                                        <div className="flex-1 flex items-center justify-center p-2 overflow-auto">
+                                            <Mermaid
+                                                chart={architecture.legacyErDiagram}
+                                                onFix={(error) => handleFixDiagram(error, "legacyErDiagram", architecture.legacyErDiagram)}
+                                            />
+                                        </div>
+                                    </div>
                                 </GlassCard>
 
                                 <div className="space-y-4">
@@ -835,8 +957,13 @@ export function ArchitectureTabs({
                                                                 </Button>
                                                             </div>
                                                             {hasClassDiagram && (
-                                                                <div className="h-48 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center">
-                                                                    <Mermaid chart={classDiagrams[containerId]} />
+                                                                <div className="h-48 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex flex-col">
+                                                                    <div className="flex items-center justify-end p-2">
+                                                                        <DiagramExportMenu diagramCode={classDiagrams[containerId]} title={`${container.name} Class Diagram`} />
+                                                                    </div>
+                                                                    <div className="flex-1 flex items-center justify-center p-2 overflow-auto">
+                                                                        <Mermaid chart={classDiagrams[containerId]} />
+                                                                    </div>
                                                                 </div>
                                                             )}
                                                         </div>
@@ -859,8 +986,13 @@ export function ArchitectureTabs({
                                                                 </Button>
                                                             </div>
                                                             {hasSequences && sequences[containerId]?.map((seq: any, i: number) => (
-                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
-                                                                    <Mermaid chart={seq.diagram} />
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex flex-col overflow-hidden">
+                                                                    <div className="flex items-center justify-end p-1">
+                                                                        <DiagramExportMenu diagramCode={seq.diagram} title={`${container.name} Sequence ${i + 1}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 flex items-center justify-center p-1 overflow-auto">
+                                                                        <Mermaid chart={seq.diagram} />
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -883,8 +1015,13 @@ export function ArchitectureTabs({
                                                                 </Button>
                                                             </div>
                                                             {hasActivities && activities[containerId]?.map((act: any, i: number) => (
-                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
-                                                                    <Mermaid chart={act.diagram} />
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex flex-col overflow-hidden">
+                                                                    <div className="flex items-center justify-end p-1">
+                                                                        <DiagramExportMenu diagramCode={act.diagram} title={`${container.name} Activity ${i + 1}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 flex items-center justify-center p-1 overflow-auto">
+                                                                        <Mermaid chart={act.diagram} />
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -907,8 +1044,13 @@ export function ArchitectureTabs({
                                                                 </Button>
                                                             </div>
                                                             {hasStates && states[containerId]?.map((st: any, i: number) => (
-                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
-                                                                    <Mermaid chart={st.diagram} />
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex flex-col overflow-hidden">
+                                                                    <div className="flex items-center justify-end p-1">
+                                                                        <DiagramExportMenu diagramCode={st.diagram} title={`${container.name} State Machine ${i + 1}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 flex items-center justify-center p-1 overflow-auto">
+                                                                        <Mermaid chart={st.diagram} />
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -931,8 +1073,13 @@ export function ArchitectureTabs({
                                                                 </Button>
                                                             </div>
                                                             {hasTiming && timing[containerId]?.map((t: any, i: number) => (
-                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
-                                                                    <Mermaid chart={t.diagram} />
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex flex-col overflow-hidden">
+                                                                    <div className="flex items-center justify-end p-1">
+                                                                        <DiagramExportMenu diagramCode={t.diagram} title={`${container.name} Timing ${i + 1}`} />
+                                                                    </div>
+                                                                    <div className="flex-1 flex items-center justify-center p-1 overflow-auto">
+                                                                        <Mermaid chart={t.diagram} />
+                                                                    </div>
                                                                 </div>
                                                             ))}
                                                         </div>
