@@ -85,7 +85,7 @@ export default function NewProjectPage() {
   }, [projectName, description]);
 
   // Generate AI suggestions - placed in circle around parent
-  const generateSuggestions = useCallback(async (parentId: string, currentNodes?: Record<string, GraphNode>) => {
+  const generateSuggestions = useCallback(async (parentId: string, currentNodes?: Record<string, GraphNode>, retryCount = 0) => {
     const nodesToUse = currentNodes || nodes;
     const parent = nodesToUse[parentId];
     if (!parent) return;
@@ -121,7 +121,7 @@ export default function NewProjectPage() {
       return newNodes;
     });
 
-    try {
+    const attemptRequest = async (attempt: number): Promise<any> => {
       const siblingContents = Object.values(nodesToUse)
         .filter((n) => n.parentId === parentId)
         .map((n) => n.content);
@@ -136,9 +136,16 @@ export default function NewProjectPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("Failed to generate suggestions");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to generate suggestions (${response.status})`);
+      }
 
-      const { suggestions } = await response.json();
+      return response.json();
+    };
+
+    try {
+      const { suggestions } = await attemptRequest(1);
 
       // Remove skeletons and add real suggestions
       setNodes((prev) => {
@@ -173,7 +180,37 @@ export default function NewProjectPage() {
       });
     } catch (error) {
       console.error("Failed to generate suggestions:", error);
-      toast.error("Failed to generate suggestions");
+      
+      // Retry logic: up to 2 retries with exponential backoff
+      if (retryCount < 2) {
+        const delay = Math.min(1000 * Math.pow(2, retryCount), 5000); // 2s, 4s, max 5s
+        toast.error(
+          `Failed to generate suggestions. Retrying (${retryCount + 1}/2)...`,
+          { duration: delay }
+        );
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
+        generateSuggestions(parentId, nodesToUse, retryCount + 1);
+        return;
+      }
+      
+      // Remove skeleton placeholders on final failure
+      setNodes((prev) => {
+        const newNodes = { ...prev };
+        skeletonIds.forEach((id) => { delete newNodes[id]; });
+        return newNodes;
+      });
+      
+      toast.error(
+        "Failed to generate suggestions after 3 attempts. Please try again.",
+        {
+          action: {
+            label: "Retry",
+            onClick: () => generateSuggestions(parentId, nodes, 0)
+          },
+          duration: 8000
+        }
+      );
     } finally {
       setGeneratingFor(null);
     }
