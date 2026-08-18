@@ -38,7 +38,8 @@ import {
   LayoutTemplate,
   ZoomIn,
   ZoomOut,
-  Maximize
+  Maximize,
+  Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import dagre from "dagre";
@@ -129,6 +130,9 @@ function BrainstormNode({ data, selected }: any) {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(node.content);
   const [isHovered, setIsHovered] = useState(false);
+  
+  // Check if this node is a temporary AI-generated placeholder (content starts with __SKELETON__)
+  const isSkeleton = node.content === "__SKELETON__";
 
   const handleEditToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -144,6 +148,34 @@ function BrainstormNode({ data, selected }: any) {
     setIsEditing(false);
   };
 
+  // Render skeleton placeholder while AI generates
+  if (isSkeleton) {
+    return (
+      <div className="relative w-72">
+        <Handle type="target" position={Position.Top} className="!w-3 !h-3 !bg-[var(--color-accent-orange)]/30 !border-2 !border-[var(--color-nebula-surface)] transition-transform hover:scale-150 z-10" />
+        <div className="relative w-72 rounded-[var(--r-xl)] border border-[var(--color-accent-orange)]/30 bg-[var(--color-surface-deep)] shadow-md overflow-hidden animate-pulse">
+          {/* Header - Drag Handle Area */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--color-accent-orange)]/10 bg-[var(--color-accent-orange)]/5">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-accent-orange)]/20 animate-pulse" />
+            <div className="h-3 bg-[var(--color-accent-orange)]/20 rounded w-20 animate-pulse" />
+          </div>
+          
+          {/* Content Area - skeleton lines */}
+          <div className="px-5 py-4 space-y-3">
+            <div className="h-4 bg-[var(--color-accent-orange)]/15 rounded w-3/4 animate-pulse" />
+            <div className="h-4 bg-[var(--color-accent-orange)]/15 rounded w-full animate-pulse" />
+            <div className="h-4 bg-[var(--color-accent-orange)]/15 rounded w-5/6 animate-pulse" />
+          </div>
+          
+          <div className="absolute -bottom-3 -right-3 w-7 h-7 bg-[var(--color-accent-orange)]/10 border border-[var(--color-accent-orange)]/20 rounded-full flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-[var(--color-accent-orange)] animate-spin" />
+          </div>
+        </div>
+        <Handle type="source" position={Position.Bottom} className="!w-3 !h-3 !bg-[var(--color-accent-orange)]/30 !border-2 !border-[var(--color-nebula-surface)]" />
+      </div>
+    );
+  }
+
   return (
     <>
       <NodeToolbar
@@ -157,8 +189,17 @@ function BrainstormNode({ data, selected }: any) {
           className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/10 rounded-lg transition-colors group relative"
           title="AI Suggest Ideas"
         >
-          <Wand2 className={cn("w-4 h-4 text-amber-300", isGenerating && "animate-pulse")} />
-          <span className="text-xs font-medium text-amber-300/90 hidden sm:inline-block">AI Ideas</span>
+          {isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 text-amber-300 animate-spin" />
+              <span className="text-xs font-medium text-amber-300/90 hidden sm:inline-block">Generating...</span>
+            </>
+          ) : (
+            <>
+              <Wand2 className={cn("w-4 h-4 text-amber-300", isGenerating && "animate-pulse")} />
+              <span className="text-xs font-medium text-amber-300/90 hidden sm:inline-block">AI Ideas</span>
+            </>
+          )}
         </button>
         <div className="w-px h-5 bg-white/10 mx-1 self-center" />
         {(["user", "feature", "problem", "solution", "goal", "constraint"] as NodeType[]).map((type) => (

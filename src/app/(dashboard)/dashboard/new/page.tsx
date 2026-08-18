@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createProjectWithAI } from "@/actions/project";
 import { useRouter } from "next/navigation";
 import { GraphBrainstorm, GraphNode, NodeType } from "@/components/brainstorm/GraphBrainstorm";
+import { AestheticLoader } from "@/components/ui/AestheticLoader";
 import { toast } from "sonner";
 
 // Initial seed with spatial positioning
@@ -91,6 +92,35 @@ export default function NewProjectPage() {
 
     setGeneratingFor(parentId);
 
+    // Show skeleton placeholders immediately (3-4 temp nodes)
+    const skeletonCount = 3;
+    const skeletonIds: string[] = [];
+    setNodes((prev) => {
+      const newNodes = { ...prev };
+      const existingChildren = Object.values(newNodes).filter((n) => n.parentId === parentId);
+      const startAngle = existingChildren.length * (Math.PI * 2 / 8);
+      const radius = 400;
+
+      for (let i = 0; i < skeletonCount; i++) {
+        const id = `${parentId}-skeleton-${Date.now()}-${i}`;
+        skeletonIds.push(id);
+        const angle = startAngle + (i * (Math.PI * 2 / skeletonCount));
+        newNodes[id] = {
+          id,
+          content: "__SKELETON__",
+          type: "feature",
+          x: parent.x + Math.cos(angle) * radius,
+          y: parent.y + Math.sin(angle) * radius,
+          parentId,
+          relatedIds: [],
+          aiGenerated: true,
+          expanded: false,
+          collapsed: false,
+        };
+      }
+      return newNodes;
+    });
+
     try {
       const siblingContents = Object.values(nodesToUse)
         .filter((n) => n.parentId === parentId)
@@ -110,9 +140,12 @@ export default function NewProjectPage() {
 
       const { suggestions } = await response.json();
 
-      // Add suggestions in circle formation around parent
+      // Remove skeletons and add real suggestions
       setNodes((prev) => {
         const newNodes = { ...prev };
+        // Remove skeleton placeholders
+        skeletonIds.forEach((id) => { delete newNodes[id]; });
+
         const existingChildren = Object.values(newNodes).filter((n) => n.parentId === parentId);
         const startAngle = existingChildren.length * (Math.PI * 2 / 8);
         const radius = 400;
@@ -446,6 +479,13 @@ export default function NewProjectPage() {
   // Step 3: Review - Editorial style
   return (
     <div className="min-h-screen bg-[var(--color-nebula-bg)] flex flex-col">
+      {/* Creating overlay */}
+      {isCreating && (
+        <div className="fixed inset-0 z-50 bg-[var(--color-nebula-bg)]/80 backdrop-blur-sm flex flex-col items-center justify-center">
+          <AestheticLoader message="Assembling your project..." />
+        </div>
+      )}
+
       {/* Minimal nav */}
       <div className="px-6 py-6">
         <button
