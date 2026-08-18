@@ -3,16 +3,16 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Sparkles, Database, Code, Server as ServerIcon, FileText } from "lucide-react";
+import { Sparkles, Database, Code, Server as ServerIcon, FileText, Layers } from "lucide-react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import Mermaid from "@/components/ui/Mermaid";
 import { generateDatabaseSection, generateAPISection, generateDeploymentSection, fixMermaidDiagram } from "@/actions/architecture-sections";
 import { generateHLD, generateLLD, approveHLD, approveLLD } from "@/actions/project";
 import { updateArchitecture } from "@/actions/crud";
-import { Loader2, CheckCircle2, XCircle, RefreshCw, Zap, Layout, GitBranch, Server, Layers, Hexagon } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, RefreshCw, Zap, Layout, GitBranch, Server, Hexagon } from "lucide-react";
 import { toast } from "sonner";
 
-type Tab = "overview" | "database" | "api" | "deployment";
+type Tab = "overview" | "database" | "api" | "components" | "deployment";
 
 interface DatabaseTable {
     name: string;
@@ -109,7 +109,10 @@ const parseContent = (content: string | null | undefined, depth = 0): string => 
 
 // Skeleton loaders for progressive loading
 function SkeletonCard() {
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <GlassCard className="animate-pulse">
             <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-3/4 mb-4" />
             <div className="space-y-3">
@@ -122,7 +125,10 @@ function SkeletonCard() {
 }
 
 function SkeletonMermaid() {
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <GlassCard className="animate-pulse">
             <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-2/4 mb-4" />
             <div className="aspect-video bg-[var(--color-nebula-hairline)] rounded" />
@@ -131,7 +137,10 @@ function SkeletonMermaid() {
 }
 
 function SkeletonDiagram({ title }: { title: string }) {
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <GlassCard className="animate-pulse">
             <div className="h-5 bg-[var(--color-nebula-hairline)] rounded w-1/3 mb-4" />
             <div className="aspect-video bg-[var(--color-nebula-hairline)] rounded" />
@@ -161,7 +170,10 @@ function HLDReviewGate({ architecture, projectId, onApprove, onRequestChanges }:
     if (hldStatus === "approved") return null;
     if (hldStatus === "draft" && !isComplete) return null;
 
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <GlassCard className="border-[var(--color-accent-yellow)] bg-[var(--color-accent-yellow-glow)]">
             <div className="flex items-start gap-4">
                 <div className="p-2 rounded-lg bg-[var(--color-accent-yellow)]/20 border border-[var(--color-accent-yellow)]">
@@ -209,7 +221,10 @@ function HLDReviewGate({ architecture, projectId, onApprove, onRequestChanges }:
 }
 
 function HLDCheckItem({ label, status, count }: { label: string; status: boolean; count?: number }) {
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <div className={`p-3 rounded-lg text-center ${
             status ? "bg-[var(--color-accent-green)]/10 border border-[var(--color-accent-green)]/30" 
                    : "bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)]"
@@ -272,6 +287,7 @@ export function ArchitectureTabs({
         { id: "overview", label: "Overview", icon: FileText },
         { id: "database", label: "Database", icon: Database },
         { id: "api", label: "API", icon: Code },
+        { id: "components", label: "Components", icon: Layers },
         { id: "deployment", label: "Deployment", icon: ServerIcon },
     ];
 
@@ -291,6 +307,48 @@ export function ArchitectureTabs({
             }
         } catch (error) {
             toast.error("Failed to generate section");
+        } finally {
+            setIsGenerating(null);
+        }
+    };
+
+    // Generate LLD for a specific container
+    const handleGenerateLLDForContainer = async (containerId: string) => {
+        setIsGenerating(`components-${containerId}`);
+        try {
+            const result = await generateLLD(projectId, containerId);
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success(`Components generated for container!`);
+                window.location.reload();
+            }
+        } catch (error) {
+            toast.error("Failed to generate components");
+        } finally {
+            setIsGenerating(null);
+        }
+    };
+
+    // Generate components for all containers
+    const handleGenerateComponents = async () => {
+        setIsGenerating("components");
+        try {
+            const containers = architecture.containers ? JSON.parse(architecture.containers) : [];
+            for (const container of containers) {
+                setIsGenerating(`components-${container.id}`);
+                const result = await generateLLD(projectId, container.id);
+                if (result.error) {
+                    toast.error(`Failed for ${container.name}: ${result.error}`);
+                } else {
+                    toast.success(`Generated for ${container.name}`);
+                }
+            }
+            setIsGenerating("components");
+            toast.success("All containers processed!");
+            window.location.reload();
+        } catch (error) {
+            toast.error("Failed to generate components");
         } finally {
             setIsGenerating(null);
         }
@@ -320,13 +378,19 @@ export function ArchitectureTabs({
         }
     })();
 
-    return (
+
+
+    // Generate LLD for a specific container
+        return (
         <div className="space-y-6 overflow-x-hidden w-full h-full p-4 sm:p-6">
             {/* Tab Navigation */}
             <div className="flex gap-1 sm:gap-2 nebula-hairline-b pb-4 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
                 {tabs.map((tab) => {
                     const Icon = tab.icon;
-                    return (
+                
+
+    // Generate LLD for a specific container
+        return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
@@ -630,6 +694,280 @@ export function ArchitectureTabs({
                                 )); })()}
                             </>
                         )}
+                    </div>
+                )}
+
+
+
+                {/* Components Tab */}
+                {activeTab === "components" && (
+                    <div className="space-y-6">
+                        {(() => {
+                            if (!architecture?.components) return (
+                                <GlassCard className="text-center py-12">
+                                    <Layers className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-accent-orange)]" />
+                                    <h3 className="type-h3 mb-2">Component Design Not Generated</h3>
+                                    <p className="type-body text-[color:var(--color-charcoal)] mb-6">
+                                        Generate detailed component diagrams, class models, and API sequences for each service
+                                    </p>
+                                    <Button
+                                        onClick={() => handleGenerateComponents()}
+                                        disabled={isGenerating === "components"}
+                                        variant="nebula"
+                                    >
+                                        {isGenerating === "components" ? (
+                                            <>
+                                                <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                                                Generating Components...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="w-4 h-4 mr-2" />
+                                                Generate Components
+                                            </>
+                                        )}
+                                    </Button>
+                                </GlassCard>
+                            );
+
+                            const containers = architecture.containers ? JSON.parse(architecture.containers) : [];
+                            if (containers.length === 0) return (
+                                <GlassCard className="text-center py-12">
+                                    <Layers className="w-12 h-12 mx-auto mb-4 text-[color:var(--color-accent-orange)]" />
+                                    <h3 className="type-h3 mb-2">No Containers Defined</h3>
+                                    <p className="type-body text-[color:var(--color-charcoal)] mb-6">
+                                        Generate HLD first to define containers, then generate components for each.
+                                    </p>
+                                    <Button variant="nebula-ghost" onClick={() => setActiveTab("overview")}>
+                                        Go to Overview
+                                    </Button>
+                                </GlassCard>
+                            );
+
+                        
+
+    // Generate LLD for a specific container
+        return (
+                                <div className="space-y-6">
+                                    <div className="flex items-center justify-between">
+                                        <h3 className="type-h3">Components ({containers.length} containers)</h3>
+                                        <Button
+                                            onClick={() => handleGenerateComponents()}
+                                            disabled={isGenerating === "components"}
+                                            variant="nebula"
+                                        >
+                                            {isGenerating === "components" ? (
+                                                <>
+                                                    <Sparkles className="w-4 h-4 mr-2 animate-spin" />
+                                                    Regenerating All...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <RefreshCw className="w-4 h-4 mr-2" />
+                                                    Regenerate All Components
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                        {containers.map((container: any) => {
+                                            const containerId = container.id;
+                                            const classDiagrams = architecture.classDiagrams ? JSON.parse(architecture.classDiagrams) : {};
+                                            const sequences = architecture.lldSequenceDiagrams ? JSON.parse(architecture.lldSequenceDiagrams) : {};
+                                            const activities = architecture.activityDiagrams ? JSON.parse(architecture.activityDiagrams) : {};
+                                            const states = architecture.stateMachines ? JSON.parse(architecture.stateMachines) : {};
+                                            const timing = architecture.timingDiagrams ? JSON.parse(architecture.timingDiagrams) : {};
+                                            const apiContracts = architecture.apiContracts ? JSON.parse(architecture.apiContracts) : {};
+
+                                            const hasClassDiagram = classDiagrams[containerId];
+                                            const hasSequences = sequences[containerId] && sequences[containerId].length > 0;
+                                            const hasActivities = activities[containerId] && activities[containerId].length > 0;
+                                            const hasStates = states[containerId] && states[containerId].length > 0;
+                                            const hasTiming = timing[containerId] && timing[containerId].length > 0;
+                                            const hasApiContract = apiContracts[containerId];
+
+                                        
+
+    // Generate LLD for a specific container
+        return (
+                                                <GlassCard key={containerId} className="flex flex-col h-full">
+                                                    <div className="flex items-start justify-between mb-4">
+                                                        <div>
+                                                            <h4 className="type-h4">{container.name}</h4>
+                                                            <p className="type-small text-[color:var(--color-charcoal)]">{container.type} • {container.technology}</p>
+                                                        </div>
+                                                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                                            hasClassDiagram || hasSequences || hasActivities 
+                                                                ? "bg-[var(--color-accent-green)]/20 text-[var(--color-accent-green)] border border-[var(--color-accent-green)]/30"
+                                                                : "bg-[var(--color-nebula-surface)] text-[color:var(--color-ash)] border border-[var(--color-nebula-hairline-strong)]"
+                                                        }`}>
+                                                            {hasClassDiagram || hasSequences || hasActivities ? "Generated" : "Pending"}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex-1 space-y-3 overflow-y-auto">
+                                                        {/* Class Diagram */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasClassDiagram 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">Class Diagram</span>
+                                                                <Button
+                                                                    variant={hasClassDiagram ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasClassDiagram ? (
+                                                                        <>
+                                                                            <CheckCircle2 className="w-3 h-3 mr-1" />
+                                                                            View
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <Zap className="w-3 h-3 mr-1" />
+                                                                            Generate
+                                                                        </>
+                                                                    )}
+                                                                </Button>
+                                                            </div>
+                                                            {hasClassDiagram && (
+                                                                <div className="h-48 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center">
+                                                                    <Mermaid chart={classDiagrams[containerId]} />
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Sequence Diagrams */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasSequences 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">Sequences ({sequences[containerId]?.length || 0})</span>
+                                                                <Button
+                                                                    variant={hasSequences ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasSequences ? <CheckCircle2 className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+                                                                </Button>
+                                                            </div>
+                                                            {hasSequences && sequences[containerId]?.map((seq: any, i: number) => (
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
+                                                                    <Mermaid chart={seq.diagram} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Activity Diagrams */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasActivities 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">Activities ({activities[containerId]?.length || 0})</span>
+                                                                <Button
+                                                                    variant={hasActivities ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasActivities ? <CheckCircle2 className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+                                                                </Button>
+                                                            </div>
+                                                            {hasActivities && activities[containerId]?.map((act: any, i: number) => (
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
+                                                                    <Mermaid chart={act.diagram} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* State Machines */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasStates 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">State Machines ({states[containerId]?.length || 0})</span>
+                                                                <Button
+                                                                    variant={hasStates ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasStates ? <CheckCircle2 className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+                                                                </Button>
+                                                            </div>
+                                                            {hasStates && states[containerId]?.map((st: any, i: number) => (
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
+                                                                    <Mermaid chart={st.diagram} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* Timing Diagrams */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasTiming 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">Timing/SLA ({timing[containerId]?.length || 0})</span>
+                                                                <Button
+                                                                    variant={hasTiming ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasTiming ? <CheckCircle2 className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+                                                                </Button>
+                                                            </div>
+                                                            {hasTiming && timing[containerId]?.map((t: any, i: number) => (
+                                                                <div key={i} className="h-32 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center overflow-hidden">
+                                                                    <Mermaid chart={t.diagram} />
+                                                                </div>
+                                                            ))}
+                                                        </div>
+
+                                                        {/* API Contract */}
+                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                            hasApiContract 
+                                                                ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
+                                                                : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
+                                                        }`}>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className="type-small font-medium">API Contract</span>
+                                                                <Button
+                                                                    variant={hasApiContract ? "nebula" : "nebula-ghost"}
+                                                                    size="sm"
+                                                                    onClick={() => handleGenerateLLDForContainer(containerId)}
+                                                                    disabled={isGenerating === `components-${containerId}`}
+                                                                >
+                                                                    {hasApiContract ? <CheckCircle2 className="w-3 h-3" /> : <Zap className="w-3 h-3" />}
+                                                                </Button>
+                                                            </div>
+                                                            {hasApiContract && (
+                                                                <div className="h-48 bg-[var(--color-surface-deep)] rounded border border-[var(--color-nebula-hairline-strong)] overflow-auto p-2 text-xs font-mono">
+                                                                    <pre>{JSON.stringify(apiContracts[containerId], null, 2)}</pre>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </GlassCard>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })()}
                     </div>
                 )}
 
