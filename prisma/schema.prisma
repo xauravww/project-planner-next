@@ -68,31 +68,59 @@ model Architecture {
   projectId String   @unique
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   
+  // Generation metadata
+  architecturalStyle   String?   @default("modular-monolith")  // "microservices" | "modular-monolith" | "serverless" | "event-driven" | "layered" | "clean" | "hexagonal"
+  generationVersion    Int       @default(2)
+  hldApprovedAt        DateTime?
+  lldApprovedAt        DateTime?
+  hldStatus            String    @default("draft")  // "draft" | "generating" | "review" | "approved"
+  lldStatus            String    @default("draft")
+  
   // Core content (generated initially)
   content   String   // Overview and summary
   highLevel String?  // High-level architecture description
   lowLevel  String?  // Low-level component details
   functionalDecomposition String?  // Functional breakdown
   
-  // Diagram fields (generated on-demand)
-  systemDiagram      String?  // Main system architecture (Mermaid)
-  erDiagram          String?  // Database ER diagram (Mermaid)
-  sequenceDiagrams   String?  // API sequence diagrams (JSON array of Mermaid diagrams)
-  dataFlowDiagram    String?  // Data flow diagram (Mermaid)
-  deploymentDiagram  String?  // Infrastructure/deployment (Mermaid)
-  componentDiagram   String?  // Component relationships (Mermaid)
+  // HLD Structured Data
+  containers           String?  // JSON: C4 containers [{id, name, type, technology, responsibilities, ports}]
+  contextDiagram       String?  // Mermaid: System context (C4 L1)
+  containerDiagram     String?  // Mermaid: Container diagram (C4 L2)
+  dataFlowDiagram      String?  // Mermaid: Data flow (HLD)
+  dynamicDiagram       String?  // Mermaid: Runtime collaboration/sequence (HLD)
+  deploymentTopology   String?  // JSON: Regions, clusters, networking (HLD)
+  adrs                 String?  // JSON: Architecture Decision Records [{id, title, status, context, decision, consequences}]
   
-  // Structured data (generated on-demand)
-  databaseSchema String?  // JSON: { tables: [{ name, fields, relationships }] }
-  apiSpec        String?  // JSON: { endpoints: [{ method, path, request, response }] }
-  techStack      String?  // JSON: { frontend, backend, database, infrastructure }
-   securityDesign String?  // Security architecture details
-   scalingStrategy String?  // Scalability approach
-
-   embedding String?  // Shared embedding for all sections
-   embedding_vector Unsupported("vector(384)")?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // LLD Structured Data (per container)
+  components           String?  // JSON: C4 components per container [{containerId, components: [...]}]
+  classDiagrams        String?  // JSON: Domain models per container
+  sequenceDiagrams     String?  // JSON: API sequences per endpoint
+  activityDiagrams     String?  // JSON: Business logic flows
+  stateMachines        String?  // JSON: State machines per entity
+  timingDiagrams       String?  // JSON: Latency budgets, SLA
+  databaseSchemas      String?  // JSON: ERD per service [{containerId, tables: [...]}]
+  apiContracts         String?  // JSON: OpenAPI 3.0 per service
+  deploymentSpecs      String?  // JSON: Docker/K8s per service
+  
+  // Legacy diagram fields (backward compat) - renamed to avoid conflicts
+  legacySystemDiagram    String?  // Main system architecture (Mermaid)
+  legacyErDiagram        String?  // Database ER diagram (Mermaid)
+  legacySequenceDiagrams String?  // API sequence diagrams (JSON array of Mermaid diagrams)
+  legacyDataFlowDiagram  String?  // Data flow diagram (Mermaid)
+  legacyDeploymentDiagram String? // Infrastructure/deployment (Mermaid)
+  legacyComponentDiagram String?  // Component relationships (Mermaid)
+  
+  // Other structured data
+  databaseSchema       String?  // JSON: { tables: [{ name, fields, relationships }] }
+  apiSpec              String?  // JSON: { endpoints: [{ method, path, request, response }] }
+  techStack            String?  // JSON: { frontend, backend, database, infrastructure }
+  securityDesign       String?  // Security architecture details
+  scalingStrategy      String?  // Scalability approach
+  
+  embedding            String?  // Shared embedding for all sections
+  embedding_vector     Unsupported("vector(384)")?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model Workflow {

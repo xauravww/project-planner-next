@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2 } from "lucide-react";
+import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateArchitecture } from "@/actions/project";
 import { updateArchitecture, deleteArchitecture } from "@/actions/crud";
@@ -135,20 +135,41 @@ export default function ArchitecturePageClient({
                         </div>
                         <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
                             {!architecture ? (
-                                <Button
-                                    variant="nebula-ghost"
-                                    onClick={handleGenerateClick}
-                                    disabled={aiGenerateMutation.isPending}
-                                    className="text-sm px-4 py-2"
-                                >
-                                    {aiGenerateMutation.isPending ? (
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    ) : (
-                                        <Sparkles className="w-4 h-4 mr-2" />
-                                    )}
-                                    <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
-                                    <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
-                                </Button>
+                                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                                    <Button
+                                        variant="nebula-ghost"
+                                        onClick={handleGenerateClick}
+                                        disabled={aiGenerateMutation.isPending}
+                                        className="text-sm px-4 py-2"
+                                    >
+                                        {aiGenerateMutation.isPending ? (
+                                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                        ) : (
+                                            <Sparkles className="w-4 h-4 mr-2" />
+                                        )}
+                                        <span className="hidden sm:inline">{aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}</span>
+                                        <span className="sm:hidden">{aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}</span>
+                                    </Button>
+                                    <Button
+                                        variant="nebula"
+                                        onClick={() => {
+                                            setIsEditing(true);
+                                            // Initialize empty architecture in edit mode
+                                            setFormData({
+                                                content: "",
+                                                highLevel: "",
+                                                lowLevel: "",
+                                                functionalDecomposition: "",
+                                                diagram: "",
+                                            });
+                                        }}
+                                        className="text-sm px-4 py-2"
+                                    >
+                                        <Plus className="w-4 h-4 mr-2" />
+                                        <span className="hidden sm:inline">Create Manually</span>
+                                        <span className="sm:hidden">Manual</span>
+                                    </Button>
+                                </div>
                             ) : (
                                 <>
                                     {isEditing ? (
