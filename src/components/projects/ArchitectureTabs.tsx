@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Sparkles, Database, Code, Server, FileText } from "lucide-react";
+import { Sparkles, Database, Code, Server as ServerIcon, FileText } from "lucide-react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import Mermaid from "@/components/ui/Mermaid";
 import { generateDatabaseSection, generateAPISection, generateDeploymentSection, fixMermaidDiagram } from "@/actions/architecture-sections";
+import { generateHLD, generateLLD, approveHLD, approveLLD } from "@/actions/project";
 import { updateArchitecture } from "@/actions/crud";
+import { Loader2, CheckCircle2, XCircle, RefreshCw, Zap, Layout, GitBranch, Server, Layers, Hexagon } from "lucide-react";
 import { toast } from "sonner";
 
 type Tab = "overview" | "database" | "api" | "deployment";
@@ -103,6 +105,126 @@ const parseContent = (content: string | null | undefined, depth = 0): string => 
     }
 };
 
+
+
+// Skeleton loaders for progressive loading
+function SkeletonCard() {
+    return (
+        <GlassCard className="animate-pulse">
+            <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-3/4 mb-4" />
+            <div className="space-y-3">
+                <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-full" />
+                <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-5/6" />
+                <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-2/3" />
+            </div>
+        </GlassCard>
+    );
+}
+
+function SkeletonMermaid() {
+    return (
+        <GlassCard className="animate-pulse">
+            <div className="h-4 bg-[var(--color-nebula-hairline)] rounded w-2/4 mb-4" />
+            <div className="aspect-video bg-[var(--color-nebula-hairline)] rounded" />
+        </GlassCard>
+    );
+}
+
+function SkeletonDiagram({ title }: { title: string }) {
+    return (
+        <GlassCard className="animate-pulse">
+            <div className="h-5 bg-[var(--color-nebula-hairline)] rounded w-1/3 mb-4" />
+            <div className="aspect-video bg-[var(--color-nebula-hairline)] rounded" />
+        </GlassCard>
+    );
+}
+
+// HLD Review Gate Component
+function HLDReviewGate({ architecture, projectId, onApprove, onRequestChanges }: { 
+    architecture: any; 
+    projectId: string;
+    onApprove: () => void;
+    onRequestChanges: () => void;
+}) {
+    const hldStatus = architecture?.hldStatus || "draft";
+    const containers = architecture?.containers ? JSON.parse(architecture.containers) : [];
+    const hasContainers = containers.length > 0;
+    const hasContextDiagram = !!architecture?.contextDiagram;
+    const hasContainerDiagram = !!architecture?.containerDiagram;
+    const hasDataFlow = !!architecture?.hldDataFlowDiagram;
+    const hasDynamic = !!architecture?.dynamicDiagram;
+    const hasDeploymentTopology = !!architecture?.deploymentTopology;
+    const hasADRs = architecture?.adrs && JSON.parse(architecture.adrs).length > 0;
+    
+    const isComplete = hasContainers && hasContextDiagram && hasContainerDiagram;
+    
+    if (hldStatus === "approved") return null;
+    if (hldStatus === "draft" && !isComplete) return null;
+
+    return (
+        <GlassCard className="border-[var(--color-accent-yellow)] bg-[var(--color-accent-yellow-glow)]">
+            <div className="flex items-start gap-4">
+                <div className="p-2 rounded-lg bg-[var(--color-accent-yellow)]/20 border border-[var(--color-accent-yellow)]">
+                    <Zap className="w-5 h-5 text-[var(--color-accent-yellow)]" />
+                </div>
+                <div className="flex-1">
+                    <h3 className="type-h4 text-[var(--color-accent-yellow)]">HLD Ready for Review</h3>
+                    <p className="type-small text-[color:var(--color-charcoal)] mt-1">
+                        High-Level Design has been generated. Review the diagrams below before proceeding to Low-Level Design.
+                    </p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                        <HLDCheckItem label="Containers" status={hasContainers} count={containers.length} />
+                        <HLDCheckItem label="Context Diagram" status={hasContextDiagram} />
+                        <HLDCheckItem label="Container Diagram" status={hasContainerDiagram} />
+                        <HLDCheckItem label="Data Flow" status={hasDataFlow} />
+                        <HLDCheckItem label="Dynamic/Sequence" status={hasDynamic} />
+                        <HLDCheckItem label="Deployment Topology" status={hasDeploymentTopology} />
+                        <HLDCheckItem label="ADRs" status={hasADRs} />
+                    </div>
+                    
+                    <div className="flex gap-3 mt-4">
+                        <Button 
+                            variant="nebula" 
+                            onClick={onApprove}
+                            disabled={!isComplete}
+                            className="flex-1"
+                        >
+                            <CheckCircle2 className="w-4 h-4 mr-2" />
+                            Approve & Continue to LLD
+                        </Button>
+                        <Button 
+                            variant="nebula-ghost" 
+                            onClick={onRequestChanges}
+                            className="flex-1 border-[var(--color-accent-yellow)] text-[var(--color-accent-yellow)] hover:bg-[var(--color-accent-yellow-glow)]"
+                        >
+                            <XCircle className="w-4 h-4 mr-2" />
+                            Request Changes
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </GlassCard>
+    );
+}
+
+function HLDCheckItem({ label, status, count }: { label: string; status: boolean; count?: number }) {
+    return (
+        <div className={`p-3 rounded-lg text-center ${
+            status ? "bg-[var(--color-accent-green)]/10 border border-[var(--color-accent-green)]/30" 
+                   : "bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)]"
+        }`}>
+            <div className={`flex items-center justify-center gap-1 mb-1 ${
+                status ? "text-[var(--color-accent-green)]" : "text-[color:var(--color-ash)]"
+            }`}>
+                {status ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                {count !== undefined && <span className="text-xs">({count})</span>}
+            </div>
+            <span className="text-xs font-medium">{label}</span>
+        </div>
+    );
+}
+
 export function ArchitectureTabs({
     projectId,
     architecture,
@@ -150,7 +272,7 @@ export function ArchitectureTabs({
         { id: "overview", label: "Overview", icon: FileText },
         { id: "database", label: "Database", icon: Database },
         { id: "api", label: "API", icon: Code },
-        { id: "deployment", label: "Deployment", icon: Server },
+        { id: "deployment", label: "Deployment", icon: ServerIcon },
     ];
 
     const handleGenerateSection = async (section: "database" | "api" | "deployment") => {
