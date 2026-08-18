@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { generateArchitecture } from "@/actions/project";
+import { generateArchitecture, generateHLD, generateLLD, approveHLD, approveLLD } from "@/actions/project";
 import { updateArchitecture, deleteArchitecture } from "@/actions/crud";
 import { MessageContent } from "@/components/chat/MessageContent";
 import CanvasViewer from "@/components/ui/CanvasViewer";
@@ -83,26 +83,27 @@ export default function ArchitecturePageClient({
     });
 
     const aiGenerateMutation = useMutation({
-        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateArchitecture(project.id, answers),
+        mutationFn: ({ answers, style }: { answers: Array<{ question: string; selected: string[] }>; style?: string }) => 
+            generateHLD(project.id, answers, style),
         onSuccess: async (result) => {
             if (result.success) {
-                toast.success("Architecture generated");
+                toast.success("High-Level Design generated. Review and approve to proceed to Low-Level Design.");
                 setIsAIModalOpen(false);
                 // Refetch to update UI
                 await refetch();
             } else {
-                toast.error(result.error || "Failed to generate architecture");
+                toast.error(result.error || "Failed to generate HLD");
             }
         },
-        onError: () => toast.error("Failed to generate architecture"),
+        onError: () => toast.error("Failed to generate HLD"),
     });
 
     const handleGenerateClick = () => {
         setIsAIModalOpen(true);
     };
 
-    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        await aiGenerateMutation.mutateAsync(answers);
+    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>, style?: string) => {
+        await aiGenerateMutation.mutateAsync({ answers, style });
     };
 
     const handleSave = async () => {

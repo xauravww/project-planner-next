@@ -455,6 +455,295 @@ export async function generateArchitecture(projectId: string, qaPairs?: Array<{ 
     }
 }
 
+// ============================================================================
+// NEW: Phased Architecture Generation - HLD (High-Level Design)
+// ============================================================================
+export async function generateHLD(
+    projectId: string, 
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    architecturalStyle?: string
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: { id: projectId, userId: (session.user as any).id },
+            include: {
+                requirements: true,
+                userStories: true,
+                techStack: true,
+                workflows: true,
+                personas: true,
+                userJourneys: true,
+            },
+        });
+
+        if (!project) {
+            return { error: "Project not found" };
+        }
+
+        const style = architecturalStyle || "modular-monolith";
+        
+        // Build context from workspace
+        const requirementsCtx = project.requirements.map(r => `- ${r.title}: ${r.content}`).join("\n");
+        const storiesCtx = project.userStories.map(s => `- ${s.title}: ${s.content}`).join("\n");
+        const workflowsCtx = project.workflows.map(w => `- ${w.title}: ${w.content}`).join("\n");
+        const techStackCtx = project.techStack 
+            ? `Frontend: ${project.techStack.frontend}, Backend: ${project.techStack.backend}, Database: ${project.techStack.database}, DevOps: ${project.techStack.devops}`
+            : "";
+        const personasCtx = project.personas.map(p => `- ${p.name} (${p.role}): ${p.bio}`).join("\n");
+        const journeysCtx = project.userJourneys.map(j => `- ${j.title}: ${j.steps}`).join("\n");
+
+        const qaContext = qaPairs 
+            ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n\n")}\n\n`
+            : "";
+
+        const systemPrompt = `You are a software architect. Generate HIGH-LEVEL DESIGN (HLD) only.
+Return ONLY a valid JSON object with the following fields:
+- 'content': Overview and design decisions (markdown)
+- 'highLevel': High-level architecture description (markdown)
+- 'containers': JSON array of C4 containers [{id, name, type, technology, responsibilities, ports}]
+- 'contextDiagram': Mermaid C4 system context diagram
+- 'containerDiagram': Mermaid C4 container diagram  
+- 'dataFlowDiagram': Mermaid data flow diagram (HLD)
+- 'dynamicDiagram': Mermaid runtime collaboration/sequence diagram (key user journeys)
+- 'deploymentTopology': JSON {regions, clusters, networking, dns}
+- 'adrs': JSON array of ADRs [{id, title, status, context, decision, consequences}]
+
+ARCHITECTURAL STYLE: ${style}
+Apply patterns appropriate for this style.
+
+STRICT MERMAID RULES:
+1. Wrap ALL node labels in double quotes (e.g., id["Label Text"])
+2. Use standard arrow syntax: A -->|Label| B. NEVER use A -->|Label|> B.
+3. Do not use special characters or spaces in node IDs (use alphanumeric CamelCase).
+4. Do not wrap diagrams in markdown code blocks.
+
+STRICT RULE: Return pure JSON output. No conversational text.`;
+
+        const response = await serverOpenai.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\nArchitectural Style: ${style}\n\n${techStackCtx}\n\nRequirements:\n${requirementsCtx}\n\nUser Stories:\n${storiesCtx}\n\nWorkflows:\n${workflowsCtx}\n\nPersonas:\n${personasCtx}\n\nUser Journeys:\n${journeysCtx}\n\n${qaContext}Generate HLD only.`,
+                },
+            ],
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "{}";
+        const hldData = JSON.parse(aiResponse);
+
+        // Update architecture with HLD data
+        await prisma.architecture.upsert({
+            where: { projectId },
+            update: {
+                content: hldData.content,
+                highLevel: hldData.highLevel,
+                containers: JSON.stringify(hldData.containers || []),
+                contextDiagram: hldData.contextDiagram,
+                containerDiagram: hldData.containerDiagram,
+                hldDataFlowDiagram: hldData.dataFlowDiagram,
+                dynamicDiagram: hldData.dynamicDiagram,
+                deploymentTopology: JSON.stringify(hldData.deploymentTopology || {}),
+                adrs: JSON.stringify(hldData.adrs || []),
+                architecturalStyle: style,
+                generationVersion: 2,
+                hldStatus: "review",
+            },
+            create: {
+                projectId,
+                content: hldData.content,
+                highLevel: hldData.highLevel,
+                containers: JSON.stringify(hldData.containers || []),
+                contextDiagram: hldData.contextDiagram,
+                containerDiagram: hldData.containerDiagram,
+                hldDataFlowDiagram: hldData.dataFlowDiagram,
+                dynamicDiagram: hldData.dynamicDiagram,
+                deploymentTopology: JSON.stringify(hldData.deploymentTopology || {}),
+                adrs: JSON.stringify(hldData.adrs || []),
+                architecturalStyle: style,
+                generationVersion: 2,
+                hldStatus: "review",
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/architecture`);
+        return { success: true };
+    } catch (_error) {
+        console.error("Generate HLD error:", _error);
+        return { error: "Failed to generate HLD" };
+    }
+}
+
+// ============================================================================
+// NEW: Phased Architecture Generation - LLD (Low-Level Design) per Container
+// ============================================================================
+export async function generateLLD(
+    projectId: string,
+    containerId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>
+) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const project = await prisma.project.findFirst({
+            where: { id: projectId, userId: (session.user as any).id },
+            include: {
+                architecture: true,
+                requirements: true,
+                userStories: true,
+                techStack: true,
+            },
+        });
+
+        if (!project || !project.architecture) {
+            return { error: "Project or architecture not found" };
+        }
+
+        const arch = project.architecture;
+        const containers = arch.containers ? JSON.parse(arch.containers) : [];
+        const container = containers.find((c: any) => c.id === containerId);
+        
+        if (!container) {
+            return { error: "Container not found" };
+        }
+
+        const qaContext = qaPairs 
+            ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n\n")}\n\n`
+            : "";
+
+        const systemPrompt = `You are a software architect. Generate LOW-LEVEL DESIGN (LLD) for a single container/service.
+Return ONLY a valid JSON object with the following fields:
+- 'components': JSON array of C4 components [{id, name, type, technology, responsibilities, interfaces}]
+- 'classDiagram': Mermaid class diagram (domain model for this service)
+- 'sequenceDiagrams': JSON array of API sequences [{name, diagram}]
+- 'activityDiagrams': JSON array of business logic flows [{name, diagram}]
+- 'stateMachines': JSON array of state machines [{entity, diagram}]
+- 'timingDiagrams': JSON array of timing/SLA [{endpoint, latencyBudget, diagram}]
+- 'databaseSchema': JSON {tables: [{name, columns, indexes, relationships}]}
+- 'apiContract': JSON OpenAPI 3.0 spec for this service
+- 'deploymentSpec': JSON {dockerfile, k8sManifests, helmValues}
+
+CONTAINER: ${container.name} (${container.type})
+TECHNOLOGY: ${container.technology}
+RESPONSIBILITIES: ${container.responsibilities}
+
+STRICT MERMAID RULES: Same as HLD.
+STRICT RULE: Return pure JSON output.`;
+
+        const response = await serverOpenai.chat.completions.create({
+            messages: [
+                { role: "system", content: systemPrompt },
+                {
+                    role: "user",
+                    content: `Project: ${project.name}\nContainer: ${container.name}\nType: ${container.type}\nTechnology: ${container.technology}\nResponsibilities: ${container.responsibilities}\n\nHLD Context:\n${arch.highLevel}\n\nContainer Diagram:\n${arch.containerDiagram}\n\n${qaContext}Generate LLD for this container.`,
+                },
+            ],
+        });
+
+        const aiResponse = response.choices[0]?.message?.content || "{}";
+        const lldData = JSON.parse(aiResponse);
+
+        // Update architecture with LLD data for this container
+        const existingComponents = arch.components ? JSON.parse(arch.components) : [];
+        const existingClassDiagrams = arch.classDiagrams ? JSON.parse(arch.classDiagrams) : {};
+        const existingSequences = arch.lldSequenceDiagrams ? JSON.parse(arch.lldSequenceDiagrams) : {};
+        const existingActivities = arch.activityDiagrams ? JSON.parse(arch.activityDiagrams) : {};
+        const existingStates = arch.stateMachines ? JSON.parse(arch.stateMachines) : {};
+        const existingTiming = arch.timingDiagrams ? JSON.parse(arch.timingDiagrams) : {};
+        const existingDbSchemas = arch.databaseSchemas ? JSON.parse(arch.databaseSchemas) : [];
+        const existingApiContracts = arch.apiContracts ? JSON.parse(arch.apiContracts) : {};
+        const existingDeploymentSpecs = arch.deploymentSpecs ? JSON.parse(arch.deploymentSpecs) : {};
+
+        // Update per-container data
+        const updatedComponents = [...existingComponents.filter((c: any) => c.containerId !== containerId), ...lldData.components.map((c: any) => ({ ...c, containerId }))];
+        existingClassDiagrams[containerId] = lldData.classDiagram;
+        existingSequences[containerId] = lldData.sequenceDiagrams;
+        existingActivities[containerId] = lldData.activityDiagrams;
+        existingStates[containerId] = lldData.stateMachines;
+        existingTiming[containerId] = lldData.timingDiagrams;
+        
+        const updatedDbSchemas = [...existingDbSchemas.filter((d: any) => d.containerId !== containerId), { containerId, tables: lldData.databaseSchema?.tables || [] }];
+        existingApiContracts[containerId] = lldData.apiContract;
+        existingDeploymentSpecs[containerId] = lldData.deploymentSpec;
+
+        await prisma.architecture.update({
+            where: { projectId },
+            data: {
+                components: JSON.stringify(updatedComponents),
+                classDiagrams: JSON.stringify(existingClassDiagrams),
+                lldSequenceDiagrams: JSON.stringify(existingSequences),
+                activityDiagrams: JSON.stringify(existingActivities),
+                stateMachines: JSON.stringify(existingStates),
+                timingDiagrams: JSON.stringify(existingTiming),
+                databaseSchemas: JSON.stringify(updatedDbSchemas),
+                apiContracts: JSON.stringify(existingApiContracts),
+                deploymentSpecs: JSON.stringify(existingDeploymentSpecs),
+                lldStatus: "review",
+            },
+        });
+
+        revalidatePath(`/projects/${projectId}/architecture`);
+        return { success: true };
+    } catch (_error) {
+        console.error("Generate LLD error:", _error);
+        return { error: "Failed to generate LLD" };
+    }
+}
+
+// ============================================================================
+// Approve HLD - lock and proceed to LLD
+// ============================================================================
+export async function approveHLD(projectId: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        await prisma.architecture.update({
+            where: { projectId },
+            data: {
+                hldStatus: "approved",
+                hldApprovedAt: new Date(),
+            },
+        });
+        revalidatePath(`/projects/${projectId}/architecture`);
+        return { success: true };
+    } catch (_error) {
+        console.error("Approve HLD error:", _error);
+        return { error: "Failed to approve HLD" };
+    }
+}
+
+// ============================================================================
+// Approve LLD for a container
+// ============================================================================
+export async function approveLLD(projectId: string, containerId?: string) {
+    const session = await auth();
+    if (!session?.user) return { error: "Unauthorized" };
+
+    try {
+        const data: any = { lldStatus: "review" };
+        if (containerId) {
+            // Could track per-container approval
+        } else {
+            data.lldStatus = "approved";
+            data.lldApprovedAt = new Date();
+        }
+        await prisma.architecture.update({
+            where: { projectId },
+            data,
+        });
+        revalidatePath(`/projects/${projectId}/architecture`);
+        return { success: true };
+    } catch (_error) {
+        console.error("Approve LLD error:", _error);
+        return { error: "Failed to approve LLD" };
+    }
+}
+
 // Similar functions for workflows, user stories, tech stack...
 // I'll create abbreviated versions to save space
 
