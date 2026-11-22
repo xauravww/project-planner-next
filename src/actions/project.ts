@@ -1189,6 +1189,7 @@ export async function generateTasks(
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 8-12 project tasks.`
                 }
             ],
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
@@ -1314,6 +1315,7 @@ export async function generateUserJourneys(
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user journeys.`
                 }
             ],
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
@@ -1558,6 +1560,7 @@ export async function generateBusinessRules(
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 5-8 business rules.`
                 }
             ],
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
@@ -1619,6 +1622,7 @@ export async function generateTeamMembers(
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 4-7 team roles needed.`
                 }
             ],
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
