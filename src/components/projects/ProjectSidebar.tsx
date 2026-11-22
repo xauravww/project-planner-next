@@ -11,7 +11,6 @@ import {
     GitBranch,
     Users,
     Code,
-    ArrowLeft,
     Settings,
     X,
     LayoutDashboard,
@@ -20,8 +19,6 @@ import {
     LogOut,
 } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { Button } from "@/components/ui/Button";
-import { GlassCard } from "@/components/ui/GlassCard";
 
 interface ProjectSidebarProps {
     projectId: string;
@@ -30,19 +27,18 @@ interface ProjectSidebarProps {
     onClose?: () => void;
 }
 
-export default function ProjectSidebar({ projectId, projectName, projectType, onClose }: ProjectSidebarProps) {
+export default function ProjectSidebar({ projectId, projectName, onClose }: ProjectSidebarProps) {
     const pathname = usePathname();
     const [openCategories, setOpenCategories] = useState<string[]>(["planning"]);
 
     const toggleCategory = (category: string) => {
         setOpenCategories((prev) =>
-            prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+            prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
         );
     };
 
     const isActive = (path: string) => pathname?.includes(path);
 
-    // Global navigation items that could be in dock
     const globalItems = [
         { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
         { name: "New Project", href: "/dashboard/new", icon: Plus },
@@ -84,88 +80,84 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
             id: "team",
             name: "Team",
             icon: Users,
-            items: [
-                { name: "Team Members", href: `/projects/${projectId}/team`, icon: Users },
-            ],
+            items: [{ name: "Team Members", href: `/projects/${projectId}/team`, icon: Users }],
         },
     ];
 
     return (
-        <aside className="w-64 bg-[var(--color-nebula-bg)] flex flex-col h-full relative z-20" style={{ borderRight: "1px solid var(--color-nebula-hairline)" }}>
-            {/* Mobile close button */}
+        <aside className="flex h-full w-64 flex-col border-r-2 border-black bg-white">
             {onClose && (
-                <div className="flex items-center justify-between p-4 nebula-hairline-b lg:hidden">
-                    <h2 className="type-h4 truncate">{projectName}</h2>
-                    <Button
-                        variant="ghost"
-                        size="icon"
+                <div className="flex items-center justify-between border-b-2 border-black p-4 lg:hidden">
+                    <h2 className="truncate font-semibold text-black">{projectName}</h2>
+                    <button
+                        type="button"
                         onClick={onClose}
-                        className="text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-surface-elevated)]"
+                        aria-label="Close menu"
+                        className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:text-[#FF4D00]"
                     >
-                        <X className="w-5 h-5" />
-                    </Button>
+                        <X className="h-4 w-4" />
+                    </button>
                 </div>
             )}
 
             <div className="flex-1 overflow-y-auto p-3">
-                {/* Global Navigation */}
-                <div className="mb-6">
-                    <div className="type-eyebrow mb-3 px-1">Navigation</div>
-                    <nav className="space-y-1">
-                        {globalItems.map((item) => (
-                            <Link key={item.href} href={item.href}>
-                                <Button
-                                    variant="ghost"
-                                    className={`w-full justify-start type-small ${isActive(item.href)
-                                        ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-nebula-fg)]"
-                                        : "text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
-                                        }`}
-                                >
-                                    <item.icon className="w-4 h-4 mr-2" />
-                                    {item.name}
-                                </Button>
-                            </Link>
-                        ))}
-                    </nav>
+                <p className="px-1 pb-2 font-mono text-xs uppercase tracking-tight text-black/50">Menu</p>
+                <nav className="space-y-1">
+                    {globalItems.map((item) => (
+                        <Link key={item.href} href={item.href}>
+                            <span
+                                className={`flex items-center gap-2 border-2 px-3 py-2 text-sm transition-colors ${
+                                    isActive(item.href)
+                                        ? "border-black bg-black text-white"
+                                        : "border-transparent text-black hover:border-black hover:bg-black/5"
+                                }`}
+                            >
+                                <item.icon className="h-4 w-4" />
+                                {item.name}
+                            </span>
+                        </Link>
+                    ))}
+                </nav>
+
+                <div className="mt-4 border-t-2 border-black pt-4">
+                    <p className="truncate px-1 pb-2 font-mono text-xs uppercase tracking-tight text-black/50">
+                        Project · {projectName}
+                    </p>
                 </div>
 
-                <div className="nebula-hairline-t pt-4 mb-4">
-                    <div className="type-eyebrow px-1 truncate">Project: {projectName}</div>
-                </div>
-                {/* Navigation */}
                 <nav className="space-y-1">
                     {categories.map((category) => (
                         <div key={category.id}>
-                            <Button
-                                variant="ghost"
-                                className="w-full justify-between type-small text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
+                            <button
+                                type="button"
                                 onClick={() => toggleCategory(category.id)}
+                                className="flex w-full items-center justify-between border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-black hover:bg-black/5"
                             >
-                                <span className="flex items-center">
-                                    <category.icon className="w-4 h-4 mr-2" />
+                                <span className="flex items-center gap-2">
+                                    <category.icon className="h-4 w-4" />
                                     {category.name}
                                 </span>
                                 {openCategories.includes(category.id) ? (
-                                    <ChevronDown className="w-4 h-4" />
+                                    <ChevronDown className="h-4 w-4" />
                                 ) : (
-                                    <ChevronRight className="w-4 h-4" />
+                                    <ChevronRight className="h-4 w-4" />
                                 )}
-                            </Button>
+                            </button>
 
                             {openCategories.includes(category.id) && (
-                                <div className="pl-6 mt-1 space-y-1">
+                                <div className="ml-4 mt-1 space-y-1 border-l-2 border-black pl-3">
                                     {category.items.map((item) => (
                                         <Link key={item.href} href={item.href}>
-                                            <Button
-                                                variant="ghost"
-                                                className={`w-full justify-start type-small ${isActive(item.href)
-                                                    ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-nebula-fg)]"
-                                                    : "text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
-                                                    }`}
+                                            <span
+                                                className={`flex items-center gap-2 px-2 py-1.5 text-sm transition-colors ${
+                                                    isActive(item.href)
+                                                        ? "font-semibold text-[#FF4D00]"
+                                                        : "text-black/70 hover:text-black"
+                                                }`}
                                             >
-                                                <item.icon className="w-4 h-4 mr-2" />
+                                                <item.icon className="h-4 w-4" />
                                                 {item.name}
-                                            </Button>
+                                            </span>
                                         </Link>
                                     ))}
                                 </div>
@@ -175,34 +167,27 @@ export default function ProjectSidebar({ projectId, projectName, projectType, on
                 </nav>
             </div>
 
-            {/* Settings and home at bottom */}
-            <div className="p-3 nebula-hairline-t space-y-1">
+            <div className="space-y-1 border-t-2 border-black p-3">
                 <Link href="/">
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
-                    >
-                        <Home className="w-4 h-4 mr-2" />
+                    <span className="flex items-center gap-2 border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-black hover:bg-black/5">
+                        <Home className="h-4 w-4" />
                         Go to homepage
-                    </Button>
+                    </span>
                 </Link>
                 <Link href={`/projects/${projectId}/settings`}>
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] hover:bg-[var(--color-nebula-surface)]"
-                    >
-                        <Settings className="w-4 h-4 mr-2" />
+                    <span className="flex items-center gap-2 border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-black hover:bg-black/5">
+                        <Settings className="h-4 w-4" />
                         Settings
-                    </Button>
+                    </span>
                 </Link>
-                <Button
-                    variant="ghost"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                    className="w-full justify-start type-small text-[color:var(--color-charcoal)] hover:text-[color:var(--color-accent-red)] hover:bg-[var(--color-nebula-surface)]"
+                <button
+                    type="button"
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="flex w-full items-center gap-2 border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
                 >
-                    <LogOut className="w-4 h-4 mr-2" />
+                    <LogOut className="h-4 w-4" />
                     Sign out
-                </Button>
+                </button>
             </div>
         </aside>
     );

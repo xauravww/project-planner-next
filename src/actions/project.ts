@@ -228,8 +228,9 @@ function parseAIResponse(content: string, fallback: any = []) {
 }
 
 export async function generateRequirements(
-    projectId: string, 
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    projectId: string,
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    existingRequirements?: string[],
 ) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
@@ -253,6 +254,11 @@ export async function generateRequirements(
             throw new Error("Project not found");
         }
 
+        const existingBlock =
+            existingRequirements && existingRequirements.length
+                ? `Existing requirements (do not duplicate or conflict with these):\n${existingRequirements.join("\n")}\n\n`
+                : "";
+
         const response = await serverOpenai.chat.completions.create({
             messages: [
                 {
@@ -261,10 +267,10 @@ export async function generateRequirements(
                 },
                 {
                     role: "user",
-                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate requirements.`,
+                    content: `Project: ${project.name}\nDescription: ${project.description}\n\n${existingBlock}${qaPairs ? `User Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate requirements. Keep each requirement title and content concise.`,
                 },
             ],
-            max_tokens: 4000,
+            max_tokens: 8000,
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
@@ -322,6 +328,10 @@ export async function generateRequirements(
 
     if (!transactionResult.success) {
         return { error: `Failed to save requirements: ${transactionResult.error}` };
+    }
+
+    if (transactionResult.data.length === 0) {
+        return { error: "No requirements could be generated" };
     }
 
     // Generate embeddings asynchronously (non-blocking)
@@ -1660,5 +1670,39 @@ export async function generateSingleMockup(projectId: string, prompt: string) {
     } catch (error) {
         console.error("Generate single mockup error:", error);
         return { error: "Failed to generate mockup" };
+    }
+}
+
+export async function suggestCategory(projectId: string, text: string, existingCategories: string[]) {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
+
+    try {
+        const response = await serverOpenai.chat.completions.create({
+            messages: [
+                {
+                    role: "system",
+                    content:
+                        "You classify requirements into categories. Given a requirement text and existing categories, respond ONLY with JSON: {\"category\":\"...\",\"matched_existing\":\"...\"|null}. Reuse an existing category when one clearly matches; otherwise propose a short new category.",
+                },
+                {
+                    role: "user",
+                    content: `Requirement: ${text}\nExisting categories: ${existingCategories.join(", ") || "none"}`,
+                },
+            ],
+            max_tokens: 80,
+        });
+
+        const raw = response.choices[0]?.message?.content || "";
+        const parsed = parseAIResponse(raw, null);
+        if (!parsed || !parsed.category) {
+            return { error: "Could not suggest a category" };
+        }
+        return {
+            suggested: String(parsed.category),
+            matched: parsed.matched_existing ? String(parsed.matched_existing) : null,
+        };
+    } catch {
+        return { error: "Failed to suggest category" };
     }
 }

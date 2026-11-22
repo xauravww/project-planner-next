@@ -3,13 +3,14 @@ import { redirect } from "next/navigation";
 import { getProject } from "@/actions/project";
 import { RefineChat } from "@/components/dashboard/RefineChat";
 
-export default async function RefinePage({ params }: { params: { id: string } }) {
+export default async function RefinePage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
     if (!session) {
         redirect("/login");
     }
 
-    const result = await getProject(params.id);
+    const { id } = await params;
+    const result = await getProject(id);
     if (!result.project) {
         redirect("/dashboard");
     }

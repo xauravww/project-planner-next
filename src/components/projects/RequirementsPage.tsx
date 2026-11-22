@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
-import { Plus, Pencil, Trash2, Wand2, FileText, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Wand2, FileText, Loader2, Search, X } from "lucide-react";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { generateRequirements } from "@/actions/project";
 import { createRequirement, updateRequirement, deleteRequirement, deleteAllRequirements } from "@/actions/crud";
@@ -14,6 +14,7 @@ import { AIGenerationModal } from "./AIGenerationModal";
 import { ImproveButton } from "@/components/ui/ImproveButton";
 import { queryKeys, invalidateModule } from "@/lib/query-client";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function RequirementsPageClient({
     project,
@@ -36,6 +37,7 @@ export default function RequirementsPageClient({
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [requirementToDelete, setRequirementToDelete] = useState<string | null>(null);
+    const [search, setSearch] = useState("");
 
     // Use React Query for server state
     const { data: requirements = initialRequirements, isLoading } = useQuery({
@@ -52,6 +54,15 @@ export default function RequirementsPageClient({
     useEffect(() => {
         queryClient.setQueryData(queryKeys.projects.requirements(project.id), initialRequirements);
     }, [initialRequirements, project.id, queryClient]);
+
+    const lower = search.trim().toLowerCase();
+    const filtered = lower
+        ? requirements.filter(
+              (r: any) =>
+                  (r.title || "").toLowerCase().includes(lower) ||
+                  (typeof r.content === "string" && r.content.toLowerCase().includes(lower)),
+          )
+        : requirements;
 
     // Create mutation with optimistic update
     const createMutation = useMutation({
@@ -250,24 +261,33 @@ export default function RequirementsPageClient({
             <div className="nebula-hairline-b px-4 lg:px-6 py-4 bg-[var(--color-nebula-bg)]">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="text-center lg:text-left">
-                            <h1 className="type-h3">Requirements</h1>
+                        <div className="relative w-full">
+                            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black/50" />
+                            <input
+                                type="text"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder="Search requirements"
+                                className="h-11 w-full border-2 border-black bg-white pl-10 pr-10 text-sm text-black placeholder:text-black/40 outline-none transition-colors focus:border-[#FF4D00]"
+                            />
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearch("")}
+                                    aria-label="Clear search"
+                                    className="absolute right-1 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center text-black transition-colors hover:text-[#FF4D00]"
+                                >
+                                    <X className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                         {!isAdding && !editingId && (
                             <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
-                                <Button
-                                    onClick={() => {
-                                        setIsAdding(true);
-                                        setEditingId(null);
-                                        setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-                                    }}
-                                    variant="nebula"
-                                    className="transition-all duration-300"
-                                >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    <span className="hidden sm:inline">Add Requirement</span>
+                                <Link href={`/projects/${project.id}/requirements/new`} className="nebula-btn nebula-btn--primary justify-center">
+                                    <Plus className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Add requirement</span>
                                     <span className="sm:hidden">Add</span>
-                                </Button>
+                                </Link>
                                 <Button
                                     variant="nebula-ghost"
                                     onClick={() => router.push(`/projects/${project.id}/refine`)}
@@ -277,15 +297,15 @@ export default function RequirementsPageClient({
                                     Plan more
                                 </Button>
                                 {requirements.length > 0 && (
-                                    <Button
-                                        variant="ghost"
+                                    <button
+                                        type="button"
                                         onClick={handleDeleteAll}
-                                        className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] text-[color:var(--color-ash)] transition-colors border border-transparent hover:border-[var(--color-accent-red)]/20"
+                                        className="inline-flex items-center gap-2 border-2 border-black bg-white px-4 py-2 font-mono text-xs uppercase tracking-tight text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
                                     >
-                                        <Trash2 className="w-4 h-4 mr-2" />
-                                        <span className="hidden sm:inline">Delete All</span>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Delete all</span>
                                         <span className="sm:hidden">Clear</span>
-                                    </Button>
+                                    </button>
                                 )}
                             </div>
                         )}
@@ -413,35 +433,18 @@ export default function RequirementsPageClient({
                             </div>
                             <h3 className="type-h3 mt-6">No requirements yet</h3>
                             <p className="mt-3 text-black/60">
-                                Start by generating requirements with AI, or add them manually.
+                                Start by generating requirements with AI, or add them manually using the
+                                buttons above.
                             </p>
-                            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-                                <button
-                                    type="button"
-                                    onClick={() => router.push(`/projects/${project.id}/refine`)}
-                                    className="nebula-btn nebula-btn--primary justify-center"
-                                >
-                                    <Wand2 className="h-4 w-4" />
-                                    Plan more
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setIsAdding(true);
-                                        setEditingId(null);
-                                        setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-                                    }}
-                                    className="nebula-btn nebula-btn--ghost justify-center"
-                                >
-                                    <Plus className="h-4 w-4" />
-                                    Add manually
-                                </button>
-                            </div>
                         </div>
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <div className="px-4 py-12 text-center">
+                        <p className="text-sm text-black/60">No requirements match your search.</p>
                     </div>
                 ) : (
                     <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-3">
-                        {requirements.map((req: any) => (
+                        {filtered.map((req: any) => (
                             <div key={req.id} className="border-2 border-black bg-white p-5">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
@@ -543,8 +546,8 @@ export default function RequirementsPageClient({
                 title={requirementToDelete === "ALL" ? "Delete All Requirements" : "Delete Requirement"}
                 description={
                     requirementToDelete === "ALL"
-                        ? "Are you sure you want to delete ALL requirements? This action cannot be undone and will permanently remove everything from this list."
-                        : "Are you sure you want to delete this requirement? This action cannot be undone and will permanently remove the requirement from your project."
+                        ? "Are you sure you want to delete all requirements? This action cannot be undone. Any artifacts linked to these requirements will also be deleted."
+                        : "Are you sure you want to delete this requirement? This action cannot be undone. Any artifacts linked to this requirement will also be deleted."
                 }
                 confirmText={requirementToDelete === "ALL" ? "Delete All" : "Delete Requirement"}
             />
