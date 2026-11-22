@@ -4,59 +4,35 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/ui/GlassCard";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Plus, User, Target, Frown, Sparkles, Trash2, Pencil, Save, X, Wand2, Loader2 } from "lucide-react";
-import { createPersona, updatePersona, deletePersona, deleteAllPersonas } from "@/actions/crud";
-import { generatePersonas } from "@/actions/project";
-import { AIGenerationModal } from "./AIGenerationModal";
+import { Plus, User, Target, Frown, Trash2, Pencil, Wand2 } from "lucide-react";
+import { deletePersona, deleteAllPersonas } from "@/actions/crud";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
 import { queryKeys } from "@/lib/query-client";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
+
+const toArray = (val: any): string[] => {
+    if (typeof val === "string") {
+        try {
+            const parsed = JSON.parse(val);
+            if (Array.isArray(parsed)) return parsed.map(String);
+        } catch {
+            // ignore
+        }
+        return val.trim() ? val.split("\n").map((s: string) => s.trim()).filter(Boolean) : [];
+    }
+    return Array.isArray(val) ? val.map(String) : [];
+};
 
 export default function PersonasPage({ params, initialPersonas, projectName }: { params: { id: string }; initialPersonas: any[]; projectName: string }) {
     const queryClient = useQueryClient();
     const router = useRouter();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        name: "",
-        role: "",
-        goals: "",
-        frustrations: "",
-        bio: "",
-    });
 
     const { data: personas = initialPersonas } = useQuery({
         queryKey: queryKeys.projects.personas(params.id),
         queryFn: async () => initialPersonas,
         initialData: initialPersonas,
-    });
-
-    const createMutation = useMutation({
-        mutationFn: (data: any) => createPersona(params.id, data),
-        onSuccess: () => {
-            toast.success("Persona created");
-            setIsModalOpen(false);
-            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-            router.refresh();
-        },
-        onError: () => toast.error("Failed to create persona"),
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (vars: { id: string; data: any }) => updatePersona(vars.id, vars.data),
-        onSuccess: () => {
-            toast.success("Persona updated");
-            setEditingId(null);
-            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-            setIsModalOpen(false);
-            router.refresh();
-        },
-        onError: () => toast.error("Failed to update persona"),
     });
 
     const deleteMutation = useMutation({
@@ -78,58 +54,6 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
         onError: () => toast.error("Failed to delete all personas"),
     });
 
-    const aiGenerateMutation = useMutation({
-        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generatePersonas(params.id, answers),
-        onSuccess: async (result) => {
-            if (result.success) {
-                toast.success("Personas generated");
-                await queryClient.invalidateQueries({ queryKey: queryKeys.projects.personas(params.id) });
-                setIsAIModalOpen(false);
-                router.refresh();
-            } else {
-                toast.error("Failed to generate");
-            }
-        },
-        onError: () => toast.error("Failed to generate personas"),
-    });
-
-    const handleCreate = async () => {
-        if (!formData.name) return;
-        await createMutation.mutateAsync(formData);
-    };
-
-    const handleUpdate = async () => {
-        if (!editingId) return;
-        await updateMutation.mutateAsync({ id: editingId, data: formData });
-    };
-
-    const handleEdit = (persona: any) => {
-        setEditingId(persona.id);
-
-        // Helper to format JSON strings for textarea
-        const formatForEdit = (val: any) => {
-            try {
-                if (typeof val === 'string' && (val.startsWith('[') || val.startsWith('{'))) {
-                    const parsed = JSON.parse(val);
-                    if (Array.isArray(parsed)) return parsed.join('\n');
-                    return val;
-                }
-                return val;
-            } catch {
-                return val;
-            }
-        };
-
-        setFormData({
-            name: persona.name,
-            role: persona.role,
-            goals: formatForEdit(persona.goals),
-            frustrations: formatForEdit(persona.frustrations),
-            bio: persona.bio,
-        });
-        setIsModalOpen(true);
-    };
-
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [personaToDelete, setPersonaToDelete] = useState<string | null>(null);
 
@@ -150,251 +74,154 @@ export default function PersonasPage({ params, initialPersonas, projectName }: {
         }
     };
 
-    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        await aiGenerateMutation.mutateAsync(answers);
+    const handleEdit = (persona: any) => {
+        router.push(`/projects/${params.id}/personas/new?edit=${persona.id}`);
+    };
+
+    const handleGenerateClick = () => {
+        router.push(`/projects/${params.id}/personas/generate`);
     };
 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
-            <div className="h-full flex flex-col">
-                <div className="nebula-hairline-b px-6 py-4 flex items-center justify-between bg-[var(--color-nebula-bg)]">
-                    <div>
-                        <Breadcrumb
-                            items={[
-                                { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/projects/${params.id}` },
-                                { label: "Personas" },
-                            ]}
-                        />
-                        <h1 className="type-h3 mt-2">User Personas</h1>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="nebula" onClick={() => {
-                            setEditingId(null);
-                            setFormData({ name: "", role: "", goals: "", frustrations: "", bio: "" });
-                            setIsModalOpen(true);
-                        }}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Persona
-                        </Button>
-                        <Button
-                            variant="nebula-ghost"
-                            onClick={() => setIsAIModalOpen(true)}
-                            disabled={aiGenerateMutation.isPending}
-                            className="transition-all duration-300"
-                        >
-                            {aiGenerateMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                                <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
-                            )}
-                            {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
-                        </Button>
-                        {personas.length > 0 && (
+            <div className="h-full flex flex-col bg-white">
+                <div className="border-b-2 border-black bg-white px-4 lg:px-6 py-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <h1 className="type-h3">User Personas</h1>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                            <Link href={`/projects/${params.id}/personas/new`} className="nebula-btn nebula-btn--primary justify-center">
+                                <Plus className="h-4 w-4" />
+                                <span className="hidden sm:inline">Add persona</span>
+                                <span className="sm:hidden">Add</span>
+                            </Link>
+                            <Link href={`/projects/${params.id}/personas/board`} className="nebula-btn nebula-btn--ghost justify-center">
+                                Overview
+                            </Link>
+                            <Link href={`/projects/${params.id}/personas/connections`} className="nebula-btn nebula-btn--ghost justify-center">
+                                Connections
+                            </Link>
                             <Button
                                 variant="nebula-ghost"
-                                onClick={() => handleDelete("ALL")}
-                                className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
+                                onClick={handleGenerateClick}
+                                className="transition-all duration-300 text-sm px-4 py-2"
                             >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">Delete All</span>
-                                <span className="sm:hidden">Clear</span>
+                                <Wand2 className="h-4 w-4 mr-2 text-[color:var(--color-nebula-fg)]" />
+                                <span className="hidden sm:inline">Generate with AI</span>
+                                <span className="sm:hidden">AI Generate</span>
                             </Button>
-                        )}
+                            {personas.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleDelete("ALL")}
+                                    className="inline-flex items-center gap-2 border-2 border-black bg-white px-4 py-2 font-mono text-xs uppercase tracking-tight text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Delete all</span>
+                                    <span className="sm:hidden">Clear</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto">
                     {personas.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mb-6">
-                                <User className="w-10 h-10 text-[color:var(--color-ash)]" />
+                        <div className="flex items-center justify-center px-4 py-16">
+                            <div className="max-w-md text-center">
+                                <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-black">
+                                    <User className="h-10 w-10 text-[#FF4D00]" />
+                                </div>
+                                <h3 className="type-h3 mt-6">No personas yet</h3>
+                                <p className="mt-3 text-black/60">
+                                    Generate personas with AI or add them manually using the buttons above.
+                                </p>
                             </div>
-                            <h3 className="type-h4 mb-2">No Personas Yet</h3>
-                            <p className="text-[color:var(--color-charcoal)] max-w-md mb-6">
-                                Create user personas to better understand your target audience and their needs.
-                            </p>
-                            <Button onClick={() => setIsModalOpen(true)} size="lg" variant="nebula" className="transition-all">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create First Persona
-                            </Button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {personas.map((persona) => (
-                                <GlassCard key={persona.id} className="p-6 relative group">
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(persona)} className="p-2 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-nebula-surface)] rounded-[var(--r-md)] text-[color:var(--color-nebula-fg)]">
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(persona.id)} className="p-2 bg-[var(--color-accent-red-glow)] hover:bg-[var(--color-accent-red-glow)] rounded-[var(--r-md)] text-[color:var(--color-accent-red)]">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    <div className="flex items-center gap-4 mb-6">
-                                        <div className="w-16 h-16 rounded-full bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center text-2xl font-bold text-[color:var(--color-nebula-fg)]">
-                                            {persona.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <h3 className="text-xl font-bold text-[color:var(--color-nebula-fg)]">{persona.name}</h3>
-                                            <p className="text-[color:var(--color-accent-blue)]">{persona.role}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div>
-                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2 flex items-center gap-2">
-                                                <Target className="w-4 h-4" /> Goals
-                                            </h4>
-                                            <div className="text-sm text-[color:var(--color-charcoal)]">
-                                                {(() => {
-                                                    try {
-                                                        const goals = typeof persona.goals === 'string' ? JSON.parse(persona.goals) : persona.goals;
-                                                        if (Array.isArray(goals)) {
-                                                            return (
-                                                                <ul className="list-disc list-inside space-y-1">
-                                                                    {goals.map((goal: string, i: number) => (
-                                                                        <li key={i}>{goal}</li>
-                                                                    ))}
-                                                                </ul>
-                                                            );
-                                                        }
-                                                        return <p>{persona.goals}</p>;
-                                                    } catch {
-                                                        return <p>{persona.goals}</p>;
-                                                    }
-                                                })()}
+                        <div className="p-4 lg:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {personas.map((persona: any) => {
+                                const goals = toArray(persona.goals);
+                                const frustrations = toArray(persona.frustrations);
+                                return (
+                                    <div key={persona.id} className="border-2 border-black bg-white p-5 flex flex-col">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="grid h-12 w-12 shrink-0 place-items-center border-2 border-black text-lg font-bold text-black">
+                                                    {(persona.name || "?").charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-black">{persona.name}</h3>
+                                                    <p className="font-mono text-[11px] uppercase tracking-tight text-[#FF4D00]">{persona.role}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex shrink-0 gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(persona)}
+                                                    aria-label="Edit persona"
+                                                    className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(persona.id)}
+                                                    aria-label="Delete persona"
+                                                    className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </div>
                                         </div>
-                                        <div>
-                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2 flex items-center gap-2">
-                                                <Frown className="w-4 h-4" /> Frustrations
-                                            </h4>
-                                            <div className="text-sm text-[color:var(--color-charcoal)]">
-                                                {(() => {
-                                                    try {
-                                                        const frustrations = typeof persona.frustrations === 'string' ? JSON.parse(persona.frustrations) : persona.frustrations;
-                                                        if (Array.isArray(frustrations)) {
-                                                            return (
-                                                                <ul className="list-disc list-inside space-y-1">
-                                                                    {frustrations.map((f: string, i: number) => (
-                                                                        <li key={i}>{f}</li>
-                                                                    ))}
-                                                                </ul>
-                                                            );
-                                                        }
-                                                        return <p>{persona.frustrations}</p>;
-                                                    } catch {
-                                                        return <p>{persona.frustrations}</p>;
-                                                    }
-                                                })()}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <h4 className="text-sm font-medium text-[color:var(--color-ash)] mb-2">Bio</h4>
-                                            <p className="text-sm text-[color:var(--color-charcoal)] line-clamp-3">{persona.bio}</p>
+
+                                        {persona.bio && (
+                                            <p className="mt-4 text-sm text-[color:var(--color-charcoal)] line-clamp-3">{persona.bio}</p>
+                                        )}
+
+                                        <div className="mt-4 space-y-4 flex-1">
+                                            {goals.length > 0 && (
+                                                <div>
+                                                    <h4 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-tight text-black/50">
+                                                        <Target className="h-3.5 w-3.5" /> Goals
+                                                    </h4>
+                                                    <ul className="mt-2 space-y-1 text-sm text-black/70">
+                                                        {goals.map((g: string, i: number) => (
+                                                            <li key={i} className="flex gap-2"><span className="text-[#FF4D00]">—</span> {g}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                            {frustrations.length > 0 && (
+                                                <div>
+                                                    <h4 className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-tight text-black/50">
+                                                        <Frown className="h-3.5 w-3.5" /> Frustrations
+                                                    </h4>
+                                                    <ul className="mt-2 space-y-1 text-sm text-black/70">
+                                                        {frustrations.map((f: string, i: number) => (
+                                                            <li key={i} className="flex gap-2"><span className="text-[#FF4D00]">—</span> {f}</li>
+                                                        ))}
+                                                    </ul>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </GlassCard>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
 
-                {/* Create/Edit Modal */}
-                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
-                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
-                            <DialogTitle className="type-h4 text-[color:var(--color-nebula-fg)] text-center">
-                                {editingId ? "Edit Persona" : "New Persona"}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="px-6 py-5 space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Name</label>
-                                    <input
-                                        type="text"
-                                        value={formData.name}
-                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                        placeholder="e.g. Sarah Smith"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Role</label>
-                                    <input
-                                        type="text"
-                                        value={formData.role}
-                                        onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                        className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                        placeholder="e.g. Marketing Manager"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Bio</label>
-                                <textarea
-                                    value={formData.bio}
-                                    onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                    placeholder="Short biography..."
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Goals (One per line)</label>
-                                <textarea
-                                    value={formData.goals}
-                                    onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                    placeholder="What are they trying to achieve?"
-                                />
-                            </div>
-                            <div>
-                                <label className="text-sm text-[color:var(--color-ash)] mb-1 block">Frustrations (One per line)</label>
-                                <textarea
-                                    value={formData.frustrations}
-                                    onChange={(e) => setFormData({ ...formData, frustrations: e.target.value })}
-                                    className="w-full h-24 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                    placeholder="What are their pain points?"
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
-                            <div className="flex gap-3 justify-end w-full">
-                                <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                <Button onClick={editingId ? handleUpdate : handleCreate} variant="nebula" className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
-                                    {editingId ? "Save Changes" : "Create Persona"}
-                                </Button>
-                            </div>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                <DeleteModal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    onConfirm={confirmDelete}
+                    title={personaToDelete === "ALL" ? "Delete All Personas" : "Delete Persona"}
+                    description={
+                        personaToDelete === "ALL"
+                            ? "Are you sure you want to delete ALL personas? This action cannot be undone."
+                            : "Are you sure you want to delete this persona? This action cannot be undone."
+                    }
+                    confirmText={personaToDelete === "ALL" ? "Delete All" : "Delete Persona"}
+                />
             </div>
-            <AIGenerationModal
-                isOpen={isAIModalOpen}
-                onClose={() => {
-                    setIsAIModalOpen(false);
-                    aiGenerateMutation.reset();
-                }}
-                projectId={params.id}
-                type="personas"
-                onGenerate={handleAIGenerate}
-                isGenerating={aiGenerateMutation.isPending}
-            />
-            <DeleteModal
-                isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                onConfirm={confirmDelete}
-                title={personaToDelete === "ALL" ? "Delete All Personas" : "Delete Persona"}
-                description={
-                    personaToDelete === "ALL"
-                        ? "Are you sure you want to delete ALL personas? This action cannot be undone and will permanently remove everything from this list."
-                        : "Are you sure you want to delete this persona? This action cannot be undone."
-                }
-                confirmText={personaToDelete === "ALL" ? "Delete All" : "Delete Persona"}
-            />
         </ProjectLayout>
     );
 }

@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createProjectWithAI, generateGenerationQuestions, generateRequirements, generateUserStories, getProject } from "@/actions/project";
-import { deleteRequirement, deleteUserStory } from "@/actions/crud";
+import { createProjectWithAI, generateGenerationQuestions, generateRequirements, generateUserStories, generatePersonas, getProject } from "@/actions/project";
+import { createRequirement, createUserStory, createPersona, createWorkflow } from "@/actions/crud";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 import { ArrowLeft, Send, Box } from "lucide-react";
 
@@ -50,10 +50,24 @@ export function RefineChat({
     projectId?: string;
     artifactCount?: number;
     artifactBreakdown?: Record<string, number>;
-    artifact?: "requirements" | "stories";
+    artifact?: "requirements" | "stories" | "personas" | "workflows";
 }) {
     const isStories = artifact === "stories";
-    const artifactLabel = isStories ? "user stories" : "requirements";
+    const isPersonas = artifact === "personas";
+    const isWorkflows = artifact === "workflows";
+    const artifactLabel = isStories ? "user stories" : isPersonas ? "personas" : isWorkflows ? "workflows" : "requirements";
+    const itemsOf = (proj: any) =>
+        isStories ? (proj?.userStories ?? [])
+        : isPersonas ? (proj?.personas ?? [])
+        : isWorkflows ? (proj?.workflows ?? [])
+        : (proj?.requirements ?? []);
+    const titleOf = (r: any) => r.title ?? r.name;
+    const textOf = (r: any) =>
+        isPersonas
+            ? `${titleOf(r)} ${r.bio || ""} ${typeof r.goals === "string" ? r.goals : ""}`
+            : `${titleOf(r)} ${typeof r.content === "string" ? r.content : ""}`;
+    const slugOf = () => (isStories ? "stories" : isPersonas ? "personas" : isWorkflows ? "workflows" : "requirements");
+    const keyLabel = () => (isStories ? "User Stories" : isPersonas ? "Personas" : isWorkflows ? "Workflows" : "Requirements");
     const router = useRouter();
     const [started, setStarted] = useState(false);
     const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -183,54 +197,111 @@ export function RefineChat({
         setGenerating(true);
         try {
             const before = await getProject(projectId);
-            const beforeItems = isStories ? before.project?.userStories ?? [] : before.project?.requirements ?? [];
-            const beforeTitles = beforeItems.map((r: any) => r.title);
-            const beforeIds = new Set(beforeItems.map((r: any) => r.id));
+            const beforeItems = itemsOf(before.project);
+            const beforeTitles = beforeItems.map(titleOf);
 
-            const result = isStories
-                ? await generateUserStories(projectId, pairs)
-                : await generateRequirements(
-                      projectId,
-                      pairs.map((p) => ({ question: p.question, selected: p.selected })),
-                      beforeTitles,
-                  );
+            let result;
+            let proposed: any[] = [];
+            if (isStories) {
+                result = await generateUserStories(projectId, pairs, { dryRun: true });
+                proposed = result?.stories ?? [];
+            } else if (isPersonas) {
+                result = await generatePersonas(projectId, pairs, { dryRun: true });
+                proposed = result?.personas ?? [];
+            } else if (isWorkflows) {
+                result = await generateWorkflows(projectId, pairs, { dryRun: true });
+                proposed = result?.workflows ?? [];
+            } else {
+                result = await generateRequirements(
+                    projectId,
+                    pairs.map((p) => ({ question: p.question, selected: p.selected })),
+                    beforeTitles,
+                    { dryRun: true },
+                );
+                proposed = result?.requirements ?? [];
+            }
             if (result?.error) throw new Error(result.error);
 
-            const after = await getProject(projectId);
-            const newItems = (isStories ? after.project?.userStories ?? [] : after.project?.requirements ?? []).filter(
-                (r: any) => !beforeIds.has(r.id),
-            );
-
-            if (newItems.length === 0) {
+            if (proposed.length === 0) {
                 throw new Error(`No ${artifactLabel} were generated`);
             }
 
-            const reviewed = newItems.map((r: any) => {
-                const ex = beforeItems.find((e: any) => similarity(r.title, e.title) > 0.45) || null;
-                return { ...r, conflict: ex ? { title: ex.title, content: ex.content } : null };
+            const reviewed = proposed.map((r: any) => {
+                const ex = beforeItems.find((e: any) => similarity(textOf(r), textOf(e)) > 0.45) || null;
+                return { ...r, conflict: ex ? { title: titleOf(ex), content: isPersonas ? ex.bio : ex.content } : null };
             });
 
             setReviewItems(reviewed);
             setShowReview(true);
+            setGenerating(false);
         } catch {
             toast.error(`Failed to generate ${artifactLabel}`);
             setGenerating(false);
         }
     };
 
-    const removeReviewItem = async (id: string) => {
-        setRemovingId(id);
-        if (isStories) {
-            await deleteUserStory(id);
-        } else {
-            await deleteRequirement(id);
-        }
-        setReviewItems((prev) => prev.filter((r) => r.id !== id));
-        setRemovingId(null);
-        if (reviewItems.length - 1 === 0) {
+    const removeReviewItem = (id: string) => {
+        const next = reviewItems.filter((r) => r.id !== id);
+        setReviewItems(next);
+        if (next.length === 0) {
             setShowReview(false);
-            toast.success("Plan generated");
-            router.push(`/projects/${projectId}/${isStories ? "stories" : "requirements"}`);
+        }
+    };
+
+    const commitReview = async () => {
+        const kept = reviewItems;
+        if (kept.length === 0) {
+            setShowReview(false);
+            router.push(`/projects/${projectId}/${slugOf()}`);
+            return;
+        }
+        setCreating(true);
+        try {
+            for (const item of kept) {
+                if (isStories) {
+                    await createUserStory(projectId, {
+                        title: item.title,
+                        content: item.content,
+                        acceptanceCriteria:
+                            typeof item.acceptanceCriteria === "string"
+                                ? item.acceptanceCriteria
+                                : Array.isArray(item.acceptanceCriteria)
+                                  ? item.acceptanceCriteria.join("\n")
+                                  : undefined,
+                        priority: item.priority,
+                        storyPoints: item.storyPoints,
+                    });
+                } else if (isWorkflows) {
+                    await createWorkflow(projectId, {
+                        title: item.title,
+                        content: typeof item.content === "string" ? item.content : JSON.stringify(item.content),
+                        diagram: item.diagram,
+                    });
+                } else if (isPersonas) {
+                    await createPersona(projectId, {
+                        name: item.name,
+                        role: item.role || "",
+                        bio: item.bio || "",
+                        goals: Array.isArray(item.goals) ? JSON.stringify(item.goals) : String(item.goals ?? ""),
+                        frustrations: Array.isArray(item.frustrations)
+                            ? JSON.stringify(item.frustrations)
+                            : String(item.frustrations ?? ""),
+                    });
+                } else {
+                    await createRequirement(projectId, {
+                        title: item.title,
+                        content: item.content,
+                        type: item.type || "functional",
+                        priority: item.priority,
+                    });
+                }
+            }
+            toast.success(`Saved ${kept.length} ${artifactLabel}`);
+            setShowReview(false);
+            router.push(`/projects/${projectId}/${slugOf()}`);
+        } catch {
+            toast.error("Failed to save");
+            setCreating(false);
         }
     };
 
@@ -238,17 +309,21 @@ export function RefineChat({
         if (!projectId) return;
         setPlanningMore(true);
         try {
-            const result = isStories ? await generateUserStories(projectId) : await generateRequirements(projectId);
+            const result = isStories
+                ? await generateUserStories(projectId)
+                : isPersonas
+                  ? await generatePersonas(projectId)
+                  : await generateRequirements(projectId);
             if (result?.error) throw new Error(result.error);
             const refreshed = await getProject(projectId);
             if (refreshed.project) {
                 const p: any = refreshed.project;
-                const key = isStories ? "User Stories" : "Requirements";
-                setArtifactMap((prev) => ({ ...prev, [key]: isStories ? p.userStories.length : p.requirements.length }));
+                const key = keyLabel();
+                setArtifactMap((prev) => ({ ...prev, [key]: itemsOf(p).length }));
             }
-            toast.success(isStories ? "Added more user stories" : "Added more requirements");
+            toast.success(isStories ? "Added more user stories" : isPersonas ? "Added more personas" : "Added more requirements");
         } catch {
-            toast.error(isStories ? "Failed to add more user stories" : "Failed to add more requirements");
+            toast.error(isStories ? "Failed to add more user stories" : isPersonas ? "Failed to add more personas" : "Failed to add more requirements");
         } finally {
             setPlanningMore(false);
         }
@@ -271,7 +346,7 @@ export function RefineChat({
                 pairs.length ? (
                     <>
                         {generating && <KineticSpinner className="h-4 w-4" />}
-                        {generating ? "Generating" : isStories ? "Generate stories" : "Generate plan"}
+                        {generating ? "Generating" : isStories ? "Generate stories" : isPersonas ? "Generate personas" : "Generate plan"}
                     </>
                 ) : (
                     "Done"
@@ -594,13 +669,18 @@ export function RefineChat({
                         <h1 className="mx-2 truncate text-sm font-semibold text-black sm:text-base">Review new {artifactLabel}</h1>
                         <button
                             type="button"
-                            onClick={() => {
-                                setShowReview(false);
-                                router.push(`/projects/${projectId}/${isStories ? "stories" : "requirements"}`);
-                            }}
-                            className="nebula-btn nebula-btn--primary px-4 py-2 text-xs"
+                            onClick={commitReview}
+                            disabled={creating}
+                            className="nebula-btn nebula-btn--primary px-4 py-2 text-xs disabled:opacity-60"
                         >
-                            Continue
+                            {creating ? (
+                                <>
+                                    <KineticSpinner className="h-4 w-4" />
+                                    Saving
+                                </>
+                            ) : (
+                                "Save & continue"
+                            )}
                         </button>
                     </div>
 
@@ -613,9 +693,15 @@ export function RefineChat({
                                     <div key={r.id} className="border-2 border-black bg-white p-5">
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="min-w-0 flex-1">
-                                                <p className="truncate font-semibold text-black">{r.title}</p>
+                                                <p className="truncate font-semibold text-black">{titleOf(r)}</p>
                                                 <p className="mt-1.5 text-sm leading-relaxed text-black/70">
-                                                    {typeof r.content === "string" ? r.content : ""}
+                                                    {isPersonas
+                                                        ? typeof r.bio === "string"
+                                                            ? r.bio
+                                                            : ""
+                                                        : typeof r.content === "string"
+                                                          ? r.content
+                                                          : ""}
                                                 </p>
                                             </div>
                                             <div className="flex shrink-0 items-center gap-2">
@@ -654,9 +740,15 @@ export function RefineChat({
                                                     </div>
                                                     <div className="border-2 border-black bg-black p-3 text-white">
                                                         <p className="font-mono text-[11px] uppercase tracking-tight text-white/60">New</p>
-                                                        <p className="mt-1 text-sm font-semibold">{r.title}</p>
+                                                        <p className="mt-1 text-sm font-semibold">{titleOf(r)}</p>
                                                         <p className="mt-1 text-sm text-white/70 line-clamp-3">
-                                                            {typeof r.content === "string" ? r.content : ""}
+                                                            {isPersonas
+                                                                ? typeof r.bio === "string"
+                                                                    ? r.bio
+                                                                    : ""
+                                                                : typeof r.content === "string"
+                                                                  ? r.content
+                                                                  : ""}
                                                         </p>
                                                     </div>
                                                 </div>

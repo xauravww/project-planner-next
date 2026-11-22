@@ -239,6 +239,7 @@ export async function generateRequirements(
     projectId: string,
     qaPairs?: Array<{ question: string; selected: string[] }>,
     existingRequirements?: string[],
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
@@ -314,6 +315,11 @@ export async function generateRequirements(
     if (unsafeContent) {
         console.error("Potentially unsafe content detected in AI output");
         return { error: "Generated content failed safety checks" };
+    }
+
+    // Dry run: return the proposal without persisting (used by the review flow)
+    if (opts?.dryRun) {
+        return { success: true, count: requirements.length, requirements };
     }
 
     // Transaction: Create all requirements atomically
@@ -773,7 +779,8 @@ export async function approveLLD(projectId: string, containerId?: string) {
 
 export async function generateWorkflows(
     projectId: string, 
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
@@ -830,6 +837,11 @@ export async function generateWorkflows(
 
     const { workflows } = aiResult.data;
 
+    // Dry run: return the proposal without persisting (used by the review flow)
+    if (opts?.dryRun) {
+        return { success: true, count: workflows.length, workflows };
+    }
+
     // Transaction: Create all workflows atomically
     const transactionResult = await withTransaction(async (tx) => {
         const createdWorkflows = [];
@@ -870,7 +882,8 @@ export async function generateWorkflows(
 
 export async function generateUserStories(
     projectId: string, 
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
@@ -934,6 +947,11 @@ export async function generateUserStories(
     );
     if (unsafeContent) {
         return { error: "Generated content failed safety checks" };
+    }
+
+    // Dry run: return the proposal without persisting (used by the review flow)
+    if (opts?.dryRun) {
+        return { success: true, count: stories.length, stories };
     }
 
     // Transaction: Create all user stories atomically
@@ -1199,7 +1217,8 @@ export async function generateTasks(
 // GENERATE PERSONAS
 export async function generatePersonas(
     projectId: string,
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -1227,10 +1246,15 @@ export async function generatePersonas(
                     content: `Project: ${project.name}\nDescription: ${project.description || "No description"}\n\n${qaPairs ? `Preferences:\n${qaPairs.map(qa => `Q: ${qa.question}\nA: ${qa.selected.join(", ")}`).join("\n")}\n\n` : ""}Generate 3-5 user personas.`
                 }
             ],
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const personas = parseAIResponse(aiResponse, [{ name: "Primary User", role: "End User", bio: "Main user of the system", goals: ["Achieve efficiency"], frustrations: ["Slow processes"] }]);
+
+        if (opts?.dryRun) {
+            return { success: true, count: personas.length, personas };
+        }
 
         for (const persona of personas) {
             await prisma.persona.create({
