@@ -36,11 +36,11 @@ export function KineticMarquee() {
             <div className="skew-x-2">
                 <MarqueeRow
                     items={ROW1}
-                    className="animate-marquee text-[#FF4D00] text-[clamp(1.25rem,7vw,7rem)] font-display uppercase leading-none"
+                    className="animate-marquee text-[#FF4D00] text-[clamp(1rem,4.5vw,3.5rem)] font-display uppercase leading-none"
                 />
                 <MarqueeRow
                     items={ROW2}
-                    className="animate-marquee-reverse text-white/80 text-[clamp(1rem,5.5vw,5rem)] font-display uppercase leading-none mt-2"
+                    className="animate-marquee-reverse text-white/80 text-[clamp(0.85rem,3.5vw,2.5rem)] font-display uppercase leading-none mt-1.5"
                 />
             </div>
         </section>
