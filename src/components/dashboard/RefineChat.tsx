@@ -3,7 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createProjectWithAI, generateGenerationQuestions, generateRequirements, generateUserStories, generatePersonas, getProject } from "@/actions/project";
+import {
+    createProjectWithAI,
+    generateGenerationQuestions,
+    generateRequirements,
+    generateUserStories,
+    generatePersonas,
+    generateWorkflows,
+    generateTasks,
+    generateUserJourneys,
+    generateBusinessRules,
+    generateTeamMembers,
+    getProject,
+} from "@/actions/project";
 import {
     createRequirement,
     createUserStory,
