@@ -67,7 +67,7 @@ When writing copy (UI, headings, marketing, docs, code comments that a user read
 - One consistent container everywhere (`container mx-auto px-6 max-w-[1200px]`) — no per-section `max-w-*xl` overrides that break the grid.
 - Content starts on the container lines; no off-grid indents.
 - Every section needs a visual (product mockup, real screenshot, icon set, or a concrete UI fragment). No text-only blocks.
-- Focus-visible ring must never be removed without a replacement.
+- Focus-visible ring must never be removed without a replacement. Buttons/links keep the global outline. Form inputs intentionally use a **focus border** (e.g. `KineticField` `focus:border-[#FF4D00]`) instead of an outline — no ring/outline on input boxes (see `globals.css` `:focus-visible` which excludes `input`/`select`/`textarea`).
 - Tap targets ≥ 44px on mobile.
 
 ---

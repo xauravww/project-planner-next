@@ -3,7 +3,7 @@ import { Inter, Archivo_Black, Space_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import { cn } from "@/lib/utils";
-import { Toaster } from "sonner";
+import { ThemedToaster } from "@/components/ui/ThemedToaster";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/components/providers/SessionProvider";
 
@@ -39,7 +39,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             {children}
-            <Toaster position="bottom-right" richColors />
+            <ThemedToaster />
           </AuthProvider>
         </QueryProvider>
       </body>

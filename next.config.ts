@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   experimental: {
     cpus: 1
   },
+  allowedDevOrigins: [
+    "http://localhost:3002",
+    "http://localhost:3012",
+    "http://100.81.27.4",
+    "http://100.81.27.4:3012",
+    "http://100.81.27.4:3002",
+  ],
   typescript: {
     ignoreBuildErrors: true
   }

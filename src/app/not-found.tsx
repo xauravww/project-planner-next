@@ -1,26 +1,20 @@
-"use client";
-
 import Link from "next/link";
-import { Glitchy404 } from "@/components/ui/glitchy-404-1";
-import { Button } from "@/components/ui/Button";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen w-full bg-[var(--color-nebula-bg)] overflow-hidden flex flex-col items-center justify-center gap-10 p-4">
-            <div className="max-w-full overflow-hidden flex justify-center">
-                <Glitchy404
-                    width={800}
-                    height={232}
-                    color="var(--color-nebula-fg)"
-                    className="w-full max-w-[800px] h-auto"
-                />
-            </div>
-            <p className="type-subtitle text-center max-w-md">
-                This page drifted off into the nebula. Let&apos;s get you back.
+        <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4 text-center">
+            <p className="font-mono text-xs uppercase tracking-tight text-[#FF4D00]">Error 404</p>
+            <h1 className="type-display mt-4 text-[length:clamp(3rem,12vw,10rem)]">Lost</h1>
+            <div className="mx-auto mt-4 h-1 w-10 bg-[#FF4D00]" />
+            <p className="mt-5 max-w-md text-black/70">
+                The page you&apos;re looking for doesn&apos;t exist.
             </p>
-            <Button asChild variant="nebula">
-                <Link href="/">Back to home</Link>
-            </Button>
+            <div className="mt-8">
+                <NebulaButton href="/" size="lg">
+                    Back to home
+                </NebulaButton>
+            </div>
         </div>
     );
 }

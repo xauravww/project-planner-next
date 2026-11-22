@@ -33,20 +33,17 @@ export function KineticFeatures() {
     return (
         <section id="work" className="bg-black text-white pt-10 pb-10">
             <div className="container mx-auto px-4 max-w-[1400px]">
-                <div className="mb-6 flex items-end justify-between border-b border-white/20 pb-4">
+                <div className="mb-6 border-b border-white/20 pb-4">
                     <h2 className="type-display-xl text-[length:clamp(2rem,7vw,5rem)]">
                         What it does
                     </h2>
-                    <span className="font-mono text-xs uppercase text-white/60 hidden sm:block">
-                        04 / capabilities
-                    </span>
                 </div>
 
                 <div>
                     {FEATURES.map((f) => (
                         <div
                             key={f.n}
-                            className="group border-b border-white/20 py-8 grid grid-cols-12 gap-4 items-start transition-colors hover:bg-white/5 cursor-default"
+                            className="group border-b border-white/20 py-6 grid grid-cols-12 gap-4 items-start transition-colors hover:bg-white/5 cursor-default"
                         >
                             <span className="col-span-2 md:col-span-1 font-mono text-[#FF4D00] text-sm">
                                 {f.n}
@@ -58,10 +55,10 @@ export function KineticFeatures() {
                                     </h3>
                                     <ArrowUpRight className="w-8 h-8 text-[#FF4D00] opacity-0 transition-all group-hover:opacity-100 group-hover:rotate-45" />
                                 </div>
-                                <p className="mt-3 max-w-xl text-white/70 text-lg">
+                                <p className="mt-2 max-w-xl text-white/70 text-base">
                                     {f.body}
                                 </p>
-                                <div className="mt-4 flex flex-wrap gap-2">
+                                <div className="mt-3 flex flex-wrap gap-2">
                                     {f.tags.map((t) => (
                                         <span key={t} className="rounded-full border border-white/30 px-3 py-1 font-mono text-xs uppercase text-white/80">
                                             {t}

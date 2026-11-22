@@ -396,23 +396,22 @@
 }
 
 /* Focus-visible — Taste Skill: never remove the focus ring without replacing it.
-   Sits late so it beats utility classes like focus:outline-none. */
-:where(a, button, input, select, textarea, [tabindex], summary):focus-visible {
+   Buttons/links keep an outline. Form inputs intentionally use a focus border
+   (e.g. KineticField `focus:border-[#FF4D00]`) instead of an outline, so they
+   are excluded here. Sits late so it beats utility classes like focus:outline-none. */
+:where(a, button, [tabindex], summary):focus-visible {
   outline: 2px solid var(--color-accent-blue) !important;
   outline-offset: 2px !important;
   border-radius: 2px;
 }
-:where(a, button):focus-visible {
-  outline: 2px solid var(--color-accent-blue) !important;
-  outline-offset: 2px !important;
-}
 
-/* Autofill Override */
+/* Autofill Override — match the white brutalist theme (was black/dark leftover) */
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-  -webkit-box-shadow: 0 0 0 30px black inset !important;
-  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0 30px #ffffff inset !important;
+  -webkit-text-fill-color: #000000 !important;
+  caret-color: #000000;
   transition: background-color 5000s ease-in-out 0s;
 }
