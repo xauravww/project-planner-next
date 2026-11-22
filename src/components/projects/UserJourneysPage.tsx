@@ -4,123 +4,55 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/ui/GlassCard";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Plus, Map, Trash2, Pencil, ArrowRight, Wand2, Loader2 } from "lucide-react";
-import { createUserJourney, updateUserJourney, deleteUserJourney, deleteAllUserJourneys } from "@/actions/crud";
-import { generateUserJourneys } from "@/actions/project";
-import { AIGenerationModal } from "./AIGenerationModal";
+import { Plus, Route, Trash2, Pencil, Wand2 } from "lucide-react";
+import { deleteUserJourney, deleteAllUserJourneys } from "@/actions/crud";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
-import { MessageContent } from "@/components/chat/MessageContent";
-import { ImproveButton } from "@/components/ui/ImproveButton";
 import { queryKeys } from "@/lib/query-client";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 
-interface Journey {
-    id: string;
-    title: string;
-    steps: string;
-    projectId: string;
-    createdAt: string | Date;
-    updatedAt: string | Date;
-}
+const stepsOf = (j: any): string[] => {
+    if (typeof j.steps === "string") {
+        try {
+            const parsed = JSON.parse(j.steps);
+            if (Array.isArray(parsed)) return parsed.map(String);
+        } catch {
+            // ignore
+        }
+        return j.steps.split("\n").map((s: string) => s.trim()).filter(Boolean);
+    }
+    return Array.isArray(j.steps) ? j.steps.map(String) : [];
+};
 
-export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: Journey[]; projectName: string }) {
+export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: any[]; projectName: string }) {
     const queryClient = useQueryClient();
     const router = useRouter();
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        title: "",
-        steps: "",
-    });
 
-    const { data: journeys = initialJourneys, refetch } = useQuery<Journey[]>({
+    const { data: journeys = initialJourneys } = useQuery({
         queryKey: queryKeys.projects.journeys(params.id),
-        queryFn: async () => {
-            const res = await fetch(`/api/projects/${params.id}/journeys`);
-            if (!res.ok) throw new Error("Failed to fetch journeys");
-            return res.json();
-        },
+        queryFn: async () => initialJourneys,
         initialData: initialJourneys,
-    });
-
-    const createMutation = useMutation({
-        mutationFn: (data: any) => createUserJourney(params.id, data),
-        onSuccess: async () => {
-            toast.success("Journey created");
-            setIsModalOpen(false);
-            setFormData({ title: "", steps: "" });
-            await refetch();
-        },
-        onError: () => toast.error("Failed to create journey"),
-    });
-
-    const updateMutation = useMutation({
-        mutationFn: (vars: { id: string; data: any }) => updateUserJourney(vars.id, vars.data),
-        onSuccess: async () => {
-            toast.success("Journey updated");
-            setEditingId(null);
-            setFormData({ title: "", steps: "" });
-            setIsModalOpen(false);
-            await refetch();
-        },
-        onError: () => toast.error("Failed to update journey"),
     });
 
     const deleteMutation = useMutation({
         mutationFn: (id: string) => deleteUserJourney(id),
-        onSuccess: async () => {
+        onSuccess: () => {
             toast.success("Journey deleted");
-            await refetch();
+            router.refresh();
         },
         onError: () => toast.error("Failed to delete journey"),
     });
 
     const deleteAllMutation = useMutation({
         mutationFn: (projectId: string) => deleteAllUserJourneys(projectId),
-        onSuccess: async () => {
+        onSuccess: () => {
             toast.success("All journeys deleted");
-            await refetch();
+            queryClient.invalidateQueries({ queryKey: queryKeys.projects.journeys(params.id) });
+            router.refresh();
         },
         onError: () => toast.error("Failed to delete all journeys"),
     });
-
-    const aiGenerateMutation = useMutation({
-        mutationFn: (answers: Array<{ question: string; selected: string[] }>) => generateUserJourneys(params.id, answers),
-        onSuccess: async (result) => {
-            if (result.success) {
-                toast.success("Journeys generated");
-                setIsAIModalOpen(false);
-                await refetch();
-            } else {
-                toast.error("Failed to generate");
-            }
-        },
-        onError: () => toast.error("Failed to generate journeys"),
-    });
-
-    const handleCreate = async () => {
-        if (!formData.title) return;
-        await createMutation.mutateAsync(formData);
-    };
-
-    const handleUpdate = async () => {
-        if (!editingId) return;
-        await updateMutation.mutateAsync({ id: editingId, data: formData });
-    };
-
-    const handleEdit = (journey: any) => {
-        setEditingId(journey.id);
-        setFormData({
-            title: journey.title,
-            steps: journey.steps,
-        });
-        setIsModalOpen(true);
-    };
 
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [journeyToDelete, setJourneyToDelete] = useState<string | null>(null);
@@ -142,179 +74,106 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
         }
     };
 
-    const handleAIGenerate = async (answers: Array<{ question: string; selected: string[] }>) => {
-        await aiGenerateMutation.mutateAsync(answers);
+    const handleEdit = (journey: any) => {
+        router.push(`/projects/${params.id}/journeys/new?edit=${journey.id}`);
     };
 
     return (
         <ProjectLayout projectId={params.id} projectName={projectName}>
-            <div className="h-full flex flex-col">
-                <div className="border-b border-[var(--color-nebula-hairline-strong)] px-6 py-4 flex items-center justify-between bg-[var(--color-nebula-bg)]">
-                    <div>
-                        <Breadcrumb
-                            items={[
-                                { label: "Projects", href: "/dashboard" },
-                                { label: projectName, href: `/projects/${params.id}` },
-                                { label: "Journeys" },
-                            ]}
-                        />
-                        <h1 className="type-h2 mt-2">User Journeys</h1>
-                    </div>
-                    <div className="flex gap-3">
-                        <Button variant="nebula" onClick={() => {
-                            setEditingId(null);
-                            setFormData({ title: "", steps: "" });
-                            setIsModalOpen(true);
-                        }}>
-                            <Plus className="w-4 h-4 mr-2" />
-                            Add Journey
-                        </Button>
-                        <Button
-                            variant="nebula-ghost"
-                            onClick={() => setIsAIModalOpen(true)}
-                            disabled={aiGenerateMutation.isPending}
-                        >
-                            {aiGenerateMutation.isPending ? (
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                            ) : (
-                                <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)]" />
-                            )}
-                            {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
-                        </Button>
-                        {journeys.length > 0 && (
-                            <Button
-                                variant="nebula-ghost"
-                                onClick={() => handleDelete("ALL")}
-                                className="text-sm px-4 py-2 hover:bg-[var(--color-accent-red-glow)] hover:text-[color:var(--color-accent-red)] hover:border-[var(--color-accent-red)] border border-transparent"
-                            >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                <span className="hidden sm:inline">Delete All</span>
-                                <span className="sm:hidden">Clear</span>
+            <div className="h-full flex flex-col bg-white">
+                <div className="border-b-2 border-black bg-white px-4 lg:px-6 py-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                        <h1 className="type-h3">User Journeys</h1>
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                            <Link href={`/projects/${params.id}/journeys/new`} className="nebula-btn nebula-btn--primary justify-center">
+                                <Plus className="h-4 w-4" />
+                                <span className="hidden sm:inline">Add journey</span>
+                                <span className="sm:hidden">Add</span>
+                            </Link>
+                            <Link href={`/projects/${params.id}/journeys/board`} className="nebula-btn nebula-btn--ghost justify-center">
+                                Overview
+                            </Link>
+                            <Link href={`/projects/${params.id}/journeys/connections`} className="nebula-btn nebula-btn--ghost justify-center">
+                                Connections
+                            </Link>
+                            <Button variant="nebula-ghost" onClick={() => router.push(`/projects/${params.id}/journeys/generate`)} className="transition-all duration-300 text-sm px-4 py-2">
+                                <Wand2 className="h-4 w-4 mr-2 text-[color:var(--color-nebula-fg)]" />
+                                <span className="hidden sm:inline">Generate with AI</span>
+                                <span className="sm:hidden">AI Generate</span>
                             </Button>
-                        )}
+                            {journeys.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleDelete("ALL")}
+                                    className="inline-flex items-center gap-2 border-2 border-black bg-white px-4 py-2 font-mono text-xs uppercase tracking-tight text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Delete all</span>
+                                    <span className="sm:hidden">Clear</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto p-6">
+                <div className="flex-1 overflow-auto">
                     {journeys.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
-                            <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mb-6">
-                                <Map className="w-10 h-10 text-[color:var(--color-charcoal)]" />
+                        <div className="flex items-center justify-center px-4 py-16">
+                            <div className="max-w-md text-center">
+                                <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-black">
+                                    <Route className="h-10 w-10 text-[#FF4D00]" />
+                                </div>
+                                <h3 className="type-h3 mt-6">No journeys yet</h3>
+                                <p className="mt-3 text-black/60">
+                                    Generate journeys with AI or add them manually using the buttons above.
+                                </p>
                             </div>
-                            <h3 className="type-h3 mb-2">No Journeys Yet</h3>
-                            <p className="type-body text-[color:var(--color-charcoal)] max-w-md mb-6">
-                                Map out user flows and experiences to ensure a smooth user journey.
-                            </p>
-                            <Button variant="nebula" onClick={() => setIsModalOpen(true)} size="lg">
-                                <Plus className="w-5 h-5 mr-2" />
-                                Create First Journey
-                            </Button>
                         </div>
                     ) : (
-                        <div className="space-y-6">
-                            {journeys.map((journey) => (
-                                <GlassCard key={journey.id} className="p-6 relative group">
-                                    <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button onClick={() => handleEdit(journey)} className="p-2 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-elevated)] rounded-[var(--r-md)] text-[color:var(--color-nebula-fg)]">
-                                            <Pencil className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => handleDelete(journey.id)} className="p-2 bg-[var(--color-accent-red-glow)] hover:bg-[var(--color-accent-red-glow)] rounded-[var(--r-md)] text-[color:var(--color-accent-red)]">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                        <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-3">
+                            {journeys.map((journey: any) => {
+                                const steps = stepsOf(journey);
+                                return (
+                                    <div key={journey.id} className="border-2 border-black bg-white p-5">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-semibold text-black">{journey.title}</h3>
+                                                {steps.length > 0 && (
+                                                    <ol className="mt-3 space-y-1.5">
+                                                        {steps.map((s, i) => (
+                                                            <li key={i} className="flex gap-2 text-sm text-black/70">
+                                                                <span className="font-mono text-[#FF4D00]">{i + 1}.</span>
+                                                                <span>{s}</span>
+                                                            </li>
+                                                        ))}
+                                                    </ol>
+                                                )}
+                                            </div>
+                                            <div className="flex shrink-0 gap-2">
+                                                <button onClick={() => handleEdit(journey)} aria-label="Edit journey" className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]">
+                                                    <Pencil className="h-4 w-4" />
+                                                </button>
+                                                <button onClick={() => handleDelete(journey.id)} aria-label="Delete journey" className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-
-                                    <h3 className="type-h3 mb-4 flex items-center gap-3">
-                                        <Map className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />
-                                        {journey.title}
-                                    </h3>
-
-                                    <div className="prose prose-invert max-w-none">
-                                        <MessageContent content={journey.steps} />
-                                    </div>
-                                </GlassCard>
-                            ))}
+                                );
+                            })}
                         </div>
                     )}
                 </div>
 
-                {/* Create/Edit Modal */}
-                <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
-                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
-                            <DialogTitle className="type-h3 text-[color:var(--color-nebula-fg)] text-center">
-                                {editingId ? "Edit Journey" : "New Journey"}
-                            </DialogTitle>
-                        </DialogHeader>
-                        <div className="px-6 py-5 space-y-5">
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="type-small text-[color:var(--color-charcoal)]">Title</label>
-                                    <ImproveButton
-                                        currentText={formData.title}
-                                        fieldType="user journey title"
-                                        onImprove={(improved) => setFormData({ ...formData, title: improved })}
-                                    />
-                                </div>
-                                <input
-                                    type="text"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                    className="w-full bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors"
-                                    placeholder="e.g., User Onboarding Flow"
-                                />
-                            </div>
-                            <div>
-                                <div className="flex items-center justify-between mb-1">
-                                    <label className="type-small text-[color:var(--color-charcoal)]">Steps</label>
-                                    <ImproveButton
-                                        currentText={formData.steps}
-                                        fieldType="user journey steps"
-                                        onImprove={(improved) => setFormData({ ...formData, steps: improved })}
-                                    />
-                                </div>
-                                <p className="type-caption mb-2">Describe the user journey step-by-step</p>
-                                <textarea
-                                    value={formData.steps}
-                                    onChange={(e) => setFormData({ ...formData, steps: e.target.value })}
-                                    className="w-full h-64 bg-white/5 border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-3 py-2 text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] resize-none focus:outline-none focus:border-[color:var(--color-accent-orange)] transition-colors text-mono text-sm"
-                                    placeholder={`Example:\n1. User lands on homepage\n2. Clicks 'Get Started' button\n3. Completes profile setup\n4. Receives welcome email\n5. Begins using the platform`}
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)]">
-                            <div className="flex gap-3 justify-end w-full">
-                                <Button variant="nebula-ghost" className="px-6" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-                                <Button variant="nebula" onClick={editingId ? handleUpdate : handleCreate} className="px-6 bg-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/90 text-white border-0 shadow-[0_0_15px_var(--color-accent-orange-glow)] hover:shadow-[0_0_25px_var(--color-accent-orange-glow)]">
-                                    {editingId ? "Save Changes" : "Create Journey"}
-                                </Button>
-                            </div>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                <DeleteModal
+                    isOpen={deleteModalOpen}
+                    onClose={() => setDeleteModalOpen(false)}
+                    onConfirm={confirmDelete}
+                    title={journeyToDelete === "ALL" ? "Delete All Journeys" : "Delete Journey"}
+                    description={journeyToDelete === "ALL" ? "Are you sure you want to delete ALL journeys? This action cannot be undone." : "Are you sure you want to delete this journey? This action cannot be undone."}
+                    confirmText={journeyToDelete === "ALL" ? "Delete All" : "Delete Journey"}
+                />
             </div>
-            <AIGenerationModal
-                isOpen={isAIModalOpen}
-                onClose={() => {
-                    setIsAIModalOpen(false);
-                    aiGenerateMutation.reset();
-                }}
-                projectId={params.id}
-                type="journeys"
-                onGenerate={handleAIGenerate}
-                isGenerating={aiGenerateMutation.isPending}
-            />
-            <DeleteModal
-                isOpen={deleteModalOpen}
-                onClose={() => setDeleteModalOpen(false)}
-                onConfirm={confirmDelete}
-                title={journeyToDelete === "ALL" ? "Delete All Journeys" : "Delete Journey"}
-                description={
-                    journeyToDelete === "ALL"
-                        ? "Are you sure you want to delete ALL journeys? This action cannot be undone and will permanently remove everything from this list."
-                        : "Are you sure you want to delete this journey? This action cannot be undone."
-                }
-                confirmText={journeyToDelete === "ALL" ? "Delete All" : "Delete Journey"}
-            />
         </ProjectLayout>
     );
 }

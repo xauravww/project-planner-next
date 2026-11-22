@@ -1160,7 +1160,8 @@ export async function getProject(projectId: string) {
 // GENERATE TASKS
 export async function generateTasks(
     projectId: string,
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -1192,6 +1193,10 @@ export async function generateTasks(
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const tasks = parseAIResponse(aiResponse, [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }]);
+
+        if (opts?.dryRun) {
+            return { success: true, count: tasks.length, tasks };
+        }
 
         for (const task of tasks) {
             await prisma.task.create({
@@ -1280,7 +1285,8 @@ export async function generatePersonas(
 // GENERATE USER JOURNEYS
 export async function generateUserJourneys(
     projectId: string,
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -1312,6 +1318,10 @@ export async function generateUserJourneys(
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const journeys = parseAIResponse(aiResponse, [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }]);
+
+        if (opts?.dryRun) {
+            return { success: true, count: journeys.length, journeys };
+        }
 
         for (const journey of journeys) {
             await prisma.userJourney.create({
@@ -1519,7 +1529,8 @@ export async function generateMockupImage(mockupId: string) {
 // GENERATE BUSINESS RULES
 export async function generateBusinessRules(
     projectId: string,
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -1551,6 +1562,10 @@ export async function generateBusinessRules(
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const rules = parseAIResponse(aiResponse, [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }]);
+
+        if (opts?.dryRun) {
+            return { success: true, count: rules.length, rules };
+        }
 
         for (const rule of rules) {
             await prisma.businessRule.create({

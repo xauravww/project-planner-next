@@ -4,7 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { createProjectWithAI, generateGenerationQuestions, generateRequirements, generateUserStories, generatePersonas, getProject } from "@/actions/project";
-import { createRequirement, createUserStory, createPersona, createWorkflow } from "@/actions/crud";
+import {
+    createRequirement,
+    createUserStory,
+    createPersona,
+    createWorkflow,
+    createTask,
+    createUserJourney,
+    createBusinessRule,
+} from "@/actions/crud";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 import { ArrowLeft, Send, Box } from "lucide-react";
 
@@ -50,24 +58,61 @@ export function RefineChat({
     projectId?: string;
     artifactCount?: number;
     artifactBreakdown?: Record<string, number>;
-    artifact?: "requirements" | "stories" | "personas" | "workflows";
+    artifact?: "requirements" | "stories" | "personas" | "workflows" | "tasks" | "journeys" | "businessrules";
 }) {
     const isStories = artifact === "stories";
     const isPersonas = artifact === "personas";
     const isWorkflows = artifact === "workflows";
-    const artifactLabel = isStories ? "user stories" : isPersonas ? "personas" : isWorkflows ? "workflows" : "requirements";
+    const isTasks = artifact === "tasks";
+    const isJourneys = artifact === "journeys";
+    const isBusinessRules = artifact === "businessrules";
+    const artifactLabel = isStories ? "user stories"
+        : isPersonas ? "personas"
+        : isWorkflows ? "workflows"
+        : isTasks ? "tasks"
+        : isJourneys ? "user journeys"
+        : isBusinessRules ? "business rules"
+        : "requirements";
     const itemsOf = (proj: any) =>
         isStories ? (proj?.userStories ?? [])
         : isPersonas ? (proj?.personas ?? [])
         : isWorkflows ? (proj?.workflows ?? [])
+        : isTasks ? (proj?.tasks ?? [])
+        : isJourneys ? (proj?.userJourneys ?? [])
+        : isBusinessRules ? (proj?.businessRules ?? [])
         : (proj?.requirements ?? []);
     const titleOf = (r: any) => r.title ?? r.name;
-    const textOf = (r: any) =>
-        isPersonas
-            ? `${titleOf(r)} ${r.bio || ""} ${typeof r.goals === "string" ? r.goals : ""}`
-            : `${titleOf(r)} ${typeof r.content === "string" ? r.content : ""}`;
-    const slugOf = () => (isStories ? "stories" : isPersonas ? "personas" : isWorkflows ? "workflows" : "requirements");
-    const keyLabel = () => (isStories ? "User Stories" : isPersonas ? "Personas" : isWorkflows ? "Workflows" : "Requirements");
+    const textOf = (r: any) => {
+        if (isPersonas) {
+            return `${titleOf(r)} ${r.bio || ""} ${typeof r.goals === "string" ? r.goals : ""}`;
+        }
+        if (isTasks) {
+            return `${titleOf(r)} ${typeof r.description === "string" ? r.description : ""}`;
+        }
+        if (isJourneys) {
+            return `${titleOf(r)} ${typeof r.steps === "string" ? r.steps : ""}`;
+        }
+        if (isBusinessRules) {
+            return `${titleOf(r)} ${typeof r.description === "string" ? r.description : ""} ${r.condition || ""}`;
+        }
+        return `${titleOf(r)} ${typeof r.content === "string" ? r.content : ""}`;
+    };
+    const slugOf = () =>
+        isStories ? "stories"
+        : isPersonas ? "personas"
+        : isWorkflows ? "workflows"
+        : isTasks ? "tasks"
+        : isJourneys ? "journeys"
+        : isBusinessRules ? "business-rules"
+        : "requirements";
+    const keyLabel = () =>
+        isStories ? "User Stories"
+        : isPersonas ? "Personas"
+        : isWorkflows ? "Workflows"
+        : isTasks ? "Tasks"
+        : isJourneys ? "User Journeys"
+        : isBusinessRules ? "Business Rules"
+        : "Requirements";
     const router = useRouter();
     const [started, setStarted] = useState(false);
     const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -211,6 +256,15 @@ export function RefineChat({
             } else if (isWorkflows) {
                 result = await generateWorkflows(projectId, pairs, { dryRun: true });
                 proposed = result?.workflows ?? [];
+            } else if (isTasks) {
+                result = await generateTasks(projectId, pairs, { dryRun: true });
+                proposed = result?.tasks ?? [];
+            } else if (isJourneys) {
+                result = await generateUserJourneys(projectId, pairs, { dryRun: true });
+                proposed = result?.journeys ?? [];
+            } else if (isBusinessRules) {
+                result = await generateBusinessRules(projectId, pairs, { dryRun: true });
+                proposed = result?.rules ?? [];
             } else {
                 result = await generateRequirements(
                     projectId,
@@ -276,6 +330,26 @@ export function RefineChat({
                         title: item.title,
                         content: typeof item.content === "string" ? item.content : JSON.stringify(item.content),
                         diagram: item.diagram,
+                    });
+                } else if (isTasks) {
+                    await createTask(projectId, {
+                        title: item.title,
+                        description: item.description || "",
+                        status: item.status || "TODO",
+                        priority: item.priority || "MEDIUM",
+                        assignee: item.assignee || "",
+                    });
+                } else if (isJourneys) {
+                    await createUserJourney(projectId, {
+                        title: item.title,
+                        steps: Array.isArray(item.steps) ? JSON.stringify(item.steps) : String(item.steps ?? ""),
+                    });
+                } else if (isBusinessRules) {
+                    await createBusinessRule(projectId, {
+                        title: item.title,
+                        description: item.description || "",
+                        condition: item.condition || "",
+                        action: item.action || "",
                     });
                 } else if (isPersonas) {
                     await createPersona(projectId, {
