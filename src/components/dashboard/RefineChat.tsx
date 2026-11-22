@@ -12,6 +12,7 @@ import {
     createTask,
     createUserJourney,
     createBusinessRule,
+    createMember,
 } from "@/actions/crud";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 import { ArrowLeft, Send, Box } from "lucide-react";
@@ -58,7 +59,7 @@ export function RefineChat({
     projectId?: string;
     artifactCount?: number;
     artifactBreakdown?: Record<string, number>;
-    artifact?: "requirements" | "stories" | "personas" | "workflows" | "tasks" | "journeys" | "businessrules";
+    artifact?: "requirements" | "stories" | "personas" | "workflows" | "tasks" | "journeys" | "businessrules" | "team";
 }) {
     const isStories = artifact === "stories";
     const isPersonas = artifact === "personas";
@@ -66,12 +67,14 @@ export function RefineChat({
     const isTasks = artifact === "tasks";
     const isJourneys = artifact === "journeys";
     const isBusinessRules = artifact === "businessrules";
+    const isTeam = artifact === "team";
     const artifactLabel = isStories ? "user stories"
         : isPersonas ? "personas"
         : isWorkflows ? "workflows"
         : isTasks ? "tasks"
         : isJourneys ? "user journeys"
         : isBusinessRules ? "business rules"
+        : isTeam ? "team members"
         : "requirements";
     const itemsOf = (proj: any) =>
         isStories ? (proj?.userStories ?? [])
@@ -80,6 +83,7 @@ export function RefineChat({
         : isTasks ? (proj?.tasks ?? [])
         : isJourneys ? (proj?.userJourneys ?? [])
         : isBusinessRules ? (proj?.businessRules ?? [])
+        : isTeam ? (proj?.members ?? [])
         : (proj?.requirements ?? []);
     const titleOf = (r: any) => r.title ?? r.name;
     const textOf = (r: any) => {
@@ -95,6 +99,9 @@ export function RefineChat({
         if (isBusinessRules) {
             return `${titleOf(r)} ${typeof r.description === "string" ? r.description : ""} ${r.condition || ""}`;
         }
+        if (isTeam) {
+            return `${titleOf(r)} ${r.role || ""} ${r.email || ""}`;
+        }
         return `${titleOf(r)} ${typeof r.content === "string" ? r.content : ""}`;
     };
     const slugOf = () =>
@@ -104,6 +111,7 @@ export function RefineChat({
         : isTasks ? "tasks"
         : isJourneys ? "journeys"
         : isBusinessRules ? "business-rules"
+        : isTeam ? "team"
         : "requirements";
     const keyLabel = () =>
         isStories ? "User Stories"
@@ -112,6 +120,7 @@ export function RefineChat({
         : isTasks ? "Tasks"
         : isJourneys ? "User Journeys"
         : isBusinessRules ? "Business Rules"
+        : isTeam ? "Team"
         : "Requirements";
     const router = useRouter();
     const [started, setStarted] = useState(false);
@@ -265,6 +274,9 @@ export function RefineChat({
             } else if (isBusinessRules) {
                 result = await generateBusinessRules(projectId, pairs, { dryRun: true });
                 proposed = result?.rules ?? [];
+            } else if (isTeam) {
+                result = await generateTeamMembers(projectId, pairs, { dryRun: true });
+                proposed = result?.members ?? [];
             } else {
                 result = await generateRequirements(
                     projectId,
@@ -350,6 +362,12 @@ export function RefineChat({
                         description: item.description || "",
                         condition: item.condition || "",
                         action: item.action || "",
+                    });
+                } else if (isTeam) {
+                    await createMember(projectId, {
+                        name: item.name,
+                        role: item.role || "",
+                        email: item.email || "",
                     });
                 } else if (isPersonas) {
                     await createPersona(projectId, {

@@ -1590,7 +1590,8 @@ export async function generateBusinessRules(
 // GENERATE TEAM MEMBERS
 export async function generateTeamMembers(
     projectId: string,
-    qaPairs?: Array<{ question: string; selected: string[] }>
+    qaPairs?: Array<{ question: string; selected: string[] }>,
+    opts?: { dryRun?: boolean },
 ) {
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
@@ -1622,6 +1623,10 @@ export async function generateTeamMembers(
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const members = parseAIResponse(aiResponse, [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }]);
+
+        if (opts?.dryRun) {
+            return { success: true, count: members.length, members };
+        }
 
         for (const member of members) {
             await prisma.member.create({
