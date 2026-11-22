@@ -22,9 +22,9 @@ const STEPS = [
 
 export function KineticHow() {
     return (
-        <section id="how" className="bg-white pt-14 pb-10">
+        <section id="how" className="bg-white py-8">
             <div className="container mx-auto px-4 max-w-[1400px]">
-                <div className="mb-8 border-b-2 border-black pb-4">
+                <div className="mb-4 border-b-2 border-black pb-2">
                     <h2 className="type-display-xl text-[length:clamp(2rem,7vw,5rem)]">How it works</h2>
                 </div>
 

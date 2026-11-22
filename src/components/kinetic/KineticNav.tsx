@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { X } from "lucide-react";
 import { Logo } from "@/components/kinetic/Logo";
@@ -13,9 +13,21 @@ const NAV = [
 
 export function KineticNav() {
     const [open, setOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 8);
+        onScroll();
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
 
     return (
-        <header className="fixed top-0 inset-x-0 z-50">
+        <header
+            className={`fixed top-0 inset-x-0 z-50 transition-colors duration-200 ${
+                scrolled ? "border-b-2 border-black bg-white" : "bg-transparent"
+            }`}
+        >
             <div className="container mx-auto px-4 max-w-[1400px] py-4 grid grid-cols-3 items-center">
                 {/* logo */}
                 <div className="justify-self-start">

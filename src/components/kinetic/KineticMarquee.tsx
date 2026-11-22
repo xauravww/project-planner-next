@@ -32,7 +32,7 @@ function MarqueeRow({ items, className }: { items: string[]; className?: string 
 
 export function KineticMarquee() {
     return (
-        <section className="bg-black -skew-x-2 pt-6 pb-3 overflow-hidden">
+        <section className="bg-black -skew-x-2 py-4 overflow-hidden">
             <div className="skew-x-2">
                 <MarqueeRow
                     items={ROW1}

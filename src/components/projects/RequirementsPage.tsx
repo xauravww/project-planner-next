@@ -4,14 +4,12 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/Button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
-import { Input } from "@/components/ui/Input";
-import { Plus, Pencil, Trash2, Wand2, FileText, Loader2, Search, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Wand2, FileText, Loader2, Search, X, Filter } from "lucide-react";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { generateRequirements } from "@/actions/project";
-import { createRequirement, updateRequirement, deleteRequirement, deleteAllRequirements } from "@/actions/crud";
+import { deleteRequirement, deleteAllRequirements } from "@/actions/crud";
 import { AIGenerationModal } from "./AIGenerationModal";
-import { ImproveButton } from "@/components/ui/ImproveButton";
+import { CategoryFilterSelect } from "@/components/ui/CategoryFilterSelect";
 import { queryKeys, invalidateModule } from "@/lib/query-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -25,15 +23,6 @@ export default function RequirementsPageClient({
 }) {
     const queryClient = useQueryClient();
     const router = useRouter();
-    const [isAdding, setIsAdding] = useState(false);
-    const [editingId, setEditingId] = useState<string | null>(null);
-    const [formData, setFormData] = useState({
-        title: "",
-        content: "",
-        type: "functional",
-        priority: "must-have",
-    });
-
     const [isAIModalOpen, setIsAIModalOpen] = useState(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [requirementToDelete, setRequirementToDelete] = useState<string | null>(null);
@@ -55,78 +44,27 @@ export default function RequirementsPageClient({
         queryClient.setQueryData(queryKeys.projects.requirements(project.id), initialRequirements);
     }, [initialRequirements, project.id, queryClient]);
 
+    const [showFilter, setShowFilter] = useState(false);
+    const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+    const categoryOf = (r: any) => {
+        const c: string = typeof r.content === "string" ? r.content : "";
+        const m = c.match(/^Category:\s*(.+)$/m);
+        return m ? m[1].trim() : null;
+    };
+
+    const categories = Array.from(
+        new Set(requirements.map((r: any) => categoryOf(r)).filter(Boolean) as string[]),
+    );
+
     const lower = search.trim().toLowerCase();
-    const filtered = lower
-        ? requirements.filter(
-              (r: any) =>
-                  (r.title || "").toLowerCase().includes(lower) ||
-                  (typeof r.content === "string" && r.content.toLowerCase().includes(lower)),
-          )
-        : requirements;
-
-    // Create mutation with optimistic update
-    const createMutation = useMutation({
-        mutationFn: (vars: { projectId: string; data: any }) => 
-            createRequirement(vars.projectId, vars.data),
-        onMutate: async (vars) => {
-            await queryClient.cancelQueries({ queryKey: queryKeys.projects.requirements(project.id) });
-            const previousRequirements = queryClient.getQueryData<any[]>(queryKeys.projects.requirements(project.id)) || [];
-            
-            // Optimistically add to UI
-            const optimisticRequirement = {
-                id: `temp-${Date.now()}`,
-                ...vars.data,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-            };
-            
-            queryClient.setQueryData(
-                queryKeys.projects.requirements(project.id),
-                (old: any[] = []) => [...old, optimisticRequirement]
-            );
-            
-            return { previousRequirements };
-        },
-        onError: (err, vars, context) => {
-            queryClient.setQueryData(queryKeys.projects.requirements(project.id), context?.previousRequirements);
-            toast.error("Failed to create requirement");
-        },
-        onSuccess: (result) => {
-            if (result.success) {
-                toast.success("Requirement created successfully");
-            } else {
-                toast.error(result.error || "Failed to create requirement");
-            }
-            invalidateModule(project.id, "requirements");
-        },
-    });
-
-    // Update mutation
-    const updateMutation = useMutation({
-        mutationFn: (vars: { id: string; data: any }) => updateRequirement(vars.id, vars.data),
-        onMutate: async (vars) => {
-            await queryClient.cancelQueries({ queryKey: queryKeys.projects.requirements(project.id) });
-            const previousRequirements = queryClient.getQueryData<any[]>(queryKeys.projects.requirements(project.id)) || [];
-            
-            queryClient.setQueryData(
-                queryKeys.projects.requirements(project.id),
-                (old: any[] = []) => old.map((req) => (req.id === vars.id ? { ...req, ...vars.data } : req))
-            );
-            
-            return { previousRequirements };
-        },
-        onError: (err, vars, context) => {
-            queryClient.setQueryData(queryKeys.projects.requirements(project.id), context?.previousRequirements);
-            toast.error("Failed to update requirement");
-        },
-        onSuccess: (result) => {
-            if (result.success) {
-                toast.success("Requirement updated");
-            } else {
-                toast.error(result.error || "Failed to update requirement");
-            }
-            invalidateModule(project.id, "requirements");
-        },
+    const filtered = requirements.filter((r: any) => {
+        const matchesSearch =
+            !lower ||
+            (r.title || "").toLowerCase().includes(lower) ||
+            (typeof r.content === "string" && r.content.toLowerCase().includes(lower));
+        const matchesCategory = !activeCategory || categoryOf(r) === activeCategory;
+        return matchesSearch && matchesCategory;
     });
 
     // Delete mutation
@@ -210,29 +148,8 @@ export default function RequirementsPageClient({
         await aiGenerateMutation.mutateAsync(answers);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (editingId) {
-            await updateMutation.mutateAsync({ id: editingId, data: formData });
-            setEditingId(null);
-        } else {
-            await createMutation.mutateAsync({ projectId: project.id, data: formData });
-            setIsAdding(false);
-        }
-
-        setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-    };
-
     const handleEdit = (req: any) => {
-        setEditingId(req.id);
-        setFormData({
-            title: req.title,
-            content: req.content,
-            type: req.type,
-            priority: req.priority,
-        });
-        setIsAdding(false);
+        router.push(`/projects/${project.id}/requirements/new?edit=${req.id}`);
     };
 
     const handleDelete = (id: string) => {
@@ -281,8 +198,28 @@ export default function RequirementsPageClient({
                                 </button>
                             )}
                         </div>
-                        {!isAdding && !editingId && (
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                        <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-end">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowFilter((v) => !v);
+                                        setActiveCategory(null);
+                                    }}
+                                    className={`inline-flex items-center gap-2 border-2 px-4 py-2 font-mono text-xs uppercase tracking-tight transition-colors ${
+                                        showFilter
+                                            ? "border-black bg-black text-white"
+                                            : "border-black bg-white text-black hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                    }`}
+                                >
+                                    <Filter className="h-4 w-4" />
+                                    Filter
+                                </button>
+                                <Link href={`/projects/${project.id}/requirements/board`} className="nebula-btn nebula-btn--ghost justify-center">
+                                    Overview
+                                </Link>
+                                <Link href={`/projects/${project.id}/requirements/connections`} className="nebula-btn nebula-btn--ghost justify-center">
+                                    Connections
+                                </Link>
                                 <Link href={`/projects/${project.id}/requirements/new`} className="nebula-btn nebula-btn--primary justify-center">
                                     <Plus className="h-4 w-4" />
                                     <span className="hidden sm:inline">Add requirement</span>
@@ -308,122 +245,26 @@ export default function RequirementsPageClient({
                                     </button>
                                 )}
                             </div>
-                        )}
                     </div>
                 </div>
             </div>
 
+            {/* Category filter (toggleable, searchable select) */}
+            {showFilter && (
+                <div className="border-b-2 border-black bg-white px-4 py-3 lg:px-6">
+                    <div className="max-w-7xl mx-auto flex items-center gap-3">
+                        <span className="font-mono text-xs uppercase tracking-tight text-black/50">Filter by</span>
+                        <CategoryFilterSelect
+                            categories={categories}
+                            value={activeCategory}
+                            onChange={setActiveCategory}
+                        />
+                    </div>
+                </div>
+            )}
+
             {/* Content */}
             <div className="flex-1 overflow-auto">
-                {/* Add/Edit Modal */}
-                <Dialog 
-                    open={isAdding || editingId !== null} 
-                    onOpenChange={(open) => {
-                        if (!open) {
-                            setIsAdding(false);
-                            setEditingId(null);
-                            setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-                        }
-                    }}
-                >
-                    <DialogContent className="sm:max-w-[700px] border-2 border-black bg-white text-black rounded-none max-h-[90vh] overflow-hidden flex flex-col p-0">
-                        <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
-                            <DialogTitle className="flex items-center gap-3 text-[color:var(--color-nebula-fg)] type-h3">
-                                <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)]">
-                                    {editingId ? <Pencil className="w-5 h-5 text-[color:var(--color-nebula-fg)]" /> : <FileText className="w-5 h-5 text-[color:var(--color-nebula-fg)]" />}
-                                </div>
-                                {editingId ? "Edit Requirement" : "New Requirement"}
-                            </DialogTitle>
-                        </DialogHeader>
-
-                        <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
-                            <form id="requirement-form" onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)]">Title</label>
-                                        <ImproveButton
-                                            currentText={formData.title}
-                                            fieldType="requirement title"
-                                            onImprove={(improved) => setFormData({ ...formData, title: improved })}
-                                        />
-                                    </div>
-                                    <Input
-                                        value={formData.title}
-                                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                                        placeholder="e.g., User Authentication System"
-                                        required
-                                    />
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)]">Description</label>
-                                        <ImproveButton
-                                            currentText={formData.content}
-                                            fieldType="requirement description"
-                                            onImprove={(improved) => setFormData({ ...formData, content: improved })}
-                                        />
-                                    </div>
-                                    <textarea
-                                        value={formData.content}
-                                        onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="flex min-h-[120px] w-full resize-y border-2 border-black bg-white px-4 py-3 text-sm text-black placeholder:text-black/40 outline-none transition-colors focus:border-[#FF4D00]"
-                                        placeholder="Describe the requirement in detail…"
-                                        required
-                                    />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Type</label>
-                                        <select
-                                            value={formData.type}
-                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                            className="w-full border-2 border-black bg-white px-4 py-3 text-sm text-black outline-none transition-colors focus:border-[#FF4D00]"
-                                        >
-                                            <option value="functional">Functional</option>
-                                            <option value="non-functional">Non-Functional</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="text-sm font-medium text-[color:var(--color-charcoal)] mb-2 block">Priority</label>
-                                        <select
-                                            value={formData.priority}
-                                            onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                            className="w-full border-2 border-black bg-white px-4 py-3 text-sm text-black outline-none transition-colors focus:border-[#FF4D00]"
-                                        >
-                                            <option value="must-have">Must Have</option>
-                                            <option value="should-have">Should Have</option>
-                                            <option value="nice-to-have">Nice to Have</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        
-                        <DialogFooter className="px-6 py-5 border-t border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-bg)]/50 flex flex-row justify-between sm:justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="nebula-ghost"
-                                className="px-6"
-                                onClick={() => {
-                                    setIsAdding(false);
-                                    setEditingId(null);
-                                    setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
-                                }}
-                            >
-                                Cancel
-                            </Button>
-                            <Button 
-                                type="submit" 
-                                form="requirement-form"
-                                variant="nebula"
-                                className="px-6"
-                            >
-                                {editingId ? "Update Requirement" : "Create Requirement"}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-
                 {/* Content List */}
                 {requirements.length === 0 ? (
                     <div className="flex items-center justify-center px-4 py-16">

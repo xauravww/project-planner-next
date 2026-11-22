@@ -100,6 +100,7 @@ const FEATURES = [
         mock: <RequirementsMock />,
         body: "Functional and non-functional requirements with type and priority.",
         tags: ["AI", "Functional", "Priority"],
+        accent: "#2563EB",
     },
     {
         n: "02",
@@ -107,6 +108,7 @@ const FEATURES = [
         mock: <StoriesMock />,
         body: "Clear, shippable user stories your team can act on.",
         tags: ["AI", "Stories"],
+        accent: "#16A34A",
     },
     {
         n: "03",
@@ -114,6 +116,7 @@ const FEATURES = [
         mock: <ArchitectureMock />,
         body: "System design with modules, edges, and HLD/LLD diagrams.",
         tags: ["HLD", "LLD"],
+        accent: "#0D9488",
     },
     {
         n: "04",
@@ -121,14 +124,15 @@ const FEATURES = [
         mock: <WorkflowsMock />,
         body: "Auto-generated workflows and a task backlog with exports.",
         tags: ["Workflows", "Tasks"],
+        accent: "#FF4D00",
     },
 ];
 
 export function KineticFeatures() {
     return (
-        <section id="work" className="bg-white text-black pt-10 pb-10">
+        <section id="work" className="bg-white text-black py-8">
             <div className="container mx-auto px-4 max-w-[1400px]">
-                <div className="mb-8 border-b-2 border-black pb-4">
+                <div className="mb-4 border-b-2 border-black pb-2">
                     <h2 className="type-display-xl text-[length:clamp(2rem,7vw,5rem)]">
                         What it does
                     </h2>
@@ -141,7 +145,7 @@ export function KineticFeatures() {
                             className="group flex flex-col border-2 border-black bg-white p-4 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#000]"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="font-mono text-xs text-[#FF4D00]">{f.n}</span>
+                                <span className="font-mono text-xs" style={{ color: f.accent }}>{f.n}</span>
                                 <ArrowUpRight className="h-4 w-4 text-black opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" />
                             </div>
 
@@ -155,7 +159,11 @@ export function KineticFeatures() {
                             </p>
                             <div className="mt-3 flex flex-wrap gap-1.5">
                                 {f.tags.map((t) => (
-                                    <span key={t} className="rounded-full border border-black px-2 py-0.5 font-mono text-[11px] uppercase text-black/80">
+                                    <span
+                                        key={t}
+                                        className="rounded-full border-2 px-2 py-0.5 font-mono text-[11px] uppercase"
+                                        style={{ borderColor: f.accent, color: f.accent }}
+                                    >
                                         {t}
                                     </span>
                                 ))}

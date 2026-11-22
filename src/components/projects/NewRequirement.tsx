@@ -4,22 +4,35 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { createRequirement } from "@/actions/crud";
+import { createRequirement, updateRequirement } from "@/actions/crud";
 import { suggestCategory } from "@/actions/project";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 import { KineticSelect } from "@/components/ui/KineticSelect";
 import { CategoryCombobox } from "@/components/ui/CategoryCombobox";
 import { ArrowLeft, X, Wand2 } from "lucide-react";
 
-export default function NewRequirement({ projectId }: { projectId: string }) {
+const parseInitialCategory = (content?: string) => {
+    if (!content) return { body: "", category: "" };
+    const idx = content.indexOf("\n");
+    const first = idx === -1 ? content : content.slice(0, idx);
+    const m = first.match(/^Category:\s*(.+)$/i);
+    if (m) {
+        return { category: m[1].trim(), body: idx === -1 ? "" : content.slice(idx + 1) };
+    }
+    return { category: "", body: content };
+};
+
+export default function NewRequirement({ projectId, initial, backHref }: { projectId: string; initial?: any; backHref?: string }) {
     const router = useRouter();
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [type, setType] = useState("functional");
-    const [priority, setPriority] = useState("must-have");
+    const editing = Boolean(initial);
+    const parsed = parseInitialCategory(initial?.content);
+    const [title, setTitle] = useState(initial?.title || "");
+    const [content, setContent] = useState(parsed.body);
+    const [type, setType] = useState(initial?.type || "functional");
+    const [priority, setPriority] = useState(initial?.priority || "must-have");
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState("");
-    const [category, setCategory] = useState("");
+    const [category, setCategory] = useState(parsed.category || "");
     const categories = ["Authentication", "Payments", "Core", "UX", "Data", "Integrations", "Reports"];
     const [suggesting, setSuggesting] = useState(false);
     const [suggestion, setSuggestion] = useState<{ suggested: string; matched: string | null } | null>(null);
@@ -57,17 +70,15 @@ export default function NewRequirement({ projectId }: { projectId: string }) {
         setError("");
         const contentFinal = category ? `Category: ${category}\n${content.trim()}` : content.trim();
         try {
-            const res = await createRequirement(projectId, {
-                title: title.trim(),
-                content: contentFinal,
-                type,
-                priority,
-            });
+            const data = { title: title.trim(), content: contentFinal, type, priority };
+            const res = editing
+                ? await updateRequirement(initial.id, data)
+                : await createRequirement(projectId, data);
             if (res?.success) {
-                toast.success("Requirement added");
+                toast.success(editing ? "Requirement updated" : "Requirement added");
                 router.push(`/projects/${projectId}/requirements`);
             } else {
-                setError(res?.error || "Failed to add requirement");
+                setError(res?.error || (editing ? "Failed to update requirement" : "Failed to add requirement"));
                 setSubmitting(false);
             }
         } catch {
@@ -79,14 +90,14 @@ export default function NewRequirement({ projectId }: { projectId: string }) {
     return (
         <div className="mx-auto max-w-xl px-4 py-10 md:py-14">
             <Link
-                href={`/projects/${projectId}/requirements`}
+                href={backHref || `/projects/${projectId}/requirements`}
                 className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-tight text-black/60 transition-colors hover:text-[#FF4D00]"
             >
                 <ArrowLeft className="h-4 w-4" />
-                Back to requirements
+                Back
             </Link>
 
-            <h1 className="type-h3 mt-6">New requirement</h1>
+            <h1 className="type-h3 mt-6">{editing ? "Edit requirement" : "New requirement"}</h1>
 
             <form onSubmit={submit} className="mt-8 space-y-5">
                 {error && (
@@ -224,7 +235,7 @@ export default function NewRequirement({ projectId }: { projectId: string }) {
                             "Add requirement"
                         )}
                     </button>
-                    <Link href={`/projects/${projectId}/requirements`} className="nebula-btn nebula-btn--ghost flex-1 justify-center">
+                    <Link href={backHref || `/projects/${projectId}/requirements`} className="nebula-btn nebula-btn--ghost flex-1 justify-center">
                         Cancel
                     </Link>
                 </div>

@@ -26,9 +26,9 @@ const PLANS = [
 
 export function KineticPricing() {
     return (
-        <section id="pricing" className="bg-white pt-16 pb-10">
+        <section id="pricing" className="bg-white py-8">
             <div className="container mx-auto px-4 max-w-[1400px]">
-                <div className="mb-10 border-b-2 border-black pb-4">
+                <div className="mb-4 border-b-2 border-black pb-2">
                     <h2 className="type-display-xl text-[length:clamp(2rem,7vw,5rem)]">Pricing</h2>
                 </div>
 

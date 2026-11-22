@@ -2,12 +2,12 @@
 
 export function KineticCTA() {
     return (
-        <section id="contact" className="bg-white py-24">
+        <section id="contact" className="bg-[#FF4D00] py-16">
             <div className="container mx-auto px-4 max-w-[1400px] text-center">
-                <h2 className="type-display text-[length:clamp(2.5rem,14vw,10rem)] leading-[0.9]">
+                <h2 className="type-display text-[length:clamp(2.5rem,14vw,10rem)] leading-[0.9] text-black">
                     Start planning
                     <br />
-                    <span className="text-[#FF4D00]">your next build</span>
+                    <span>your next build</span>
                 </h2>
                 <div className="mt-10 flex justify-center">
                     <a

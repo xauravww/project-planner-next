@@ -19,10 +19,10 @@ function HeroAppFrame() {
                 </div>
 
                 <div className="grid grid-cols-12">
-                    {/* sidebar */}
-                    <div className="col-span-3 border-r-2 border-black p-3">
-                        <div className="mb-3 font-mono text-[10px] uppercase tracking-tight text-black/50">Menu</div>
-                        <div className="space-y-1.5">
+                    {/* sidebar — stacks as a top bar on mobile */}
+                    <div className="col-span-12 border-b-2 border-black p-3 sm:col-span-3 sm:border-b-0 sm:border-r-2">
+                        <div className="mb-2 font-mono text-[10px] uppercase tracking-tight text-black/50 sm:mb-3">Menu</div>
+                        <div className="flex flex-wrap gap-1.5 sm:block sm:space-y-1.5">
                             {["Dashboard", "Requirements", "Stories", "Architecture"].map((l, i) => (
                                 <div
                                     key={l}
@@ -37,7 +37,7 @@ function HeroAppFrame() {
                     </div>
 
                     {/* content */}
-                    <div className="col-span-9 p-4">
+                    <div className="col-span-12 min-w-0 p-4 sm:col-span-9">
                         <div className="flex items-center justify-between">
                             <span className="font-mono text-[10px] uppercase tracking-tight text-black/50">Requirements · 4</span>
                             <span className="border border-black px-2 py-0.5 font-mono text-[10px] uppercase tracking-tight text-black">
@@ -50,10 +50,10 @@ function HeroAppFrame() {
                                 { t: "Secure payments", n: "02", tag: "Functional" },
                                 { t: "Fast loading", n: "03", tag: "Non-functional" },
                             ].map((r) => (
-                                <div key={r.n} className="flex items-center gap-3 border border-black px-3 py-2">
+                                <div key={r.n} className="flex items-center gap-2 border border-black px-2 py-2 sm:gap-3 sm:px-3">
                                     <span className="font-mono text-[10px] text-[#FF4D00]">{r.n}</span>
-                                    <span className="flex-1 text-[12px] font-semibold text-black">{r.t}</span>
-                                    <span className="border border-black px-2 py-0.5 font-mono text-[9px] uppercase tracking-tight text-black/70">
+                                    <span className="min-w-0 flex-1 truncate text-[12px] font-semibold text-black">{r.t}</span>
+                                    <span className="hidden shrink-0 border border-black px-2 py-0.5 font-mono text-[9px] uppercase tracking-tight text-black/70 sm:inline">
                                         {r.tag}
                                     </span>
                                 </div>
