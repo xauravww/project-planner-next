@@ -7,7 +7,7 @@ export function KineticCTA() {
                 <h2 className="type-display text-[length:clamp(2.5rem,14vw,10rem)] leading-[0.9]">
                     Start planning
                     <br />
-                    <span className="text-[#FF4D00]">your next build.</span>
+                    <span className="text-[#FF4D00]">your next build</span>
                 </h2>
                 <div className="mt-10 flex justify-center">
                     <a

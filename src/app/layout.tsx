@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Archivo_Black, Space_Mono } from "next/font/google";
+import { Inter, Archivo_Black, Space_Mono, Caveat } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import { cn } from "@/lib/utils";
@@ -22,6 +22,10 @@ const spaceMono = Space_Mono({
     variable: "--font-mono",
     weight: ["400", "700"],
 });
+const caveat = Caveat({
+    subsets: ["latin"],
+    variable: "--font-hand",
+});
 
 export const metadata: Metadata = {
   title: "NebulaPlan | AI Project Planning",
@@ -35,7 +39,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.variable, archivo.variable, spaceMono.variable, inter.className, "min-h-screen bg-background text-foreground")}>
+      <body className={cn(inter.variable, archivo.variable, spaceMono.variable, caveat.variable, inter.className, "min-h-screen bg-background text-foreground")}>
         <QueryProvider>
           <AuthProvider>
             {children}
