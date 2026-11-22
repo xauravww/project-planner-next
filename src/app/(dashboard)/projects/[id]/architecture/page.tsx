@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getProject } from "@/actions/project";
 import ArchitecturePageClient from "@/components/projects/ArchitecturePage";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default async function ArchitecturePage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
@@ -22,12 +21,6 @@ export default async function ArchitecturePage({ params }: { params: Promise<{ i
             projectType={result.project.description || undefined}
         >
             <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 bg-black/20">
-                    <Breadcrumb items={[
-                        { label: result.project.name, href: `/projects/${id}` },
-                        { label: "Architecture" }
-                    ]} />
-                </div>
                 <div className="flex-1 overflow-auto overflow-x-hidden">
                     <ArchitecturePageClient
                         project={result.project}

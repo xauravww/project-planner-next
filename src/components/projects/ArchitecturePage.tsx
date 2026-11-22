@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2, Plus } from "lucide-react";
@@ -122,7 +121,7 @@ export default function ArchitecturePageClient({
     return (
         <div className="h-full flex flex-col relative">
             {/* Header */}
-            <div className="nebula-hairline-b px-4 lg:px-6 py-4 lg:py-6 bg-[var(--color-nebula-bg)]">
+            <div className="border-b-2 border-black px-4 lg:px-6 py-4 bg-white">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="flex items-center gap-4 justify-center lg:justify-start">

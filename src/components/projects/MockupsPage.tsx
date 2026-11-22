@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Plus, Trash2, Image as ImageIcon, Wand2, Code2, Sparkles } from "lucide-react";
 import { createMockup, deleteMockup, deleteAllMockups } from "@/actions/crud";
@@ -131,7 +130,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
         <ProjectLayout projectId={params.id} projectName={projectName}>
             <div className="h-full flex flex-col relative">
                 {/* Header */}
-                <div className="border-b border-[var(--color-nebula-hairline-strong)] px-4 lg:px-6 py-4 lg:py-6 bg-[var(--color-nebula-bg)]">
+                <div className="border-b-2 border-black px-4 lg:px-6 py-4 bg-white">
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                             <div className="flex items-center gap-4 justify-center lg:justify-start">
@@ -208,9 +207,9 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                             <div className="p-4 sm:p-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     {mockups.map((mockup) => (
-                                        <GlassCard
+                                        <div
                                             key={mockup.id}
-                                            className="group relative overflow-hidden cursor-pointer transition-all duration-200 hover:scale-[1.02] p-0"
+                                            className="group relative overflow-hidden cursor-pointer border-2 border-black bg-white"
                                             onClick={() => router.push(`/projects/${params.id}/mockups/${mockup.id}`)}
                                         >
                                             <div className="aspect-[4/3] bg-[var(--color-nebula-bg)] relative">
@@ -263,7 +262,7 @@ export default function MockupsPage({ params, mockups, projectName }: { params: 
                                                     {new Date(mockup.createdAt).toISOString().split('T')[0]}
                                                 </p>
                                             </div>
-                                        </GlassCard>
+                                        </div>
                                     ))}
                                 </div>
                             </div>
