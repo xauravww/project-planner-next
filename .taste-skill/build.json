@@ -1,0 +1,11 @@
+{
+ "page": null,
+ "url": "http://localhost:3002/",
+ "root": null,
+ "kind": null,
+ "category": "AI-powered project planning SaaS",
+ "primary": "Start planning",
+ "rounds": 3,
+ "start": "2026-11-22T02:02:37.623Z",
+ "by": "gate.mjs --start"
+}

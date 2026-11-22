@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export function Hero() {
@@ -22,7 +22,6 @@ export function Hero() {
                     transition={{ duration: 0.5, delay: 0.2 }}
                     className="mb-8 inline-flex items-center rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-1.5 text-sm font-medium text-blue-400 backdrop-blur-sm"
                 >
-                    <Sparkles className="mr-2 h-4 w-4 text-blue-400" />
                     <span>The Future of Project Planning</span>
                 </motion.div>
 
@@ -137,7 +136,7 @@ export function Hero() {
                             {/* Overlay Text */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px] md:backdrop-blur-none md:bg-transparent pointer-events-none">
                                 <div className="text-center md:hidden">
-                                    <div className="text-4xl mb-2">🚀</div>
+                                    <div className="h-10 w-10 mb-2 rounded-xl bg-[var(--color-accent-blue)] opacity-60" />
                                     <p className="text-white font-medium">Interactive Dashboard</p>
                                 </div>
                             </div>

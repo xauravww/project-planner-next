@@ -55,3 +55,29 @@
 .animate-shimmer {
   animation: shimmer 2s infinite;
 }
+
+/* Kinetic Orange: continuous linear marquee + rotating indicator */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee-x 22s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-x 28s linear infinite reverse;
+  will-change: transform;
+}
+
+@keyframes spin-circle {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-spin-12 {
+  animation: spin-circle 12s linear infinite;
+  will-change: transform;
+}

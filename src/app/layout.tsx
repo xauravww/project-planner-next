@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fraunces, Geist_Mono } from "next/font/google";
+import { Inter, Archivo_Black, Space_Mono } from "next/font/google";
 import "./globals.css";
 import "./animations.css";
 import { cn } from "@/lib/utils";
@@ -7,22 +7,25 @@ import { Toaster } from "sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { AuthProvider } from "@/components/providers/SessionProvider";
 
-// Resend-style 3-family stack:
-// - Inter        → all UI and marketing body (stand-in for ABC Favorit)
-// - Fraunces     → hero/section serif headlines (stand-in for Domaine Display)
-// - Geist Mono   → code wells, inline code, mono labels
+// Kinetic Orange stack:
+// - Archivo Black → display headlines (uppercase, heavy)
+// - Space Mono    → metadata / labels / UI
+// - Inter         → body text
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const fraunces = Fraunces({
+const archivo = Archivo_Black({
     subsets: ["latin"],
-    variable: "--font-serif",
-    style: ["normal", "italic"],
-    weight: ["300", "400", "500"],
+    variable: "--font-display",
+    weight: "400",
 });
-const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
+const spaceMono = Space_Mono({
+    subsets: ["latin"],
+    variable: "--font-mono",
+    weight: ["400", "700"],
+});
 
 export const metadata: Metadata = {
-  title: "NebulaPlan - The Future of Project Planning",
-  description: "A premium project planning tool for modern developers.",
+  title: "NebulaPlan — AI Project Planning",
+  description: "Turn an idea into a working plan. AI project planning.",
 };
 
 export default function RootLayout({
@@ -31,8 +34,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={cn(inter.variable, fraunces.variable, geistMono.variable, inter.className, "min-h-screen bg-background text-foreground")}>
+    <html lang="en">
+      <body className={cn(inter.variable, archivo.variable, spaceMono.variable, inter.className, "min-h-screen bg-background text-foreground")}>
         <QueryProvider>
           <AuthProvider>
             {children}

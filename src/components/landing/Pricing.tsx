@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { Section, Container, SectionHeader } from "@/components/ui/Section";
 import { NebulaCard } from "@/components/ui/NebulaCard";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 
 type Plan = {
     name: string;
@@ -44,7 +45,7 @@ const plans: Plan[] = [
 
 export function Pricing() {
     return (
-        <Section id="pricing">
+        <Section id="pricing" fill>
             <Container>
                 <SectionHeader
                     title="Simple, fair"
@@ -52,9 +53,9 @@ export function Pricing() {
                     subtitle="Everything is FREE for a limited time during our launch. No credit card required."
                 />
 
-                <div className="text-center mb-8">
-                    <span className="inline-block px-4 py-2 bg-amber-500/20 border border-amber-500/30 rounded-full text-amber-300 text-sm font-medium">
-                        Limited time offer — Regular pricing starts soon
+                <div className="text-center mb-10">
+                    <span className="inline-block px-4 py-2 rounded-full border border-[var(--color-accent-blue)] bg-[var(--color-accent-blue-glow)] text-sm font-medium text-[color:var(--color-accent-blue)]">
+                        Limited time offer. Regular pricing starts soon
                     </span>
                 </div>
 
@@ -69,9 +70,9 @@ export function Pricing() {
                                 <span
                                     className="absolute -top-3 left-1/2 -translate-x-1/2 nebula-pill"
                                     style={{
-                                        background: "var(--color-accent-green)",
-                                        color: "var(--color-nebula-bg)",
-                                        borderColor: "var(--color-accent-green)",
+                                        background: "var(--color-accent-blue)",
+                                        color: "var(--color-on-light)",
+                                        borderColor: "var(--color-accent-blue)",
                                     }}
                                 >
                                     Recommended
@@ -82,17 +83,18 @@ export function Pricing() {
                                 <h3 className="type-h3">{plan.name}</h3>
                                 <div className="flex items-baseline gap-2">
                                     <span
-                                        className="text-[color:var(--color-accent-green)]"
+                                        className="text-[color:var(--color-nebula-fg)]"
                                         style={{
-                                            fontFamily: "var(--font-serif), serif",
+                                            fontFamily: "var(--font-sans), 'Inter', sans-serif",
                                             fontSize: "var(--nebula-display-lg)",
+                                            fontWeight: 600,
                                             lineHeight: 1,
                                             letterSpacing: "-0.02em",
                                         }}
                                     >
                                         {plan.price}
                                     </span>
-                                    <span className="text-xs text-amber-300/80 font-medium bg-amber-500/10 px-2 py-0.5 rounded-full">
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full text-[color:var(--color-accent-blue)] bg-[var(--color-accent-blue-glow)]">
                                         Limited time
                                     </span>
                                 </div>
@@ -102,18 +104,19 @@ export function Pricing() {
                             <ul className="space-y-3 flex-1">
                                 {plan.features.map((feature) => (
                                     <li key={feature} className="flex items-start gap-3 type-small text-[color:var(--color-nebula-fg-soft)]">
-                                        <Check className="w-4 h-4 mt-0.5 text-[color:var(--color-accent-green)] shrink-0" />
+                                        <Check className="w-4 h-4 mt-0.5 text-[color:var(--color-accent-blue)] shrink-0" />
                                         {feature}
                                     </li>
                                 ))}
                             </ul>
 
-                            <a
+                            <NebulaButton
                                 href="/signup"
-                                className={`nebula-btn ${plan.popular ? "nebula-btn--primary" : "nebula-btn--ghost"} justify-center w-full`}
+                                variant={plan.popular ? "primary" : "ghost"}
+                                className="w-full"
                             >
                                 {plan.cta}
-                            </a>
+                            </NebulaButton>
                         </NebulaCard>
                     ))}
                 </div>

@@ -1,0 +1,2413 @@
+{
+ "start": "2026-11-22T02:02:37.623Z",
+ "round": 1,
+ "idle": 0,
+ "errors": 0,
+ "status": "fail",
+ "history": [
+  {
+   "at": "2026-11-22T02:04:59.920Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 62,
+   "round": 1,
+   "reused": false,
+   "stopHookActive": false
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": null,
+  "url": "http://localhost:3002/",
+  "root": null,
+  "kind": null,
+  "category": "AI-powered project planning SaaS",
+  "primary": "Start planning",
+  "rounds": 3,
+  "start": "2026-11-22T02:02:37.623Z",
+  "by": "gate.mjs --start"
+ },
+ "manual": true,
+ "roundKey": "65df7be6c563a6c0:da39a3ee",
+ "roundFree": false,
+ "idleFree": false,
+ "blockKey": null,
+ "fp": "65df7be6c563a6c0",
+ "page": "http://localhost:3002/",
+ "found": {
+  "fails": [
+   {
+    "check": "no-visual",
+    "where": "section#story \"WHY WE BUILT THIS A short note from the \"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "section#story \"WHY WE BUILT THIS A short note from the \""
+    ]
+   },
+   {
+    "check": "no-visual",
+    "where": "section#features \"Everything you need to ship faster\"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "section#features \"Everything you need to ship faster\""
+    ]
+   },
+   {
+    "check": "no-visual",
+    "where": "section#how \"From idea to shipped\"",
+    "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+    "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "no-visual"
+    ],
+    "wheres": [
+     "section#how \"From idea to shipped\""
+    ]
+   },
+   {
+    "check": "text-only",
+    "where": "section#pricing \"Simple, fair pricing\"",
+    "msg": "the section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+    "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-only"
+    ],
+    "wheres": [
+     "section#pricing \"Simple, fair pricing\""
+    ]
+   },
+   {
+    "check": "text-only",
+    "where": "section#faq \"Frequently asked\"",
+    "msg": "the section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+    "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-only"
+    ],
+    "wheres": [
+     "section#faq \"Frequently asked\""
+    ]
+   },
+   {
+    "check": "text-only",
+    "where": "section#cta \"Ready to build the next big thing?\"",
+    "msg": "the closing section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+    "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-only"
+    ],
+    "wheres": [
+     "section#cta \"Ready to build the next big thing?\""
+    ]
+   },
+   {
+    "check": "copy-fact",
+    "where": "div.relative.z-10 > div.grid.items-center > div.w-full.max-w-xl > h1.type-display \"Plan projects that actually ship\"",
+    "msg": "the first screen holds no number, price, date, place, platform or genre",
+    "fix": "put one hard fact from the brief on the first screen: a number, a price, a date, the place, the platforms it runs on or a game's genre; take it from the brief or remove the claim",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-fact"
+    ],
+    "wheres": [
+     "div.relative.z-10 > div.grid.items-center > div.w-full.max-w-xl > h1.type-display \"Plan projects that actually ship\""
+    ]
+   },
+   {
+    "check": "copy-headings",
+    "where": "section#features > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Everything you need to ship faster\"",
+    "msg": "\"Everything you need to ship faster\" names no product, part, place or section (17 headings like it; at most one brand line per page) (and 16 more like it: \"Modular architecture\", \"Edge fast\", \"Secure by default\", \"AI suggestions\", ...)",
+    "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "copy-headings"
+    ],
+    "wheres": [
+     "section#features > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Everything you need to ship faster\""
+    ]
+   },
+   {
+    "check": "top-stagger",
+    "where": "div:nth-of-type(2) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center",
+    "msg": "4 boxes side by side start at different heights (+5, +0, +10, +3px)",
+    "fix": "align the tops of the boxes in the row (one floor, one ceiling)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "top-stagger"
+    ],
+    "wheres": [
+     "div:nth-of-type(2) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center"
+    ]
+   },
+   {
+    "check": "text-contrast",
+    "where": "div:nth-of-type(4) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center \"Encrypted at rest\"",
+    "msg": "a caption, label or muted line in #059669 on #ffffff reads 3.77:1 (needs 4.5:1); 2 like it, like \"spec synced\"",
+    "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-contrast"
+    ],
+    "wheres": [
+     "div:nth-of-type(4) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center \"Encrypted at rest\""
+    ]
+   },
+   {
+    "check": "focus-ring",
+    "where": ".focus\\:outline-none:focus",
+    "msg": "\".focus\\:outline-none:focus\" in %5Broot-of-the-server%5D__5eb38dc2._.css removes the focus outline and sets nothing in its place",
+    "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "focus-ring"
+    ],
+    "wheres": [
+     ".focus\\:outline-none:focus"
+    ]
+   },
+   {
+    "check": "focus-ring",
+    "where": ".focus-visible\\:outline-none:focus-visible",
+    "msg": "\".focus-visible\\:outline-none:focus-visible\" in %5Broot-of-the-server%5D__5eb38dc2._.css removes the focus outline and sets nothing in its place",
+    "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "focus-ring"
+    ],
+    "wheres": [
+     ".focus-visible\\:outline-none:focus-visible"
+    ]
+   },
+   {
+    "check": "focus-visible",
+    "where": "script:nth-of-type(12) > nextjs-portal",
+    "msg": "Tab stop 34, nextjs-portal \"\": the focus lands on something you cannot see",
+    "fix": "keep the kit's ring (system.css :focus-visible, 2px in --action, there at once); a control that hides itself shows on focus",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "focus-visible"
+    ],
+    "wheres": [
+     "script:nth-of-type(12) > nextjs-portal"
+    ]
+   },
+   {
+    "check": "moment-none",
+    "where": "(the page)",
+    "msg": "a software page (read from the title) deals no moment: every kind carries one, two on a long page (moments.md)",
+    "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "moment-none"
+    ],
+    "wheres": [
+     "(the page)"
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "div.min-h-screen > footer \"NNebulaPlanOne home for visionary builde\"",
+    "msg": "the section is 420px tall (0.5 screens), 480px short of one screen (900px): every section after the hero is one screen or two, 2px either way (SR-2)",
+    "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "div.min-h-screen > footer \"NNebulaPlanOne home for visionary builde\""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "section#features \"Everything you need to ship fasterA smal\"",
+    "msg": "the section is 1412px tall (1.6 screens), 388px short of two screens (1800px): every section after the hero is one screen or two, 2px either way (SR-2)",
+    "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height",
+     "screen-height"
+    ],
+    "wheres": [
+     "section#features \"Everything you need to ship fasterA smal\"",
+     "#features section.relative.overflow-hidden \"Everything you need to ship fast\""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "section#demo \"Plan in plain English. Get back code.Des\"",
+    "msg": "the section starts at 3213px, 387px above the screen grid (4 x 900px): sections start on whole screens (SR-2)",
+    "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "section#demo \"Plan in plain English. Get back code.Des\""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "section#how \"From idea to shippedThree steps. No setu\"",
+    "msg": "the section starts at 4113px, 387px above the screen grid (5 x 900px): sections start on whole screens (SR-2)",
+    "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "section#how \"From idea to shippedThree steps. No setu\""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "section#testimonials \"“NebulaPlan changed how we handle requir\"",
+    "msg": "the section starts at 5013px, 387px above the screen grid (6 x 900px): sections start on whole screens (and 4 more like it: \"Simple, fair pricingEver\", \"Frequently askedHow does\", \"Ready to build the next \") (SR-2)",
+    "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "section#testimonials \"“NebulaPlan changed how we handle requir\""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "section#cta \"Ready to build the next big thing?Stop p\"",
+    "msg": "the screen at scroll 8133px (the top of section 10) shows 416px of section 9 and the content of 2 sections, over 24px each beside section 10: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "section#cta \"Ready to build the next big thing?Stop p\"",
+     "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "section#demo > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Plan in plain English. Get back code.\"",
+    "msg": "the screen at scroll 2700px (stride 3) shows 387px of section 4 and the heading of section 4 whole and the content of 2 sections, over 24px each beside section 3: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "section#demo > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Plan in plain English. Get back code.\""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "section#how > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"From idea to shipped\"",
+    "msg": "the screen at scroll 3600px (stride 4) shows 387px of section 5 and the heading of section 5 whole and the content of 2 sections, over 24px each beside section 4: a screen shows one section (another may peek 8px, 24px WARN) (and 5 more like it: scroll 4500px, scroll 5400px, scroll 6300px) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "section#how > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"From idea to shipped\""
+    ]
+   },
+   {
+    "check": "one-heading",
+    "where": "div.wrap.container > div.grid.gap-12 > figure.mb-0 > span.block.leading-none \"“\"",
+    "msg": "headings of two sections show whole on one screen at 8 of 163 scroll positions (4.9%; at scroll 4350, 4400, 4450, 4500px), here with \"01\": at most 3% on a desktop (SR-5)",
+    "fix": "make the sections one screen tall so their headings sit a screen apart and two never share one",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-heading"
+    ],
+    "wheres": [
+     "div.wrap.container > div.grid.gap-12 > figure.mb-0 > span.block.leading-none \"“\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.min-h-screen \"NNebulaPlanFeaturesDemoPricingFAQSign In\"",
+    "msg": "a <div> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+    "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.min-h-screen \"NNebulaPlanFeaturesDemoPricingFAQSign In\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) \"Plan projects that actually shipTurn a r\"",
+    "msg": "the section needs exactly one in-flow child .wrap (it has 1 in-flow child, 0 .wrap) (SR-6)",
+    "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) \"Plan projects that actually shipTurn a r\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) > div.pointer-events-none.absolute",
+    "msg": "a child of section 1 beside its .wrap is no valid background layer: not img, picture, video or canvas; z-index auto, not 0; a hero layer with neither alt nor aria-hidden=\"true\" (SR-6)",
+    "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) > div.pointer-events-none.absolute"
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.wrap.container > div.grid.gap-12 > div.space-y-2 > p.type-eyebrow \"Why we built this\"",
+    "msg": "2 text blocks start on a left line at x 644, 524px from the container's left: text starts on the container's left, or on one split line (x 630, 732, 834) (also \"A short note from the team.\") (SR-6)",
+    "fix": "start the text on the container's left, or on the one split line every split shares",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.wrap.container > div.grid.gap-12 > div.space-y-2 > p.type-eyebrow \"Why we built this\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.overflow-hidden > div.px-6.pb-6 \"We read your high-level idea and break i\"",
+    "msg": "1 text block starts on a left line at x 569, 449px from the container's left: text starts on the container's left, or on one split line (x 630, 732, 834) (and 10 more like it: x 176, x 165, x 144) (SR-6)",
+    "fix": "start the text on the container's left, or on the one split line every split shares",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.overflow-hidden > div.px-6.pb-6 \"We read your high-level idea and break i\""
+    ]
+   },
+   {
+    "check": "container-edges",
+    "where": "div.wrap.container > div.grid.grid-cols-1 > div:nth-of-type(6) > div.h-full.flex \"Git nativePlans sync with your repo. Cod\"",
+    "msg": "a box over half the container wide runs 144-1296px, not on the container's lines at 120-1320px (and 2 more like it: \"123\", \"© 2026 NebulaPlan Inc. A\") (SR-6)",
+    "fix": "run the picture or box from the container's left line to its right line, or put it in a row or a split",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "container-edges"
+    ],
+    "wheres": [
+     "div.wrap.container > div.grid.grid-cols-1 > div:nth-of-type(6) > div.h-full.flex \"Git nativePlans sync with your repo. Cod\""
+    ]
+   },
+   {
+    "check": "row-lines",
+    "where": "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\"",
+    "msg": "a row of 3 items: its first item starts at 169px, the container's left line at 120px; its last item ends at 1271px, the container's right line at 1320px (2px either way) (SR-7)",
+    "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "row-lines"
+    ],
+    "wheres": [
+     "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\""
+    ]
+   },
+   {
+    "check": "row-lines",
+    "where": "div.nebula-surface.overflow-hidden > div:nth-of-type(2) > div.p-5.space-y-4 > div.grid.grid-cols-3",
+    "msg": "a row of 3 items: its first item starts at 761px, its column's left line at 736px; its last item ends at 1271px, its column's right line at 1296px (2px either way) (SR-7)",
+    "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "row-lines"
+    ],
+    "wheres": [
+     "div.nebula-surface.overflow-hidden > div:nth-of-type(2) > div.p-5.space-y-4 > div.grid.grid-cols-3"
+    ]
+   },
+   {
+    "check": "row-lines",
+    "where": "section#features > div.wrap.container > div.grid.grid-cols-1 \"Modular architectureDrag, drop, and conn\"",
+    "msg": "a row of 2 items: its first item starts at 144px, the container's left line at 120px; its last item ends at 1296px, the container's right line at 1320px (2px either way) (and 3 more like it: \"“Finally bridges PMs and\", \"StarterFREELimited timeP\", \"NNebulaPlanOne home for \") (SR-7)",
+    "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "row-lines"
+    ],
+    "wheres": [
+     "section#features > div.wrap.container > div.grid.grid-cols-1 \"Modular architectureDrag, drop, and conn\""
+    ]
+   },
+   {
+    "check": "split-pair",
+    "where": "section#how > div.wrap.container > div.grid.gap-12 \"01Start with an ideaDrop in your rough t\"",
+    "msg": "the two columns of the split start 106px apart at the top: a split's columns are top-aligned, 8px either way (SR-8)",
+    "fix": "top-align both columns of the split (align-items: start)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "split-pair"
+    ],
+    "wheres": [
+     "section#how > div.wrap.container > div.grid.gap-12 \"01Start with an ideaDrop in your rough t\""
+    ]
+   },
+   {
+    "check": "split-pair",
+    "where": "section#testimonials > div.wrap.container > div.grid.gap-12 \"“NebulaPlan changed how we handle requir\"",
+    "msg": "the two columns of the split start 31px apart at the top (centred on each other): a split's columns are top-aligned, 8px either way (SR-8)",
+    "fix": "top-align both columns of the split (align-items: start)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "split-pair"
+    ],
+    "wheres": [
+     "section#testimonials > div.wrap.container > div.grid.gap-12 \"“NebulaPlan changed how we handle requir\""
+    ]
+   },
+   {
+    "check": "split-pair",
+    "where": "section#demo > div.wrap.container > div.grid.items-start \"One prompt, one planDrop in a one-liner.\"",
+    "msg": "the two columns of the split start 30px apart at the top (centred on each other): a split's columns are top-aligned, 8px either way (and 1 more like it: \"Plan projects that actua\") (SR-8)",
+    "fix": "top-align both columns of the split (align-items: start)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "split-pair"
+    ],
+    "wheres": [
+     "section#demo > div.wrap.container > div.grid.items-start \"One prompt, one planDrop in a one-liner.\""
+    ]
+   },
+   {
+    "check": "split-pair",
+    "where": "section#faq > div.wrap.container > div.grid.gap-12 \"How does the AI planning work?We read yo\"",
+    "msg": "the split's left column starts with a picture or a box, not text: text left, the visual right, on every split (SR-8)",
+    "fix": "put the text in the left column and the visual in the right, on every split",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "split-pair"
+    ],
+    "wheres": [
+     "section#faq > div.wrap.container > div.grid.gap-12 \"How does the AI planning work?We read yo\""
+    ]
+   },
+   {
+    "check": "split-pair",
+    "where": "main > section.relative.overflow-hidden:nth-of-type(1) > div.relative.z-10 > div.grid.items-center \"Plan projects that actually shipTurn a r\"",
+    "msg": "the split does not run edge to edge on the container: its left column starts at 144px, the container's left at 120px; its right column ends at 1296px, the container's right at 1320px (SR-8)",
+    "fix": "run the split from the container's left line to its right line",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "split-pair"
+    ],
+    "wheres": [
+     "main > section.relative.overflow-hidden:nth-of-type(1) > div.relative.z-10 > div.grid.items-center \"Plan projects that actually shipTurn a r\""
+    ]
+   },
+   {
+    "check": "collide",
+    "where": "div.min-h-screen > nav.fixed.top-0 \"N NebulaPlan\"",
+    "msg": "at the top of the page the fixed bar covers \"Plan projects that actually ship\": nothing scrolls it out from under the bar",
+    "fix": "on a phone nothing lies on anything else: let the section grow with its content (min-height for its screens, never a fixed height; --hm: 2 when it needs two) or cut what it holds; keep pictures and cards off the buttons; pad the page under a fixed bar by the bar's height (top: the first section; end: the footer)",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency",
+    "ids": [
+     "collide"
+    ],
+    "wheres": [
+     "div.min-h-screen > nav.fixed.top-0 \"N NebulaPlan\""
+    ]
+   },
+   {
+    "check": "text-only",
+    "where": "section#testimonials \"“ NebulaPlan changed how we handle requi\"",
+    "msg": "the quote section is only text: no picture, icon, mock or effect in it (4 sections like it at this width)",
+    "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "text-only"
+    ],
+    "wheres": [
+     "section#testimonials \"“ NebulaPlan changed how we handle requi\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "section.relative.overflow-hidden div.relative.w-full \"nebulaplan.app\"",
+    "msg": "starts at x 736; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "section.relative.overflow-hidden div.relative.w-full \"nebulaplan.app\""
+    ]
+   },
+   {
+    "check": "edge-right",
+    "where": "#story div.hidden.md:block",
+    "msg": "ends at x 596; the right line is 1296",
+    "fix": "end it on the .wrap right line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-right"
+    ],
+    "wheres": [
+     "#story div.hidden.md:block"
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#story div.md:col-span-4.space-y-2 \"Why we built thisA short note fr\"",
+    "msg": "starts at x 644; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#story div.md:col-span-4.space-y-2 \"Why we built thisA short note fr\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#story p.type-eyebrow \"Why we built this\"",
+    "msg": "starts at x 644; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#story p.type-eyebrow \"Why we built this\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#story p.type-small \"A short note from the team.\"",
+    "msg": "starts at x 644; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#story p.type-small \"A short note from the team.\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#story p.text-sm.text-[color:var(--color-nebula-fg)] \"Saurav · Founder\"",
+    "msg": "starts at x 192; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#story p.text-sm.text-[color:var(--color-nebula-fg)] \"Saurav · Founder\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#story p.text-xs.text-[color:var(--color-ash)] \"NebulaPlan\"",
+    "msg": "starts at x 192; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#story p.text-xs.text-[color:var(--color-ash)] \"NebulaPlan\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#features div.md:col-span-2.min-h-[180px] \"Edge fastZero-latency planning, \"",
+    "msg": "starts at x 728; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#features div.md:col-span-2.min-h-[180px] \"Edge fastZero-latency planning, \""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#features div.md:col-span-2.min-h-[180px] \"Team syncReal-time editing acros\"",
+    "msg": "starts at x 728; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#features div.md:col-span-2.min-h-[180px] \"Team syncReal-time editing acros\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#features div.md:col-span-2.min-h-[180px] \"AI suggestionsSmart picks for yo\"",
+    "msg": "starts at x 728; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#features div.md:col-span-2.min-h-[180px] \"AI suggestionsSmart picks for yo\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#demo div.min-w-0",
+    "msg": "starts at x 736; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#demo div.min-w-0"
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#how div.hidden.lg:block",
+    "msg": "starts at x 864; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#how div.hidden.lg:block"
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#testimonials div.hidden.lg:block",
+    "msg": "starts at x 864; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#testimonials div.hidden.lg:block"
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#testimonials div \"“Cut my planning time in half. T\"",
+    "msg": "starts at x 922.7; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#testimonials div \"“Cut my planning time in half. T\""
+    ]
+   },
+   {
+    "check": "edge-right",
+    "where": "#faq div.hidden.lg:block",
+    "msg": "ends at x 496; the right line is 1296",
+    "fix": "end it on the .wrap right line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-right"
+    ],
+    "wheres": [
+     "#faq div.hidden.lg:block"
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "#faq div.lg:col-span-2.space-y-[var(--space-md)] \"How does the AI planning work?We\"",
+    "msg": "starts at x 544; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "#faq div.lg:col-span-2.space-y-[var(--space-md)] \"How does the AI planning work?We\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"ProductFeaturesDemoPricingFAQ\"",
+    "msg": "starts at x 444; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"ProductFeaturesDemoPricingFAQ\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"CompanyAboutHow it worksTestimon\"",
+    "msg": "starts at x 744; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"CompanyAboutHow it worksTestimon\""
+    ]
+   },
+   {
+    "check": "edge-left",
+    "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"LegalPrivacy PolicyTerms of Serv\"",
+    "msg": "starts at x 1044; the lines are 144 and the column starts",
+    "fix": "start it on the .wrap left line",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "edge-left"
+    ],
+    "wheres": [
+     "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"LegalPrivacy PolicyTerms of Serv\""
+    ]
+   },
+   {
+    "check": "neighbour",
+    "where": "#features section.relative.overflow-hidden \"Everything you need to ship fast\"",
+    "msg": "framed, 169px of #demo section.relative.overflow-hidden \"Plan in plain English. Get back \" shows",
+    "fix": "keep the next section's heading and picture out of this screen",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "neighbour"
+    ],
+    "wheres": [
+     "#features section.relative.overflow-hidden \"Everything you need to ship fast\""
+    ]
+   },
+   {
+    "check": "sparse",
+    "where": "#cta section.relative.overflow-hidden \"Ready to build the next big thin\"",
+    "msg": "its content fills 48% of its screen; merge it or give it its visual (0.55 is the aim)",
+    "fix": "fill the section or make it a screen shorter",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "sparse"
+    ],
+    "wheres": [
+     "#cta section.relative.overflow-hidden \"Ready to build the next big thin\""
+    ]
+   },
+   {
+    "check": "screen-height",
+    "where": "#pricing section.relative.overflow-hidden \"Simple, fair pricingEverything i\"",
+    "msg": "1763px, 2.09 screens; a section is exactly one or two (--h), or on a phone at least one that its content fills",
+    "fix": "make the section exactly one or two screens (--h: 1 or 2)",
+    "widths": [
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "screen-height"
+    ],
+    "wheres": [
+     "#pricing section.relative.overflow-hidden \"Simple, fair pricingEverything i\""
+    ]
+   },
+   {
+    "check": "hero-fold",
+    "where": "section.relative.overflow-hidden section.relative.overflow-hidden \"Plan projects that actually ship\"",
+    "msg": "ends at y 846, past the fold (844): 1.00 screens tall",
+    "fix": "the hero fills the first screen alone, its button inside it",
+    "widths": [
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "hero-fold"
+    ],
+    "wheres": [
+     "section.relative.overflow-hidden section.relative.overflow-hidden \"Plan projects that actually ship\""
+    ]
+   }
+  ],
+  "warns": [
+   {
+    "check": "nav",
+    "where": "div.min-h-screen > nav.fixed.top-0 > div.container.mx-auto > a.flex.items-center \"N NebulaPlan\"",
+    "msg": "the nav is lopsided: its first item starts 10px inside the content's edge (144px), while its last ends on the other edge",
+    "fix": "start the nav's first item and end its last on the content's two edges",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cut-text",
+    "where": "div.relative.z-10 > div.grid.items-center > div.w-full.max-w-xl > h1.type-display \"Plan projects that actually ship\"",
+    "msg": "sits across the edge of a panel behind it",
+    "fix": "give the text room: no overflow clipping a line, no line past its box",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "cta",
+    "where": "section#features \"Everything you need to ship faster\"",
+    "msg": "a section over 1.5 screens long with no link or button in it",
+    "fix": "add the action: a button in the hero, one on every priced item, one in the closing section",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-actions",
+    "where": "nav.fixed.top-0 > div.container.mx-auto > div.hidden.items-center:nth-of-type(2) > a.nebula-btn.inline-flex \"Get Started\"",
+    "msg": "3 labels for one target /signup: \"Get Started\", \"Get started\", \"Start planning free\"",
+    "fix": "few actions, one wording: at most 2 in the hero, the main action word for word in nav, hero and close",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-actions",
+    "where": "(the page)",
+    "msg": "the main action \"Start planning\" does not read word for word the same in the nav or hero and the closing section",
+    "fix": "few actions, one wording: at most 2 in the hero, the main action word for word in nav, hero and close",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "col-edge",
+    "where": "section#faq > div.wrap.container > div.grid.gap-12 > div:nth-of-type(2) \"How does the AI planning work? We read y\"",
+    "msg": "the second column starts at 3 places: 544px (section#faq), 736px (section.relative.overflow-hidden:nth-of-type(1), section#demo), 864px (section#how, section#testimonials)",
+    "fix": "start the second column of every split on the same one or two grid columns",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) / section#story",
+    "msg": "362px between these sections, +50% against the median 241px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#features / section#demo",
+    "msg": "177px between these sections, -27% against the median 241px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#faq / section#cta",
+    "msg": "371px between these sections, +54% against the median 241px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "hole",
+    "where": "section#cta \"Ready to build the next big thing?\"",
+    "msg": "an empty hole 736x296px inside the section (33% of the screen's height), with content above and below it",
+    "fix": "close the empty space: move the content together, or give the space the visual it lacks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-family",
+    "where": "div.min-h-screen > nav.fixed.top-0",
+    "msg": "the nav changes form as the page scrolls: its fill changes from none to #ffffff",
+    "fix": "keep one nav on every screen: the same bar, fill, links and type",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "nav.fixed.top-0 > div.container.mx-auto > div.hidden.items-center:nth-of-type(1) > a.text-sm.transition-colors:nth-of-type(1) \"Features\"",
+    "msg": "\"Features\" opens a section headed \"Everything you need to ship faster\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "nav.fixed.top-0 > div.container.mx-auto > div.hidden.items-center:nth-of-type(1) > a.text-sm.transition-colors:nth-of-type(2) \"Demo\"",
+    "msg": "\"Demo\" opens a section headed \"Plan in plain English. Get back code.\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-labels",
+    "where": "nav.fixed.top-0 > div.container.mx-auto > div.hidden.items-center:nth-of-type(1) > a.text-sm.transition-colors:nth-of-type(4) \"FAQ\"",
+    "msg": "\"FAQ\" opens a section headed \"Frequently asked\"",
+    "fix": "name each nav link after the heading of the section it opens",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-length",
+    "where": "section#story \"WHY WE BUILT THIS A short note from the \"",
+    "msg": "3 sections over 90 words a screen outside the UI mocks (\"WHY WE BUILT THIS A shor\" 109, \"Simple, fair pricing\" 95, \"“ NebulaPlan changed how\" 93); 67 words a screen across the page (647 words in 9.6 screens): a tech page says it in about 80 or fewer",
+    "fix": "cut every section to its heading, one line and the product UI: the UI says the rest; no second paragraph, no list of feature sentences",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav-current",
+    "where": "div.min-h-screen > nav.fixed.top-0",
+    "msg": "the nav stays on screen with 4 links to the page's sections, but never marks the one you are in (no link changes as the page scrolls)",
+    "fix": "mark the link of the section on screen (a colour, a weight or a line under it) as the visitor scrolls",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "empty-area",
+    "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) \"Plan projects that actually ship\"",
+    "msg": "42% of the section is empty: 176px above its first content, 208px under its last (a.nebula-btn.inline-flex:nth-of-type(1)), in its 901px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "empty-area",
+    "where": "section#story \"WHY WE BUILT THIS A short note from the \"",
+    "msg": "40% of the section is empty: 32px above its first content, 160px of empty rows between its content, 48px under its last (span.w-9.h-9), 9% beside content that covers under half the container, in its 740px of rows (WARN over 35%, FAIL over 50%)",
+    "fix": "fill the section: a picture or a second column beside the words, or more of its own content; the section stays one or two screens tall (T-height)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "skip-link",
+    "where": "div.min-h-screen:nth-of-type(2) > nav.fixed.top-0 > div.container.mx-auto > a.flex.items-center \"N NebulaPlan\"",
+    "msg": "the first Tab stop is \"N NebulaPlan\", not a skip link: a keyboard user tabs through the whole nav on every visit",
+    "fix": "add the starter's skip link as the header's first child: <a class=\"skip-link\" href=\"#top\">Skip to content</a>",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "share-meta",
+    "where": "head",
+    "msg": "the head lacks og:title, og:description, og:image, twitter:card, theme-color: a shared link shows no picture or title of its own",
+    "fix": "copy the head block of starter.html: og tags, twitter:card, the icon and theme-color (references/system.md, Head)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-air",
+    "where": "section#cta \"Ready to build the next big thing?Stop p\"",
+    "msg": "the content fills 53.1% of the section's height (478 of 900px): 55% or more (40% WARN) (SR-3)",
+    "fix": "fill the section to 55%: more content, a picture or a background layer, or merge it into the section above as its last block",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.min-h-screen > nav.fixed.top-0 > div.container.mx-auto > a.flex.items-center \"N NebulaPlan\"",
+    "msg": "a 138x32px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.min-h-screen > nav.fixed.top-0 > div.container.mx-auto > button.z-50.p-2",
+    "msg": "a 40x40px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.grid.items-center > div.w-full.max-w-xl > div.flex.flex-wrap > a.nebula-btn.inline-flex:nth-of-type(1) \"Get started\"",
+    "msg": "a 109x36px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.grid.items-center > div.w-full.max-w-xl > div.flex.flex-wrap > a.nebula-btn.inline-flex:nth-of-type(2) \"View demo\"",
+    "msg": "a 109x36px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.wrap.container > div.grid.max-w-6xl > div.relative.flex:nth-of-type(1) > a.nebula-btn.inline-flex \"Get started\"",
+    "msg": "a 276x36px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.wrap.container > div.grid.max-w-6xl > div.relative.flex:nth-of-type(2) > a.nebula-btn.inline-flex \"Get started\"",
+    "msg": "a 276x36px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.space-y-10 > div.max-w-3xl.space-y-6 > div.flex.pt-2 > a.nebula-btn.inline-flex \"Start planning free\"",
+    "msg": "a 158x36px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.wrap.container > div.grid.gap-12 > div:nth-of-type(1) > a.flex.items-center \"N NebulaPlan\"",
+    "msg": "a 342x32px tap target: under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "tap-size",
+    "where": "div.grid.gap-12 > div:nth-of-type(1) > div.flex.gap-2 > a.p-2.rounded-full:nth-of-type(1)",
+    "msg": "a 34x34px tap target (and 2 more like it on this screen): under the 44px a phone needs",
+    "fix": "make every link and control outside running text 44px tall on a phone: display: inline-flex; align-items: center; min-height: 44px (a footer list then needs no gap), a 44px small button, or a transparent ::before laid past the box",
+    "widths": [
+     390,
+     320
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "copy-negation",
+    "msg": "negation runs \"No X, no Y\": 2, budget 1",
+    "fix": "keep one, and only if each item is a refusal a buyer can check (references/copy-tells.md)",
+    "widths": [],
+    "from": "copy",
+    "where": "copy x2: \"No lost context. No M...\", \"No setup. No clutter\"",
+    "exact": false
+   },
+   {
+    "check": "copy-stat-strip",
+    "msg": "stat strip x1",
+    "fix": "a strip only of figures the brief gives (a price, hours, a count); otherwise put each number in the sentence it proves, or leave it out (references/copy-tells.md)",
+    "widths": [],
+    "from": "copy",
+    "where": "copy x1: \"1 / 2 / 3\"",
+    "exact": false
+   },
+   {
+    "check": "copy-cast",
+    "msg": "default-cast names: Marcus",
+    "fix": "person names come only from the brief; a mock's names fit its locale and are not the names every model picks (references/copy-tells.md)",
+    "widths": [],
+    "from": "copy",
+    "where": "copy x1: \"Marcus\"",
+    "exact": false
+   },
+   {
+    "check": "copy-footer-signoff",
+    "msg": "a sign-off line in the footer",
+    "fix": "the footer holds facts: the brand, the year, Privacy, Terms, the credits line (references/copy-tells.md)",
+    "widths": [],
+    "from": "copy",
+    "where": "copy x1: \"Made with\"",
+    "exact": false
+   }
+  ],
+  "crashed": [],
+  "seconds": {
+   "consistency": 129,
+   "layout": 13
+  }
+ },
+ "open": [
+  {
+   "check": "no-visual",
+   "where": "section#story \"WHY WE BUILT THIS A short note from the \"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "section#story \"WHY WE BUILT THIS A short note from the \""
+   ]
+  },
+  {
+   "check": "no-visual",
+   "where": "section#features \"Everything you need to ship faster\"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "section#features \"Everything you need to ship faster\""
+   ]
+  },
+  {
+   "check": "no-visual",
+   "where": "section#how \"From idea to shipped\"",
+   "msg": "no picture, effect or mock in this section; a feature section needs a visual",
+   "fix": "give the section a visual: a UI fragment on a ground, real icons, or a photograph that fits",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "no-visual"
+   ],
+   "wheres": [
+    "section#how \"From idea to shipped\""
+   ]
+  },
+  {
+   "check": "text-only",
+   "where": "section#pricing \"Simple, fair pricing\"",
+   "msg": "the section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+   "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-only"
+   ],
+   "wheres": [
+    "section#pricing \"Simple, fair pricing\""
+   ]
+  },
+  {
+   "check": "text-only",
+   "where": "section#faq \"Frequently asked\"",
+   "msg": "the section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+   "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-only"
+   ],
+   "wheres": [
+    "section#faq \"Frequently asked\""
+   ]
+  },
+  {
+   "check": "text-only",
+   "where": "section#cta \"Ready to build the next big thing?\"",
+   "msg": "the closing section is only text: no picture, icon, mock or effect in it (3 sections like it at this width)",
+   "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-only"
+   ],
+   "wheres": [
+    "section#cta \"Ready to build the next big thing?\""
+   ]
+  },
+  {
+   "check": "copy-fact",
+   "where": "div.relative.z-10 > div.grid.items-center > div.w-full.max-w-xl > h1.type-display \"Plan projects that actually ship\"",
+   "msg": "the first screen holds no number, price, date, place, platform or genre",
+   "fix": "put one hard fact from the brief on the first screen: a number, a price, a date, the place, the platforms it runs on or a game's genre; take it from the brief or remove the claim",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-fact"
+   ],
+   "wheres": [
+    "div.relative.z-10 > div.grid.items-center > div.w-full.max-w-xl > h1.type-display \"Plan projects that actually ship\""
+   ]
+  },
+  {
+   "check": "copy-headings",
+   "where": "section#features > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Everything you need to ship faster\"",
+   "msg": "\"Everything you need to ship faster\" names no product, part, place or section (17 headings like it; at most one brand line per page) (and 16 more like it: \"Modular architecture\", \"Edge fast\", \"Secure by default\", \"AI suggestions\", ...)",
+   "fix": "name the thing in every heading: the product, a part, the place or a section noun",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "copy-headings"
+   ],
+   "wheres": [
+    "section#features > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Everything you need to ship faster\""
+   ]
+  },
+  {
+   "check": "top-stagger",
+   "where": "div:nth-of-type(2) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center",
+   "msg": "4 boxes side by side start at different heights (+5, +0, +10, +3px)",
+   "fix": "align the tops of the boxes in the row (one floor, one ceiling)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "top-stagger"
+   ],
+   "wheres": [
+    "div:nth-of-type(2) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center"
+   ]
+  },
+  {
+   "check": "text-contrast",
+   "where": "div:nth-of-type(4) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center \"Encrypted at rest\"",
+   "msg": "a caption, label or muted line in #059669 on #ffffff reads 3.77:1 (needs 4.5:1); 2 like it, like \"spec synced\"",
+   "fix": "body text in the ink at 7:1 or more; grey (4.5:1 or more) only for captions and labels",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-contrast"
+   ],
+   "wheres": [
+    "div:nth-of-type(4) > div.h-full.flex > div:nth-of-type(2) > div.flex.items-center \"Encrypted at rest\""
+   ]
+  },
+  {
+   "check": "focus-ring",
+   "where": ".focus\\:outline-none:focus",
+   "msg": "\".focus\\:outline-none:focus\" in %5Broot-of-the-server%5D__5eb38dc2._.css removes the focus outline and sets nothing in its place",
+   "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "focus-ring"
+   ],
+   "wheres": [
+    ".focus\\:outline-none:focus"
+   ]
+  },
+  {
+   "check": "focus-ring",
+   "where": ".focus-visible\\:outline-none:focus-visible",
+   "msg": "\".focus-visible\\:outline-none:focus-visible\" in %5Broot-of-the-server%5D__5eb38dc2._.css removes the focus outline and sets nothing in its place",
+   "fix": "keep the kit's :focus-visible ring, or put a change of the same strength (a 2px line in --action) in the rule that removes it",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "focus-ring"
+   ],
+   "wheres": [
+    ".focus-visible\\:outline-none:focus-visible"
+   ]
+  },
+  {
+   "check": "focus-visible",
+   "where": "script:nth-of-type(12) > nextjs-portal",
+   "msg": "Tab stop 34, nextjs-portal \"\": the focus lands on something you cannot see",
+   "fix": "keep the kit's ring (system.css :focus-visible, 2px in --action, there at once); a control that hides itself shows on focus",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "focus-visible"
+   ],
+   "wheres": [
+    "script:nth-of-type(12) > nextjs-portal"
+   ]
+  },
+  {
+   "check": "moment-none",
+   "where": "(the page)",
+   "msg": "a software page (read from the title) deals no moment: every kind carries one, two on a long page (moments.md)",
+   "fix": "deal one (moments.mjs pick --page software) and mount it in its own section",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "moment-none"
+   ],
+   "wheres": [
+    "(the page)"
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "div.min-h-screen > footer \"NNebulaPlanOne home for visionary builde\"",
+   "msg": "the section is 420px tall (0.5 screens), 480px short of one screen (900px): every section after the hero is one screen or two, 2px either way (SR-2)",
+   "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "div.min-h-screen > footer \"NNebulaPlanOne home for visionary builde\""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "section#features \"Everything you need to ship fasterA smal\"",
+   "msg": "the section is 1412px tall (1.6 screens), 388px short of two screens (1800px): every section after the hero is one screen or two, 2px either way (SR-2)",
+   "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height",
+    "screen-height"
+   ],
+   "wheres": [
+    "section#features \"Everything you need to ship fasterA smal\"",
+    "#features section.relative.overflow-hidden \"Everything you need to ship fast\""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "section#demo \"Plan in plain English. Get back code.Des\"",
+   "msg": "the section starts at 3213px, 387px above the screen grid (4 x 900px): sections start on whole screens (SR-2)",
+   "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "section#demo \"Plan in plain English. Get back code.Des\""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "section#how \"From idea to shippedThree steps. No setu\"",
+   "msg": "the section starts at 4113px, 387px above the screen grid (5 x 900px): sections start on whole screens (SR-2)",
+   "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "section#how \"From idea to shippedThree steps. No setu\""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "section#testimonials \"“NebulaPlan changed how we handle requir\"",
+   "msg": "the section starts at 5013px, 387px above the screen grid (6 x 900px): sections start on whole screens (and 4 more like it: \"Simple, fair pricingEver\", \"Frequently askedHow does\", \"Ready to build the next \") (SR-2)",
+   "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "section#testimonials \"“NebulaPlan changed how we handle requir\""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "section#cta \"Ready to build the next big thing?Stop p\"",
+   "msg": "the screen at scroll 8133px (the top of section 10) shows 416px of section 9 and the content of 2 sections, over 24px each beside section 10: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "section#cta \"Ready to build the next big thing?Stop p\"",
+    "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "section#demo > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Plan in plain English. Get back code.\"",
+   "msg": "the screen at scroll 2700px (stride 3) shows 387px of section 4 and the heading of section 4 whole and the content of 2 sections, over 24px each beside section 3: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "section#demo > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"Plan in plain English. Get back code.\""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "section#how > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"From idea to shipped\"",
+   "msg": "the screen at scroll 3600px (stride 4) shows 387px of section 5 and the heading of section 5 whole and the content of 2 sections, over 24px each beside section 4: a screen shows one section (another may peek 8px, 24px WARN) (and 5 more like it: scroll 4500px, scroll 5400px, scroll 6300px) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "section#how > div.wrap.container > div.max-w-3xl.text-left > h2.type-display-xl \"From idea to shipped\""
+   ]
+  },
+  {
+   "check": "one-heading",
+   "where": "div.wrap.container > div.grid.gap-12 > figure.mb-0 > span.block.leading-none \"“\"",
+   "msg": "headings of two sections show whole on one screen at 8 of 163 scroll positions (4.9%; at scroll 4350, 4400, 4450, 4500px), here with \"01\": at most 3% on a desktop (SR-5)",
+   "fix": "make the sections one screen tall so their headings sit a screen apart and two never share one",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-heading"
+   ],
+   "wheres": [
+    "div.wrap.container > div.grid.gap-12 > figure.mb-0 > span.block.leading-none \"“\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.min-h-screen \"NNebulaPlanFeaturesDemoPricingFAQSign In\"",
+   "msg": "a <div> at the top of the page, outside header.nav, main, footer.closing and nav.actionbar (SR-6)",
+   "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.min-h-screen \"NNebulaPlanFeaturesDemoPricingFAQSign In\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) \"Plan projects that actually shipTurn a r\"",
+   "msg": "the section needs exactly one in-flow child .wrap (it has 1 in-flow child, 0 .wrap) (SR-6)",
+   "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) \"Plan projects that actually shipTurn a r\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) > div.pointer-events-none.absolute",
+   "msg": "a child of section 1 beside its .wrap is no valid background layer: not img, picture, video or canvas; z-index auto, not 0; a hero layer with neither alt nor aria-hidden=\"true\" (SR-6)",
+   "fix": "build the page as header.nav, a main of sections (each one in-flow .wrap plus background layers) and footer.closing",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.min-h-screen > main > section.relative.overflow-hidden:nth-of-type(1) > div.pointer-events-none.absolute"
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.wrap.container > div.grid.gap-12 > div.space-y-2 > p.type-eyebrow \"Why we built this\"",
+   "msg": "2 text blocks start on a left line at x 644, 524px from the container's left: text starts on the container's left, or on one split line (x 630, 732, 834) (also \"A short note from the team.\") (SR-6)",
+   "fix": "start the text on the container's left, or on the one split line every split shares",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.wrap.container > div.grid.gap-12 > div.space-y-2 > p.type-eyebrow \"Why we built this\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.overflow-hidden > div.px-6.pb-6 \"We read your high-level idea and break i\"",
+   "msg": "1 text block starts on a left line at x 569, 449px from the container's left: text starts on the container's left, or on one split line (x 630, 732, 834) (and 10 more like it: x 176, x 165, x 144) (SR-6)",
+   "fix": "start the text on the container's left, or on the one split line every split shares",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div:nth-of-type(2) > div.relative.flex:nth-of-type(1) > div.overflow-hidden > div.px-6.pb-6 \"We read your high-level idea and break i\""
+   ]
+  },
+  {
+   "check": "container-edges",
+   "where": "div.wrap.container > div.grid.grid-cols-1 > div:nth-of-type(6) > div.h-full.flex \"Git nativePlans sync with your repo. Cod\"",
+   "msg": "a box over half the container wide runs 144-1296px, not on the container's lines at 120-1320px (and 2 more like it: \"123\", \"© 2026 NebulaPlan Inc. A\") (SR-6)",
+   "fix": "run the picture or box from the container's left line to its right line, or put it in a row or a split",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "container-edges"
+   ],
+   "wheres": [
+    "div.wrap.container > div.grid.grid-cols-1 > div:nth-of-type(6) > div.h-full.flex \"Git nativePlans sync with your repo. Cod\""
+   ]
+  },
+  {
+   "check": "row-lines",
+   "where": "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\"",
+   "msg": "a row of 3 items: its first item starts at 169px, the container's left line at 120px; its last item ends at 1271px, the container's right line at 1320px (2px either way) (SR-7)",
+   "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "row-lines"
+   ],
+   "wheres": [
+    "section#cta > div.wrap.container > div.space-y-10 > div.rounded-2xl.border \"123\""
+   ]
+  },
+  {
+   "check": "row-lines",
+   "where": "div.nebula-surface.overflow-hidden > div:nth-of-type(2) > div.p-5.space-y-4 > div.grid.grid-cols-3",
+   "msg": "a row of 3 items: its first item starts at 761px, its column's left line at 736px; its last item ends at 1271px, its column's right line at 1296px (2px either way) (SR-7)",
+   "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "row-lines"
+   ],
+   "wheres": [
+    "div.nebula-surface.overflow-hidden > div:nth-of-type(2) > div.p-5.space-y-4 > div.grid.grid-cols-3"
+   ]
+  },
+  {
+   "check": "row-lines",
+   "where": "section#features > div.wrap.container > div.grid.grid-cols-1 \"Modular architectureDrag, drop, and conn\"",
+   "msg": "a row of 2 items: its first item starts at 144px, the container's left line at 120px; its last item ends at 1296px, the container's right line at 1320px (2px either way) (and 3 more like it: \"“Finally bridges PMs and\", \"StarterFREELimited timeP\", \"NNebulaPlanOne home for \") (SR-7)",
+   "fix": "start the row's first item on the container's left line and end its last on the right line, every item one height",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "row-lines"
+   ],
+   "wheres": [
+    "section#features > div.wrap.container > div.grid.grid-cols-1 \"Modular architectureDrag, drop, and conn\""
+   ]
+  },
+  {
+   "check": "split-pair",
+   "where": "section#how > div.wrap.container > div.grid.gap-12 \"01Start with an ideaDrop in your rough t\"",
+   "msg": "the two columns of the split start 106px apart at the top: a split's columns are top-aligned, 8px either way (SR-8)",
+   "fix": "top-align both columns of the split (align-items: start)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "split-pair"
+   ],
+   "wheres": [
+    "section#how > div.wrap.container > div.grid.gap-12 \"01Start with an ideaDrop in your rough t\""
+   ]
+  },
+  {
+   "check": "split-pair",
+   "where": "section#testimonials > div.wrap.container > div.grid.gap-12 \"“NebulaPlan changed how we handle requir\"",
+   "msg": "the two columns of the split start 31px apart at the top (centred on each other): a split's columns are top-aligned, 8px either way (SR-8)",
+   "fix": "top-align both columns of the split (align-items: start)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "split-pair"
+   ],
+   "wheres": [
+    "section#testimonials > div.wrap.container > div.grid.gap-12 \"“NebulaPlan changed how we handle requir\""
+   ]
+  },
+  {
+   "check": "split-pair",
+   "where": "section#demo > div.wrap.container > div.grid.items-start \"One prompt, one planDrop in a one-liner.\"",
+   "msg": "the two columns of the split start 30px apart at the top (centred on each other): a split's columns are top-aligned, 8px either way (and 1 more like it: \"Plan projects that actua\") (SR-8)",
+   "fix": "top-align both columns of the split (align-items: start)",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "split-pair"
+   ],
+   "wheres": [
+    "section#demo > div.wrap.container > div.grid.items-start \"One prompt, one planDrop in a one-liner.\""
+   ]
+  },
+  {
+   "check": "split-pair",
+   "where": "section#faq > div.wrap.container > div.grid.gap-12 \"How does the AI planning work?We read yo\"",
+   "msg": "the split's left column starts with a picture or a box, not text: text left, the visual right, on every split (SR-8)",
+   "fix": "put the text in the left column and the visual in the right, on every split",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "split-pair"
+   ],
+   "wheres": [
+    "section#faq > div.wrap.container > div.grid.gap-12 \"How does the AI planning work?We read yo\""
+   ]
+  },
+  {
+   "check": "split-pair",
+   "where": "main > section.relative.overflow-hidden:nth-of-type(1) > div.relative.z-10 > div.grid.items-center \"Plan projects that actually shipTurn a r\"",
+   "msg": "the split does not run edge to edge on the container: its left column starts at 144px, the container's left at 120px; its right column ends at 1296px, the container's right at 1320px (SR-8)",
+   "fix": "run the split from the container's left line to its right line",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "split-pair"
+   ],
+   "wheres": [
+    "main > section.relative.overflow-hidden:nth-of-type(1) > div.relative.z-10 > div.grid.items-center \"Plan projects that actually shipTurn a r\""
+   ]
+  },
+  {
+   "check": "collide",
+   "where": "div.min-h-screen > nav.fixed.top-0 \"N NebulaPlan\"",
+   "msg": "at the top of the page the fixed bar covers \"Plan projects that actually ship\": nothing scrolls it out from under the bar",
+   "fix": "on a phone nothing lies on anything else: let the section grow with its content (min-height for its screens, never a fixed height; --hm: 2 when it needs two) or cut what it holds; keep pictures and cards off the buttons; pad the page under a fixed bar by the bar's height (top: the first section; end: the footer)",
+   "widths": [
+    390,
+    320
+   ],
+   "from": "consistency",
+   "ids": [
+    "collide"
+   ],
+   "wheres": [
+    "div.min-h-screen > nav.fixed.top-0 \"N NebulaPlan\""
+   ]
+  },
+  {
+   "check": "text-only",
+   "where": "section#testimonials \"“ NebulaPlan changed how we handle requi\"",
+   "msg": "the quote section is only text: no picture, icon, mock or effect in it (4 sections like it at this width)",
+   "fix": "give the section a visual: a photograph that fits, the real icons, or a UI fragment on a ground",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "text-only"
+   ],
+   "wheres": [
+    "section#testimonials \"“ NebulaPlan changed how we handle requi\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "section.relative.overflow-hidden div.relative.w-full \"nebulaplan.app\"",
+   "msg": "starts at x 736; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "section.relative.overflow-hidden div.relative.w-full \"nebulaplan.app\""
+   ]
+  },
+  {
+   "check": "edge-right",
+   "where": "#story div.hidden.md:block",
+   "msg": "ends at x 596; the right line is 1296",
+   "fix": "end it on the .wrap right line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-right"
+   ],
+   "wheres": [
+    "#story div.hidden.md:block"
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#story div.md:col-span-4.space-y-2 \"Why we built thisA short note fr\"",
+   "msg": "starts at x 644; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#story div.md:col-span-4.space-y-2 \"Why we built thisA short note fr\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#story p.type-eyebrow \"Why we built this\"",
+   "msg": "starts at x 644; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#story p.type-eyebrow \"Why we built this\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#story p.type-small \"A short note from the team.\"",
+   "msg": "starts at x 644; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#story p.type-small \"A short note from the team.\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#story p.text-sm.text-[color:var(--color-nebula-fg)] \"Saurav · Founder\"",
+   "msg": "starts at x 192; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#story p.text-sm.text-[color:var(--color-nebula-fg)] \"Saurav · Founder\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#story p.text-xs.text-[color:var(--color-ash)] \"NebulaPlan\"",
+   "msg": "starts at x 192; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#story p.text-xs.text-[color:var(--color-ash)] \"NebulaPlan\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#features div.md:col-span-2.min-h-[180px] \"Edge fastZero-latency planning, \"",
+   "msg": "starts at x 728; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#features div.md:col-span-2.min-h-[180px] \"Edge fastZero-latency planning, \""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#features div.md:col-span-2.min-h-[180px] \"Team syncReal-time editing acros\"",
+   "msg": "starts at x 728; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#features div.md:col-span-2.min-h-[180px] \"Team syncReal-time editing acros\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#features div.md:col-span-2.min-h-[180px] \"AI suggestionsSmart picks for yo\"",
+   "msg": "starts at x 728; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#features div.md:col-span-2.min-h-[180px] \"AI suggestionsSmart picks for yo\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#demo div.min-w-0",
+   "msg": "starts at x 736; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#demo div.min-w-0"
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#how div.hidden.lg:block",
+   "msg": "starts at x 864; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#how div.hidden.lg:block"
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#testimonials div.hidden.lg:block",
+   "msg": "starts at x 864; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#testimonials div.hidden.lg:block"
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#testimonials div \"“Cut my planning time in half. T\"",
+   "msg": "starts at x 922.7; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#testimonials div \"“Cut my planning time in half. T\""
+   ]
+  },
+  {
+   "check": "edge-right",
+   "where": "#faq div.hidden.lg:block",
+   "msg": "ends at x 496; the right line is 1296",
+   "fix": "end it on the .wrap right line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-right"
+   ],
+   "wheres": [
+    "#faq div.hidden.lg:block"
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "#faq div.lg:col-span-2.space-y-[var(--space-md)] \"How does the AI planning work?We\"",
+   "msg": "starts at x 544; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "#faq div.lg:col-span-2.space-y-[var(--space-md)] \"How does the AI planning work?We\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"ProductFeaturesDemoPricingFAQ\"",
+   "msg": "starts at x 444; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"ProductFeaturesDemoPricingFAQ\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"CompanyAboutHow it worksTestimon\"",
+   "msg": "starts at x 744; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"CompanyAboutHow it worksTestimon\""
+   ]
+  },
+  {
+   "check": "edge-left",
+   "where": "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"LegalPrivacy PolicyTerms of Serv\"",
+   "msg": "starts at x 1044; the lines are 144 and the column starts",
+   "fix": "start it on the .wrap left line",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "edge-left"
+   ],
+   "wheres": [
+    "footer.bg-[var(--color-nebula-bg)].pt-[var(--space-xxxl)] div \"LegalPrivacy PolicyTerms of Serv\""
+   ]
+  },
+  {
+   "check": "neighbour",
+   "where": "#features section.relative.overflow-hidden \"Everything you need to ship fast\"",
+   "msg": "framed, 169px of #demo section.relative.overflow-hidden \"Plan in plain English. Get back \" shows",
+   "fix": "keep the next section's heading and picture out of this screen",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "neighbour"
+   ],
+   "wheres": [
+    "#features section.relative.overflow-hidden \"Everything you need to ship fast\""
+   ]
+  },
+  {
+   "check": "sparse",
+   "where": "#cta section.relative.overflow-hidden \"Ready to build the next big thin\"",
+   "msg": "its content fills 48% of its screen; merge it or give it its visual (0.55 is the aim)",
+   "fix": "fill the section or make it a screen shorter",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "sparse"
+   ],
+   "wheres": [
+    "#cta section.relative.overflow-hidden \"Ready to build the next big thin\""
+   ]
+  },
+  {
+   "check": "screen-height",
+   "where": "#pricing section.relative.overflow-hidden \"Simple, fair pricingEverything i\"",
+   "msg": "1763px, 2.09 screens; a section is exactly one or two (--h), or on a phone at least one that its content fills",
+   "fix": "make the section exactly one or two screens (--h: 1 or 2)",
+   "widths": [
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "screen-height"
+   ],
+   "wheres": [
+    "#pricing section.relative.overflow-hidden \"Simple, fair pricingEverything i\""
+   ]
+  },
+  {
+   "check": "hero-fold",
+   "where": "section.relative.overflow-hidden section.relative.overflow-hidden \"Plan projects that actually ship\"",
+   "msg": "ends at y 846, past the fold (844): 1.00 screens tall",
+   "fix": "the hero fills the first screen alone, its button inside it",
+   "widths": [
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "hero-fold"
+   ],
+   "wheres": [
+    "section.relative.overflow-hidden section.relative.overflow-hidden \"Plan projects that actually ship\""
+   ]
+  }
+ ],
+ "waived": [],
+ "warnCount": 34,
+ "at": "2026-11-22T02:04:59.920Z"
+}

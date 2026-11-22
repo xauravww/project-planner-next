@@ -12,18 +12,18 @@ const columns: Column[] = [
         title: "Product",
         links: [
             { label: "Features", href: "#features" },
+            { label: "Demo", href: "#demo" },
             { label: "Pricing", href: "#pricing" },
-            { label: "Changelog", href: "#" },
-            { label: "Docs", href: "#" },
+            { label: "FAQ", href: "#faq" },
         ],
     },
     {
         title: "Company",
         links: [
-            { label: "About", href: "#" },
-            { label: "Blog", href: "#" },
-            { label: "Careers", href: "#" },
-            { label: "Contact", href: "#" },
+            { label: "About", href: "#story" },
+            { label: "How it works", href: "#how" },
+            { label: "Testimonials", href: "#testimonials" },
+            { label: "Contact", href: "mailto:hello@nebulaplan.app" },
         ],
     },
     {
@@ -31,16 +31,16 @@ const columns: Column[] = [
         links: [
             { label: "Privacy Policy", href: "/privacy" },
             { label: "Terms of Service", href: "/terms" },
-            { label: "Cookie Policy", href: "#" },
-            { label: "Security", href: "#" },
+            { label: "Sign up", href: "/signup" },
+            { label: "Sign in", href: "/login" },
         ],
     },
 ];
 
 const socials: { label: string; href: string; icon: LucideIcon }[] = [
-    { label: "Twitter", href: "#", icon: Twitter },
-    { label: "GitHub", href: "#", icon: Github },
-    { label: "LinkedIn", href: "#", icon: Linkedin },
+    { label: "Twitter", href: "https://x.com", icon: Twitter },
+    { label: "GitHub", href: "https://github.com", icon: Github },
+    { label: "LinkedIn", href: "https://www.linkedin.com", icon: Linkedin },
 ];
 
 export function Footer() {
@@ -77,13 +77,13 @@ export function Footer() {
 
                     {columns.map((col) => (
                         <div key={col.title}>
-                            <h4 className="type-eyebrow mb-5">{col.title}</h4>
-                            <ul className="space-y-3">
+                            <h3 className="type-eyebrow mb-5">{col.title}</h3>
+                            <ul className="space-y-1">
                                 {col.links.map((l) => (
                                     <li key={l.label}>
                                         <Link
                                             href={l.href}
-                                            className="text-sm text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
+                                            className="inline-flex items-center min-h-[44px] text-sm text-[color:var(--color-nebula-fg-soft)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
                                         >
                                             {l.label}
                                         </Link>

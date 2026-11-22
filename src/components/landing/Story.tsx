@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Section, Container } from "@/components/ui/Section";
 
 /**
@@ -9,34 +8,38 @@ import { Section, Container } from "@/components/ui/Section";
  */
 export function Story() {
     return (
-        <Section id="story" glow="orange">
+        <Section id="story" glow="orange" fill>
             <Container>
                 <div className="grid md:grid-cols-12 gap-12 items-start">
-                    <motion.div
-                        initial={{ opacity: 0, x: -16 }}
-                        whileInView={{ opacity: 1, x: 0 }}
-                        viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.6 }}
-                        className="md:col-span-4 space-y-2"
-                    >
+                    <div className="hidden md:block md:col-span-5">
+                        <div className="rounded-2xl border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-surface-elevated)] p-5 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="h-3 w-24 rounded bg-[var(--color-nebula-hairline)]" />
+                                <div className="h-6 w-6 rounded-full bg-[var(--color-accent-blue)] opacity-60" />
+                            </div>
+                            <div className="space-y-2">
+                                {[0, 1, 2].map((i) => (
+                                    <div key={i} className="flex items-center gap-2.5 rounded-lg border border-[var(--color-nebula-hairline)] bg-[var(--color-nebula-bg)] p-2.5">
+                                        <div className="h-3.5 w-3.5 shrink-0 rounded bg-[var(--color-accent-green)] opacity-60" />
+                                        <div className="h-2 flex-1 rounded bg-[var(--color-nebula-hairline)]" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="md:col-span-4 space-y-2">
                         <p className="type-eyebrow">Why we built this</p>
                         <p className="type-small">A short note from the team.</p>
-                    </motion.div>
+                    </div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="md:col-span-8 space-y-6"
-                    >
+                    <div className="md:col-span-8 space-y-6">
                         <p className="type-h3">
                             Planning a project used to mean ten open tabs, three docs, and a
                             whiteboard photo nobody could read.
                         </p>
                         <p className="type-body-lg">
                             We were that team. Every Monday started with stitching ideas back
-                            together — what was the scope again? Who said yes to that feature?
+                            together. What was the scope again? Who said yes to that feature?
                             Where did the wireframe go?
                         </p>
                         <p className="type-body-lg">
@@ -57,7 +60,7 @@ export function Story() {
                                 <p className="text-xs text-[color:var(--color-ash)]">NebulaPlan</p>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 </div>
             </Container>
         </Section>

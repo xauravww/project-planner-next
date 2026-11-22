@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "PROJECT_RULES.md"
+  ],
+  "agents": {
+    "vision": {
+      "description": "Describes and analyzes images using the free vision model",
+      "mode": "subagent",
+      "model": "opencode/nemotron-3.5-super-vl-free",
+      "permissions": [
+        { "action": "edit", "resource": "*", "effect": "deny" },
+        { "action": "shell", "resource": "*", "effect": "deny" }
+      ]
+    }
+  }
+}

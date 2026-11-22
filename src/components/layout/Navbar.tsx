@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { Menu, X, User, LogOut, LayoutDashboard } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
 import { cn } from "@/lib/utils";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 
 type NavItem = { name: string; href: string };
 
@@ -107,9 +108,9 @@ export function Navbar() {
                                 <Link href={AUTH.signIn.href} className="text-sm text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)] transition-colors">
                                     {AUTH.signIn.label}
                                 </Link>
-                                <Link href={AUTH.signUp.href} className="nebula-btn nebula-btn--primary">
+                                <NebulaButton href={AUTH.signUp.href}>
                                     {AUTH.signUp.label}
-                                </Link>
+                                </NebulaButton>
                             </>
                         )}
                     </div>
@@ -149,10 +150,10 @@ export function Navbar() {
                         <div className="flex flex-col w-full gap-3 max-w-xs pt-8 nebula-hairline-t">
                             {isLoggedIn ? (
                                 <>
-                                    <Link href="/dashboard" onClick={() => setOpen(false)} className="nebula-btn nebula-btn--ghost justify-center flex items-center gap-2">
+                                    <NebulaButton href="/dashboard" variant="ghost" className="w-full" onClick={() => setOpen(false)}>
                                         <LayoutDashboard className="w-4 h-4" />
                                         Dashboard
-                                    </Link>
+                                    </NebulaButton>
                                     <div className="flex items-center justify-center gap-2 py-3">
                                         <div className="w-8 h-8 rounded-full bg-[var(--color-nebula-fg)]/10 flex items-center justify-center">
                                             <User className="w-4 h-4 text-[color:var(--color-nebula-fg)]" />
@@ -161,22 +162,23 @@ export function Navbar() {
                                             {session?.user?.name || session?.user?.email?.split('@')[0]}
                                         </span>
                                     </div>
-                                    <button 
+                                    <NebulaButton
+                                        variant="ghost"
+                                        className="w-full text-red-400"
                                         onClick={() => { signOut({ callbackUrl: '/' }); setOpen(false); }}
-                                        className="nebula-btn nebula-btn--ghost justify-center flex items-center gap-2 text-red-400"
                                     >
                                         <LogOut className="w-4 h-4" />
                                         Sign out
-                                    </button>
+                                    </NebulaButton>
                                 </>
                             ) : (
                                 <>
-                                    <Link href={AUTH.signIn.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--ghost justify-center">
+                                    <NebulaButton href={AUTH.signIn.href} variant="ghost" className="w-full" onClick={() => setOpen(false)}>
                                         {AUTH.signIn.label}
-                                    </Link>
-                                    <Link href={AUTH.signUp.href} onClick={() => setOpen(false)} className="nebula-btn nebula-btn--primary justify-center">
+                                    </NebulaButton>
+                                    <NebulaButton href={AUTH.signUp.href} className="w-full" onClick={() => setOpen(false)}>
                                         {AUTH.signUp.label}
-                                    </Link>
+                                    </NebulaButton>
                                 </>
                             )}
                         </div>

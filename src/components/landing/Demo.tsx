@@ -1,8 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Section, Container, SectionHeader } from "@/components/ui/Section";
-import { CodeWindow } from "@/components/ui/CodeWindow";
 
 /**
  * Code-story split. Resend's signature rhythm:
@@ -11,7 +9,7 @@ import { CodeWindow } from "@/components/ui/CodeWindow";
  */
 export function Demo() {
     return (
-        <Section id="demo" glow="blue">
+        <Section id="demo" glow="blue" fill>
             <Container>
                 <SectionHeader
                     title="Plan in plain English."
@@ -19,15 +17,9 @@ export function Demo() {
                     subtitle="Describe what you want. NebulaPlan generates user stories, an architecture map, and tasks you can hand straight to your team."
                 />
 
-                <div className="grid lg:grid-cols-2 gap-[var(--space-xxl)] items-start">
+                <div className="grid lg:grid-cols-2 gap-[var(--space-xxl)] items-start lg:items-center min-w-0">
                     {/* narrative */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.5 }}
-                        className="space-y-[var(--space-xl)]"
-                    >
+                    <div className="space-y-[var(--space-xl)]">
                         {[
                             {
                                 title: "One prompt, one plan",
@@ -35,7 +27,7 @@ export function Demo() {
                             },
                             {
                                 title: "Auto-architecture",
-                                body: "We sketch the system diagram while you write — components, edges, data shapes.",
+                                body: "We sketch the system diagram while you write: components, edges, data shapes.",
                             },
                             {
                                 title: "Ship straight to your tools",
@@ -47,35 +39,17 @@ export function Demo() {
                                 <p className="type-body-lg">{item.body}</p>
                             </div>
                         ))}
-                    </motion.div>
+                    </div>
 
-                    {/* code window */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-80px" }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                    >
-                        <CodeWindow tabs={["plan.ts", "stories.json"]}>
-                            <pre className="whitespace-pre text-[length:var(--nebula-code)]">
-{`import { NebulaPlan } from "nebulaplan";
-
-const plan = await NebulaPlan.create({
-  idea: "A saas for indie founders to plan launches.",
-  format: "stories+architecture",
-});
-
-console.log(plan.stories);
-//  [
-//    { id: "S-01", title: "Founder signs up",
-//      acceptance: ["email verified", "workspace created"] },
-//    { id: "S-02", title: "Founder drafts launch checklist", ... },
-//  ]
-
-await plan.exportTo("linear", { team: "GROWTH" });`}
-                            </pre>
-                        </CodeWindow>
-                    </motion.div>
+                    {/* product screenshot */}
+                    <div className="min-w-0">
+                        <img
+                            src="/product-dashboard.png"
+                            alt="NebulaPlan dashboard preview"
+                            className="w-full h-auto rounded-2xl border border-[var(--color-nebula-hairline-strong)] shadow-2xl"
+                            loading="lazy"
+                        />
+                    </div>
                 </div>
             </Container>
         </Section>

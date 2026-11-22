@@ -2,49 +2,42 @@
 
 @theme {
   /* ──────────────────────────────────────────────────────────────
-     Landing-page design tokens — Resend-style editorial dark.
-     Edit ONLY here — every section reads these via var() / Tailwind.
-     Never hardcode colors, sizes, or motion timings in components.
-
-     Token naming: --color-nebula-* names are kept as aliases that
-     map onto the new Resend palette, so existing components don't
-     need to be rewired. New tokens (surface-elevated, surface-deep,
-     accent-*-glow, charcoal, ash) are introduced under their own
-     names.
+     Landing-page design tokens — "Kinetic Orange" brutalist.
+     Three-color system: electric orange, black, white.
+     Heavy type, sharp borders, motion.
      ────────────────────────────────────────────────────────────── */
 
   /* Surface */
-  --color-nebula-bg:           #000000; /* canvas — pure black, never near-black */
-  --color-nebula-surface:      #0a0a0c; /* surface-card  */
-  --color-surface-elevated:    #101012; /* featured tier, ghost button */
-  --color-surface-deep:        #06060a; /* code window */
+  --color-nebula-bg:           #ffffff; /* canvas — white */
+  --color-nebula-surface:      #ffffff; /* surface-card */
+  --color-surface-elevated:    #000000; /* black surface / navigation */
+  --color-surface-deep:        #000000; /* dark sections */
 
-  /* Hairlines (translucent white — replace shadows) */
-  --color-nebula-hairline:        rgba(255, 255, 255, 0.06);
-  --color-nebula-hairline-strong: rgba(255, 255, 255, 0.14);
-  --color-divider-soft:           rgba(255, 255, 255, 0.04);
+  /* Hairlines (solid black — sharp brutalist dividers) */
+  --color-nebula-hairline:        rgba(0, 0, 0, 0.14);
+  --color-nebula-hairline-strong: #000000;
+  --color-divider-soft:           rgba(0, 0, 0, 0.9);
 
   /* Text */
-  --color-nebula-fg:        #fcfdff;                   /* ink */
-  --color-nebula-fg-soft:   rgba(252, 253, 255, 0.86); /* body */
-  --color-charcoal:         rgba(252, 253, 255, 0.70);
-  --color-nebula-fg-mute:   #a1a4a5;                   /* mute */
-  --color-ash:              #888e90;
-  --color-stone:            #464a4d;
-  --color-on-light:         #000000;
+  --color-nebula-fg:        #000000;                   /* ink */
+  --color-nebula-fg-soft:   rgba(0, 0, 0, 0.82);       /* body */
+  --color-charcoal:         rgba(0, 0, 0, 0.72);
+  --color-nebula-fg-mute:   rgba(0, 0, 0, 0.62);
+  --color-ash:              rgba(0, 0, 0, 0.6);
+  --color-stone:            rgba(0, 0, 0, 0.45);
+  --color-on-light:         #ffffff;
 
-  /* Accent — used ONLY as low-opacity atmospheric glows or
-     inline highlights. Never as solid surfaces or buttons. */
-  --color-accent-orange:       #ff801f;
-  --color-accent-orange-glow:  rgba(255, 89, 0, 0.22);
-  --color-accent-yellow:       #ffc53d;
-  --color-accent-blue:         #3b9eff;
-  --color-accent-blue-glow:    rgba(0, 117, 255, 0.34);
-  --color-accent-green:        #11ff99;
-  --color-accent-green-glow:   rgba(34, 255, 153, 0.18);
-  --color-accent-red:          #ff2047;
-  --color-accent-red-glow:     rgba(255, 32, 71, 0.34);
-  --color-link:                #3b9eff;
+  /* Accent — electric orange */
+  --color-accent-orange:       #ff4d00;
+  --color-accent-orange-glow:  #ff4d00;
+  --color-accent-yellow:       #ff4d00;
+  --color-accent-blue:         #ff4d00;
+  --color-accent-blue-glow:    #ff4d00;
+  --color-accent-green:        #ff4d00;
+  --color-accent-green-glow:   #ff4d00;
+  --color-accent-red:          #ff4d00;
+  --color-accent-red-glow:     #ff4d00;
+  --color-link:                #ff4d00;
 
   /* Back-compat with previous "glow" var */
   --color-nebula-glow:         var(--color-accent-blue-glow);
@@ -71,8 +64,8 @@
   --space-xl:  24px;
   --space-xxl: 32px;
   --space-xxxl: 48px;
-  --space-section: 96px;
-  --space-band:    128px;
+  --space-section: 80px;
+  --space-band:    96px;
 
   --nebula-section-y: var(--space-section);
   --nebula-stack-lg:  var(--space-xxxl);
@@ -167,33 +160,33 @@
 }
 
 :root {
-  --background: 0 0% 0%;
-  --foreground: 0 0% 98%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 0%;
 
-  --card: 0 0% 0%;
-  --card-foreground: 0 0% 98%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 0%;
 
-  --popover: 0 0% 0%;
-  --popover-foreground: 0 0% 98%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 0%;
 
-  --primary: 0 0% 98%;
-  --primary-foreground: 0 0% 0%;
+  --primary: 0 0% 0%;
+  --primary-foreground: 0 0% 100%;
 
-  --secondary: 240 3.7% 15.9%;
-  --secondary-foreground: 0 0% 98%;
+  --secondary: 0 0% 0%;
+  --secondary-foreground: 0 0% 100%;
 
-  --muted: 240 3.7% 15.9%;
-  --muted-foreground: 240 5% 64.9%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 25%;
 
-  --accent: 240 3.7% 15.9%;
-  --accent-foreground: 0 0% 98%;
+  --accent: 0 0% 0%;
+  --accent-foreground: 0 0% 100%;
 
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 100%;
 
-  --border: 240 3.7% 15.9%;
-  --input: 240 3.7% 15.9%;
-  --ring: 240 4.9% 83.9%;
+  --border: 0 0% 0%;
+  --input: 0 0% 0%;
+  --ring: 0 0% 0%;
 }
 
 @layer base {
@@ -215,23 +208,14 @@
     background: var(--color-nebula-surface);
     border: 1px solid var(--color-nebula-hairline-strong);
   }
-
-  .glass-hover {
-    transition: border-color var(--nebula-fast) var(--nebula-ease);
-  }
-  .glass-hover:hover {
-    border-color: var(--color-nebula-fg);
-  }
-
-  .text-gradient {
-    color: var(--color-nebula-fg);
-    -webkit-text-fill-color: var(--color-nebula-fg);
-  }
+  .glass-hover { transition: border-color var(--nebula-fast) var(--nebula-ease); }
+  .glass-hover:hover { border-color: var(--color-nebula-fg); }
+  .text-gradient { color: var(--color-nebula-fg); }
 
   .modal-title {
-    font-family: var(--font-serif), 'Fraunces', serif;
-    font-weight: 400;
-    letter-spacing: 0.02em;
+    font-family: var(--font-sans), 'Inter', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   .animate-spin-slow {
@@ -273,54 +257,66 @@
      Tokens above, semantics here. Components reference these.
      ────────────────────────────────────────────────────────────── */
 
-  /* Type roles. Serif = display only. Sans = everything else.
-     Mono = code only. */
-  .text-serif       { font-family: var(--font-serif), 'Fraunces', 'Tiempos Headline', 'Söhne', serif; }
+  /* Type roles. Archivo Black = display only. Space Mono = metadata.
+     Inter = everything else. */
+  .text-serif       { font-family: var(--font-display), 'Archivo Black', sans-serif; }
   .text-sans        { font-family: var(--font-sans), 'Inter', ui-sans-serif, system-ui, sans-serif; }
-  .text-mono        { font-family: var(--font-mono), 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .text-mono        { font-family: var(--font-mono), 'Space Mono', ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-  .type-display     { font-family: var(--font-serif), serif; font-weight: 400;
-                      font-size: var(--nebula-display-xxl); line-height: 1; letter-spacing: -0.01em; }
-  .type-display-xl  { font-family: var(--font-serif), serif; font-weight: 400;
-                      font-size: var(--nebula-display-xl); line-height: 1; letter-spacing: -0.01em; }
-  .type-h2          { font-family: var(--font-serif), serif; font-weight: 400;
-                      font-size: var(--nebula-h2); line-height: 1.05; letter-spacing: -0.015em; color: var(--color-nebula-fg); }
-  .type-h3          { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 500;
-                      font-size: var(--nebula-h3); line-height: 1.3; letter-spacing: -0.01em; color: var(--color-nebula-fg); }
-  .type-h4          { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 500;
-                      font-size: var(--nebula-h4); line-height: 1.3; color: var(--color-nebula-fg); }
+  .type-display     { font-family: var(--font-display), 'Archivo Black', sans-serif; font-weight: 400;
+                      font-size: var(--nebula-display-xxl); line-height: 0.9; letter-spacing: -0.04em;
+                      text-transform: uppercase; color: var(--color-nebula-fg); }
+  .type-display-xl  { font-family: var(--font-display), 'Archivo Black', sans-serif; font-weight: 400;
+                      font-size: var(--nebula-display-xl); line-height: 0.92; letter-spacing: -0.04em;
+                      text-transform: uppercase; color: var(--color-nebula-fg); }
+  .type-h2          { font-family: var(--font-display), 'Archivo Black', sans-serif; font-weight: 400;
+                      font-size: var(--nebula-h2); line-height: 0.95; letter-spacing: -0.03em;
+                      text-transform: uppercase; color: var(--color-nebula-fg); }
+  .type-h3          { font-family: var(--font-display), 'Archivo Black', sans-serif; font-weight: 400;
+                      font-size: var(--nebula-h3); line-height: 1; letter-spacing: -0.02em;
+                      text-transform: uppercase; color: var(--color-nebula-fg); }
+  .type-h4          { font-family: var(--font-display), 'Archivo Black', sans-serif; font-weight: 400;
+                      font-size: var(--nebula-h4); line-height: 1.05; letter-spacing: -0.02em;
+                      text-transform: uppercase; color: var(--color-nebula-fg); }
   .type-subtitle    { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 400;
-                      font-size: var(--nebula-h4); line-height: 1.3; color: var(--color-charcoal); }
+                      font-size: var(--nebula-h4); line-height: 1.3; color: var(--color-nebula-fg); }
   .type-body-lg     { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 400;
                       font-size: var(--nebula-body-lg); line-height: 1.5; color: var(--color-nebula-fg-soft); }
   .type-body        { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 400;
                       font-size: var(--nebula-body); line-height: 1.5; color: var(--color-nebula-fg-soft); }
   .type-small       { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 400;
-                      font-size: var(--nebula-small); line-height: 1.43; color: var(--color-charcoal); }
+                      font-size: var(--nebula-small); line-height: 1.43; color: var(--color-nebula-fg); }
   .type-caption     { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 400;
-                      font-size: var(--nebula-caption); line-height: 1.5; color: var(--color-ash); }
-  .type-code        { font-family: var(--font-mono), 'Geist Mono', ui-monospace, monospace; font-weight: 400;
+                      font-size: var(--nebula-caption); line-height: 1.5; color: var(--color-nebula-fg-mute); }
+  .type-code        { font-family: var(--font-mono), 'Space Mono', ui-monospace, monospace; font-weight: 400;
                       font-size: var(--nebula-code); line-height: 1.6; color: var(--color-nebula-fg-soft); }
-  /* Eyebrow kept as a token only — almost never used per Resend rules. */
-  .type-eyebrow     { font-family: var(--font-sans), 'Inter', sans-serif; font-weight: 500;
-                      font-size: var(--nebula-caption); letter-spacing: 0.04em; text-transform: uppercase;
-                      color: var(--color-ash); }
-  /* Italic serif accent inside a serif headline */
-  .type-italic-accent { font-style: italic; font-weight: 400; color: var(--color-nebula-fg); }
+  .type-eyebrow     { font-family: var(--font-mono), 'Space Mono', ui-monospace, monospace; font-weight: 400;
+                      font-size: var(--nebula-caption); letter-spacing: -0.02em; text-transform: uppercase;
+                      color: var(--color-nebula-fg); }
+  /* Accent inside a headline */
+  .type-italic-accent { font-style: normal; font-weight: 400; color: var(--color-accent-blue); }
 
-  /* Surfaces */
+  /* On dark (black) surfaces, display/heading type flips to white.
+     High specificity so it beats the single-class type-* color rules. */
+  .bg-black .type-display,
+  .bg-black .type-display-xl,
+  .bg-black .type-h2,
+  .bg-black .type-h3,
+  .bg-black .type-h4 { color: #ffffff; }
+
+  /* Surfaces — brutalist: sharp 2px borders, black deep surface */
   .nebula-surface   { background: var(--color-nebula-surface);
-                      border: 1px solid var(--color-nebula-hairline-strong);
-                      border-radius: var(--r-lg); }
+                      border: 2px solid #000000;
+                      border-radius: 0; }
   .nebula-surface--elevated { background: var(--color-surface-elevated);
-                              border: 1px solid var(--color-nebula-hairline-strong);
-                              border-radius: var(--r-lg); }
+                              border: 2px solid #000000;
+                              border-radius: 0; }
   .nebula-surface--deep     { background: var(--color-surface-deep);
-                              border: 1px solid var(--color-nebula-hairline-strong);
-                              border-radius: var(--r-lg); }
-  .nebula-hairline   { border: 1px solid var(--color-nebula-hairline-strong); }
-  .nebula-hairline-t { border-top: 1px solid var(--color-nebula-hairline); }
-  .nebula-hairline-b { border-bottom: 1px solid var(--color-nebula-hairline); }
+                              border: none;
+                              border-radius: 0; }
+  .nebula-hairline   { border: 2px solid #000000; }
+  .nebula-hairline-t { border-top: 2px solid #000000; }
+  .nebula-hairline-b { border-bottom: 2px solid #000000; }
 
   /* Atmospheric glows — anchored at the TOP of a section, falling
      off to canvas black within ~600px. One per section, max.
@@ -339,39 +335,34 @@
   .glow-yellow { --glow-color: rgba(255, 197, 61, 0.18); }
   .glow-slate  { --glow-color: rgba(120, 130, 160, 0.18); }
 
-  /* Buttons — Resend palette */
+  /* Buttons — brutalist: solid black, sharp edges, hover scale */
   .nebula-btn {
     display: inline-flex; align-items: center; gap: 8px;
-    font-family: var(--font-sans), 'Inter', sans-serif;
-    font-size: var(--nebula-small); font-weight: 500;
-    padding: 8px 16px; height: 36px; border-radius: var(--r-md);
-    text-decoration: none; transition: all var(--nebula-fast) var(--nebula-ease);
-    border: 1px solid transparent;
+    font-family: var(--font-mono), 'Space Mono', ui-monospace, monospace;
+    font-size: var(--nebula-small); font-weight: 700;
+    padding: 10px 18px; height: auto; border-radius: 0;
+    text-transform: uppercase; letter-spacing: -0.02em;
+    text-decoration: none; transition: transform var(--nebula-fast) var(--nebula-ease);
+    border: 2px solid #000000;
+    cursor: pointer;
   }
-  .nebula-btn--primary {
-    background: var(--color-nebula-fg); color: var(--color-on-light);
-    border-color: var(--color-nebula-fg);
-  }
-  .nebula-btn--primary:hover  { background: #f1f7fe; border-color: #f1f7fe; }
-  .nebula-btn--ghost {
-    background: var(--color-surface-elevated); color: var(--color-nebula-fg);
-    border-color: var(--color-nebula-hairline-strong);
-  }
-  .nebula-btn--ghost:hover { background: var(--color-nebula-surface); }
-  .nebula-btn--outline {
-    background: var(--color-nebula-bg); color: var(--color-nebula-fg);
-    border-color: var(--color-nebula-hairline-strong);
-  }
-  .nebula-btn--outline:hover { border-color: var(--color-nebula-fg); }
+  .nebula-btn:hover { transform: scale(1.05); }
+  .nebula-btn--primary { background: #000000; color: #ffffff; }
+  .nebula-btn--primary:hover { background: #000000; color: #ffffff; }
+  .nebula-btn--ghost { background: #ffffff; color: #000000; }
+  .nebula-btn--ghost:hover { background: #ff4d00; color: #000000; }
+  .nebula-btn--outline { background: #ffffff; color: #000000; }
+  .nebula-btn--outline:hover { background: #ff4d00; color: #000000; }
 
-  /* Pill — inline tags ("New", "Beta"). NOT a button. */
+  /* Pill — black, white text, rounded-full */
   .nebula-pill {
     display: inline-flex; align-items: center; gap: 6px;
-    background: var(--color-surface-elevated); color: var(--color-nebula-fg-soft);
-    font-family: var(--font-sans), 'Inter', sans-serif;
-    font-size: var(--nebula-caption); font-weight: 500;
-    padding: 4px 10px; border-radius: var(--r-full);
-    border: 1px solid var(--color-nebula-hairline-strong);
+    background: #000000; color: #ffffff;
+    font-family: var(--font-mono), 'Space Mono', ui-monospace, monospace;
+    font-size: var(--nebula-caption); font-weight: 400;
+    text-transform: uppercase; letter-spacing: -0.02em;
+    padding: 4px 12px; border-radius: 9999px;
+    border: 1px solid #000000;
   }
 
   /* Stagger entrance */
@@ -402,6 +393,18 @@
 
 .bg-gradient-radial {
   background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.5) 50%, black 100%);
+}
+
+/* Focus-visible — Taste Skill: never remove the focus ring without replacing it.
+   Sits late so it beats utility classes like focus:outline-none. */
+:where(a, button, input, select, textarea, [tabindex], summary):focus-visible {
+  outline: 2px solid var(--color-accent-blue) !important;
+  outline-offset: 2px !important;
+  border-radius: 2px;
+}
+:where(a, button):focus-visible {
+  outline: 2px solid var(--color-accent-blue) !important;
+  outline-offset: 2px !important;
 }
 
 /* Autofill Override */

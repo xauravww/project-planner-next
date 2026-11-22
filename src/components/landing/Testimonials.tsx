@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Section, Container } from "@/components/ui/Section";
 import { NebulaCard } from "@/components/ui/NebulaCard";
 
@@ -17,7 +16,7 @@ const testimonials: Testimonial[] = [
         name: "Sarah Chen",
         role: "Senior Product Manager",
         content:
-            "NebulaPlan changed how we handle requirements. The AI suggestions are sharp and saved us weeks of planning — we went from messy docs to a shippable plan in one afternoon.",
+            "NebulaPlan changed how we handle requirements. The AI suggestions are sharp and saved us weeks of planning. We went from messy docs to a shippable plan in one afternoon.",
         avatar: "SC",
     },
     {
@@ -59,60 +58,59 @@ export function Testimonials() {
     const [hero, ...rest] = testimonials;
 
     return (
-        <Section id="testimonials" glow="yellow">
-            <Container className="max-w-5xl">
-                {/* Hero quote — no card, big serif, editorial */}
-                <motion.figure
-                    initial={{ opacity: 0, y: 16 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-80px" }}
-                    transition={{ duration: 0.6 }}
-                    className="mb-20 max-w-3xl"
-                >
-                    <span
-                        aria-hidden
-                        className="block text-[color:var(--color-nebula-fg)] leading-none mb-2"
-                        style={{
-                            fontFamily: "var(--font-serif), serif",
-                            fontSize: "5rem",
-                            fontStyle: "italic",
-                            opacity: 0.4,
-                        }}
-                    >
-                        &ldquo;
-                    </span>
-                    <blockquote
-                        className="text-[color:var(--color-nebula-fg)]"
-                        style={{
-                            fontFamily: "var(--font-serif), serif",
-                            fontSize: "clamp(1.5rem, 3vw, 2.25rem)",
-                            fontWeight: 400,
-                            lineHeight: 1.3,
-                            letterSpacing: "-0.01em",
-                        }}
-                    >
-                        {hero.content}
-                    </blockquote>
-                    <figcaption className="mt-6">
-                        <Author t={hero} size="lg" />
-                    </figcaption>
-                </motion.figure>
+        <Section id="testimonials" glow="yellow" fill>
+            <Container>
+                {/* Hero quote + visual split */}
+                <div className="grid lg:grid-cols-5 gap-12 items-center">
+                    <figure className="lg:col-span-3 mb-0">
+                        <span
+                            aria-hidden
+                            className="block text-[color:var(--color-accent-blue)] leading-none mb-2"
+                            style={{
+                                fontFamily: "var(--font-sans), 'Inter', sans-serif",
+                                fontSize: "4rem",
+                                fontWeight: 700,
+                                opacity: 0.35,
+                            }}
+                        >
+                            &ldquo;
+                        </span>
+                        <blockquote
+                            className="text-[color:var(--color-nebula-fg)]"
+                            style={{
+                                fontFamily: "var(--font-sans), 'Inter', sans-serif",
+                                fontSize: "clamp(1.5rem, 2.5vw, 2rem)",
+                                fontWeight: 500,
+                                lineHeight: 1.35,
+                                letterSpacing: "-0.02em",
+                            }}
+                        >
+                            {hero.content}
+                        </blockquote>
+                        <figcaption className="mt-6">
+                            <Author t={hero} size="lg" />
+                        </figcaption>
+                    </figure>
+
+                    <div className="hidden lg:block lg:col-span-2">
+                        <img
+                            src="/product-plans.png"
+                            alt="NebulaPlan planning board"
+                            className="w-full h-auto rounded-2xl border border-[var(--color-nebula-hairline-strong)] shadow-2xl"
+                            loading="lazy"
+                        />
+                    </div>
+                </div>
 
                 {/* small row — quieter cards */}
-                <div className="grid gap-4 md:grid-cols-3">
-                    {rest.map((t, i) => (
-                        <motion.div
-                            key={t.name}
-                            initial={{ opacity: 0, y: 16 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-80px" }}
-                            transition={{ duration: 0.4, delay: i * 0.08 }}
-                        >
+                <div className="grid gap-4 mt-16 md:grid-cols-3">
+                    {rest.map((t) => (
+                        <div key={t.name}>
                             <NebulaCard className="h-full gap-5 !p-6">
                                 <p className="type-small italic">&ldquo;{t.content}&rdquo;</p>
                                 <Author t={t} />
                             </NebulaCard>
-                        </motion.div>
+                        </div>
                     ))}
                 </div>
             </Container>

@@ -26,18 +26,22 @@ type SectionProps = {
     id?: string;
     /** Atmospheric radial glow anchored at the top of the section. */
     glow?: Glow;
+    /** Fill the viewport height so every section reads as one screen. */
+    fill?: boolean;
     className?: string;
     children: React.ReactNode;
 };
 
-export function Section({ id, glow, className, children }: SectionProps) {
+export function Section({ id, glow, fill, className, children }: SectionProps) {
     return (
         <section
             id={id}
             className={cn(
                 "relative overflow-hidden",
                 "bg-[var(--color-nebula-bg)]",
-                "py-[var(--space-section)]",
+                fill
+                    ? "min-h-[calc(100svh)] flex flex-col justify-center py-[var(--space-section)]"
+                    : "py-[var(--space-section)]",
                 glow && "nebula-glow",
                 glow && `glow-${glow}`,
                 className,
@@ -58,7 +62,7 @@ export function Container({
     children: React.ReactNode;
 }) {
     return (
-        <div className={cn("container mx-auto px-6 max-w-[1200px] relative z-10", className)}>
+        <div className={cn("wrap container mx-auto px-6 max-w-[1200px] relative z-10", className)}>
             {children}
         </div>
     );

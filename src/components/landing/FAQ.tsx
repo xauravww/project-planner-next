@@ -31,14 +31,33 @@ export function FAQ() {
     const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     return (
-        <Section id="faq">
-            <Container className="max-w-3xl">
+        <Section id="faq" fill>
+            <Container>
                 <SectionHeader
                     title="Frequently"
                     accent="asked"
                 />
 
-                <div className="space-y-[var(--space-md)]">
+                <div className="grid lg:grid-cols-3 gap-12 items-start">
+                    {/* visual column */}
+                    <div className="hidden lg:block">
+                        <div className="rounded-2xl border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-surface-elevated)] p-5 space-y-3">
+                            <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-nebula-hairline)] bg-[var(--color-nebula-bg)] p-2.5">
+                                <div className="h-3.5 w-3.5 shrink-0 rounded bg-[var(--color-accent-green)] opacity-60" />
+                                <div className="h-2 flex-1 rounded bg-[var(--color-nebula-hairline)]" />
+                            </div>
+                            <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-nebula-hairline)] bg-[var(--color-nebula-bg)] p-2.5">
+                                <div className="h-3.5 w-3.5 shrink-0 rounded bg-[var(--color-accent-blue)] opacity-60" />
+                                <div className="h-2 flex-1 rounded bg-[var(--color-nebula-hairline)]" />
+                            </div>
+                            <div className="flex items-center gap-2.5 rounded-lg border border-[var(--color-nebula-hairline)] bg-[var(--color-nebula-bg)] p-2.5">
+                                <div className="h-3.5 w-3.5 shrink-0 rounded bg-[var(--color-accent-green)] opacity-60" />
+                                <div className="h-2 flex-1 rounded bg-[var(--color-nebula-hairline)]" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-2 space-y-[var(--space-md)]">
                     {faqs.map((faq, i) => {
                         const open = openIndex === i;
                         return (
@@ -77,6 +96,7 @@ export function FAQ() {
                             </NebulaCard>
                         );
                     })}
+                    </div>
                 </div>
             </Container>
         </Section>
