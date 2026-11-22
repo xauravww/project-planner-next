@@ -5,6 +5,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PDFExportProgress } from "./PDFExportProgress";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 
 interface ProjectDashboardClientProps {
     project: any;
@@ -114,13 +115,6 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
         { name: "Mockups", icon: Database, href: `/projects/${project.id}/mockups`, count: stats.mockups },
     ];
 
-    const facts = [
-        { label: "Requirements", count: stats.requirements },
-        { label: "Stories", count: stats.userStories },
-        { label: "Workflows", count: stats.workflows },
-        { label: "Mockups", count: stats.mockups },
-    ].filter((f) => f.count > 0);
-
     return (
         <div className="min-h-screen bg-white">
             <div className="mx-auto max-w-[1200px] px-4 py-6 md:py-8">
@@ -144,39 +138,23 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                         </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                        <button
-                            type="button"
+                        <NebulaButton
+                            variant="ghost"
                             onClick={handleExport}
                             disabled={isExporting}
-                            className="nebula-btn nebula-btn--ghost disabled:opacity-50"
+                            className="disabled:opacity-50"
                         >
                             <Download className="h-4 w-4" />
                             {isExporting ? 'Exporting...' : 'Export'}
-                        </button>
-                        <Link href={`/projects/${project.id}/refine`} className="nebula-btn nebula-btn--primary">
+                        </NebulaButton>
+                        <NebulaButton href={`/projects/${project.id}/refine`}>
                             Continue planning
-                        </Link>
+                        </NebulaButton>
                     </div>
                 </div>
 
-                {/* Facts strip */}
-                {facts.length > 0 && (
-                    <div className="mt-5 flex flex-wrap gap-3">
-                        {facts.map((f) => (
-                            <span
-                                key={f.label}
-                                className="inline-flex items-center gap-2 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-tight text-black/70"
-                            >
-                                <span className="font-display text-base text-black">{f.count}</span>
-                                {f.label}
-                            </span>
-                        ))}
-                    </div>
-                )}
-
                 {/* Modules — compact grid */}
                 <div className="mt-6">
-                    <p className="mb-3 font-mono text-xs uppercase tracking-tight text-black/60">Modules</p>
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                         {modules.map((m) => (
                             <Link
@@ -185,12 +163,12 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                                 className="group flex flex-col gap-2.5 border-2 border-black p-3.5 transition-colors hover:bg-black/5"
                             >
                                 <span className="flex items-center justify-between">
-                                    <m.icon className="h-5 w-5 text-[#FF4D00]" />
+                                    <m.icon className="h-5 w-5 text-[color:var(--color-accent-orange)]" />
                                     <span className="font-mono text-[11px] uppercase tracking-tight text-black/50">
                                         {m.count}
                                     </span>
                                 </span>
-                                <span className="text-sm font-semibold text-black transition-colors group-hover:text-[#FF4D00]">
+                                <span className="text-sm font-semibold text-black transition-colors group-hover:text-[color:var(--color-accent-orange)]">
                                     {m.name}
                                 </span>
                             </Link>

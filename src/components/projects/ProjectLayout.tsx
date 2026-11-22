@@ -44,7 +44,7 @@ export default function ProjectLayout({ projectId, projectName, projectType, chi
     const currentPageName = getCurrentPageName();
 
     return (
-        <div className="flex h-full overflow-hidden">
+        <div className="flex h-screen overflow-hidden">
             {/* Mobile sidebar overlay */}
             {sidebarOpen && (
                 <div className="fixed inset-0 z-50 lg:hidden">

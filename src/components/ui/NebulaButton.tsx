@@ -21,6 +21,7 @@ type NebulaButtonProps = {
     children: React.ReactNode;
     type?: "button" | "submit";
     onClick?: () => void;
+    disabled?: boolean;
     "aria-label"?: string;
 };
 
@@ -47,6 +48,7 @@ export function NebulaButton({
     children,
     type = "button",
     onClick,
+    disabled,
     ...rest
 }: NebulaButtonProps) {
     const classes = cn(base, variants[variant], sizes[size], className);
@@ -68,7 +70,7 @@ export function NebulaButton({
     }
 
     return (
-        <button type={type} onClick={onClick} className={classes} {...rest}>
+        <button type={type} onClick={onClick} disabled={disabled} className={classes} {...rest}>
             {children}
         </button>
     );

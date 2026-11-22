@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getProjects } from "@/actions/project";
 import { DeleteProjectButton } from "@/components/projects/DeleteProjectButton";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
+import { SearchInput } from "@/components/dashboard/SearchInput";
 
 type ProjectRow = {
     id: string;
@@ -24,7 +25,17 @@ export function ProjectsView({ projects: initial, total }: { projects: ProjectRo
     const [items, setItems] = useState<ProjectRow[]>(initial);
     const [hasMore, setHasMore] = useState(initial.length < total);
     const [loading, setLoading] = useState(false);
+    const [search, setSearch] = useState("");
     const sentinelRef = useRef<HTMLDivElement>(null);
+
+    const q = search.trim().toLowerCase();
+    const visible = q
+        ? items.filter(
+              (p) =>
+                  p.name.toLowerCase().includes(q) ||
+                  (p.description ?? "").toLowerCase().includes(q),
+          )
+        : items;
 
     const handleDeleted = (id: string) => {
         setItems((prev) => prev.filter((p) => p.id !== id));
@@ -59,9 +70,11 @@ export function ProjectsView({ projects: initial, total }: { projects: ProjectRo
 
     return (
         <div>
-            {/* View toggle */}
-            <div className="mb-4 flex items-center justify-end gap-2 font-mono text-xs uppercase tracking-tight">
-                <button
+            {/* Toolbar: search + view toggle */}
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <SearchInput value={search} onChange={setSearch} />
+                <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-tight">
+                    <button
                     type="button"
                     onClick={() => setView("table")}
                     className={`border-2 border-black px-3 py-1.5 transition-colors ${
@@ -79,13 +92,21 @@ export function ProjectsView({ projects: initial, total }: { projects: ProjectRo
                 >
                     Grid
                 </button>
+                </div>
             </div>
 
-            {view === "table" ? (
+            {visible.length === 0 ? (
+                <div className="border-2 border-dashed border-black px-6 py-10 text-center">
+                    <p className="font-mono text-sm uppercase tracking-tight text-black/60">No projects match</p>
+                    <p className="mt-2 text-sm text-black/60">
+                        {q ? `Nothing matches "${search.trim()}".` : "No projects yet."}
+                    </p>
+                </div>
+            ) : view === "table" ? (
                 <div className="overflow-x-auto">
                     <table className="w-full border-collapse border-2 border-black">
                         <thead>
-                            <tr className="border-b-2 border-black font-mono text-xs uppercase tracking-tight text-black/60">
+                            <tr className="bg-black font-mono text-xs uppercase tracking-tight text-white">
                                 <th className="p-3 text-left font-medium">Project</th>
                                 <th className="hidden p-3 text-left font-medium md:table-cell">Description</th>
                                 <th className="hidden p-3 text-left font-medium sm:table-cell">Updated</th>
@@ -93,7 +114,7 @@ export function ProjectsView({ projects: initial, total }: { projects: ProjectRo
                             </tr>
                         </thead>
                         <tbody>
-                            {items.map((project) => (
+                            {visible.map((project) => (
                                 <tr key={project.id} className="border-t-2 border-black transition-colors hover:bg-black/5">
                                     <td className="max-w-0 p-3">
                                         <Link
@@ -125,7 +146,7 @@ export function ProjectsView({ projects: initial, total }: { projects: ProjectRo
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {items.map((project) => (
+                    {visible.map((project) => (
                         <Link
                             key={project.id}
                             href={`/projects/${project.id}`}

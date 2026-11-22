@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { DeleteModal } from "@/components/ui/DeleteModal";
-import { Wand2, Pencil, Trash2, Save, X, Download, Share2, Sparkles, FileText, Network, Loader2, Plus } from "lucide-react";
+import { Wand2, Pencil, Trash2, Save, X, Sparkles, FileText, Network, Loader2, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateArchitecture, generateHLD, generateLLD, approveHLD, approveLLD } from "@/actions/project";
 import { updateArchitecture, deleteArchitecture } from "@/actions/crud";
@@ -125,11 +125,11 @@ export default function ArchitecturePageClient({
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                         <div className="flex items-center gap-4 justify-center lg:justify-start">
-                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-[var(--r-lg)] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] flex items-center justify-center">
-                                <Network className="w-5 h-5 lg:w-6 lg:h-6 text-[color:var(--color-nebula-fg)]" />
+                            <div className="grid h-11 w-11 lg:h-12 lg:w-12 place-items-center border-2 border-black bg-white">
+                                <Network className="h-5 w-5 lg:h-6 lg:w-6 text-[color:var(--color-nebula-fg)]" />
                             </div>
                             <div className="text-center lg:text-left">
-                                <h1 className="type-h3">Architecture</h1>
+                                <h1 className="type-h2">Architecture</h1>
                                 <p className="type-small text-[color:var(--color-charcoal)] mt-0.5">System design & component structure</p>
                             </div>
                         </div>
@@ -186,14 +186,6 @@ export default function ArchitecturePageClient({
                                         </>
                                     ) : (
                                         <>
-                                            <Button variant="nebula-ghost" className="gap-2 text-sm px-4 py-2">
-                                                <Share2 className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Share</span>
-                                            </Button>
-                                            <Button variant="nebula-ghost" className="gap-2 text-sm px-4 py-2">
-                                                <Download className="w-4 h-4" />
-                                                <span className="hidden sm:inline">Export</span>
-                                            </Button>
                                             <Button onClick={() => setIsEditing(true)} variant="nebula" className="text-sm px-4 py-2">
                                                 <Pencil className="w-4 h-4 mr-2" />
                                                 <span className="hidden sm:inline">Edit</span>
@@ -216,7 +208,7 @@ export default function ArchitecturePageClient({
                     {!architecture && !aiGenerateMutation.isPending ? (
                         <div className="flex items-center justify-center h-full p-4 sm:p-8">
                             <div className="max-w-sm sm:max-w-md text-center px-4">
-                                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-4 sm:mb-6 border border-[var(--color-nebula-hairline-strong)]">
+                                <div className="grid h-16 w-16 sm:h-20 sm:w-20 place-items-center border-2 border-black bg-white mx-auto mb-4 sm:mb-6">
                                     <Network className="w-8 h-8 sm:w-10 sm:h-10 text-[color:var(--color-nebula-fg)]" />
                                 </div>
                                 <h3 className="type-h3 mb-3">No Architecture Defined</h3>

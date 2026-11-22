@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { Sparkles, Database, Code, Server as ServerIcon, FileText, Layers, Download, Copy, Check, Code2, Image, Settings } from "lucide-react";
+import { Sparkles, Database, Code, Server as ServerIcon, FileText, Layers, Download, Copy, Check, Code2, Image, Settings, Lock } from "lucide-react";
 import { MessageContent } from "@/components/chat/MessageContent";
 import Mermaid from "@/components/ui/Mermaid";
 import { generateDatabaseSection, generateAPISection, generateDeploymentSection, fixMermaidDiagram } from "@/actions/architecture-sections";
@@ -176,7 +176,7 @@ function HLDReviewGate({ architecture, projectId, onApprove, onRequestChanges }:
         return (
         <GlassCard className="border-[var(--color-accent-yellow)] bg-[var(--color-accent-yellow-glow)]">
             <div className="flex items-start gap-4">
-                <div className="p-2 rounded-lg bg-[var(--color-accent-yellow)]/20 border border-[var(--color-accent-yellow)]">
+                <div className="p-2 rounded-none bg-[var(--color-accent-yellow)]/20 border border-[var(--color-accent-yellow)]">
                     <Zap className="w-5 h-5 text-[var(--color-accent-yellow)]" />
                 </div>
                 <div className="flex-1">
@@ -225,7 +225,7 @@ function HLDCheckItem({ label, status, count }: { label: string; status: boolean
 
     // Generate LLD for a specific container
         return (
-        <div className={`p-3 rounded-lg text-center ${
+        <div className={`p-3 rounded-none text-center ${
             status ? "bg-[var(--color-accent-green)]/10 border border-[var(--color-accent-green)]/30" 
                    : "bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)]"
         }`}>
@@ -304,7 +304,7 @@ ${diagramCode}
                         className="fixed inset-0 z-10" 
                         onClick={() => setIsOpen(false)} 
                     />
-                    <div className="absolute right-0 top-full mt-1 z-20 GlassCard rounded-xl border border-[var(--color-nebula-hairline-strong)] py-1 min-w-[180px] shadow-lg">
+                    <div className="absolute right-0 top-full mt-1 z-20 border-2 border-black bg-white py-1 min-w-[180px]">
                         <div className="px-3 py-2 border-b border-[var(--color-nebula-hairline-strong)] text-xs text-[color:var(--color-ash)]">
                             Export: {title}
                         </div>
@@ -502,13 +502,15 @@ export function ArchitectureTabs({
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 rounded-[var(--r-md)] transition-all whitespace-nowrap border-b border-[var(--color-nebula-hairline-strong)] ${activeTab === tab.id
-                                ? "border-[color:var(--color-accent-orange)] text-[color:var(--color-nebula-fg)]"
-                                : "border-transparent text-[color:var(--color-charcoal)] hover:text-[color:var(--color-nebula-fg)]"
-                                }`}
+                            aria-selected={activeTab === tab.id}
+                            className={`inline-flex items-center gap-1 sm:gap-2 border-2 px-2 sm:px-4 py-2 text-xs sm:text-sm transition-colors whitespace-nowrap ${
+                                activeTab === tab.id
+                                    ? "border-black bg-black text-white"
+                                    : "border-transparent text-[color:var(--color-charcoal)] hover:border-black hover:text-[color:var(--color-nebula-fg)]"
+                            }`}
                         >
                             <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                            <span className="text-xs sm:text-sm">{tab.label}</span>
+                            <span>{tab.label}</span>
                         </button>
                     );
                 })}
@@ -523,7 +525,7 @@ export function ArchitectureTabs({
                             <h3 className="type-h4 mb-4">System Architecture</h3>
                             {isEditing ? (
                                 <textarea
-                                    className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
+                                    className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-none p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
                                     value={formData?.content || ""}
                                     onChange={(e) => onFormChange?.("content", e.target.value)}
                                     placeholder="Enter system architecture overview..."
@@ -542,7 +544,7 @@ export function ArchitectureTabs({
                                 <h3 className="type-h4 mb-4">System Diagram</h3>
                                 {isEditing ? (
                                     <textarea
-                                        className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y mb-4"
+                                        className="w-full h-64 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-none p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y mb-4"
                                         value={formData?.diagram || ""}
                                         onChange={(e) => onFormChange?.("diagram", e.target.value)}
                                         placeholder="Enter Mermaid diagram code..."
@@ -567,7 +569,7 @@ export function ArchitectureTabs({
                                 <h3 className="type-h4 mb-4">High-Level Architecture</h3>
                                 {isEditing ? (
                                     <textarea
-                                        className="w-full h-48 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-[var(--r-md)] p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
+                                        className="w-full h-48 bg-[var(--color-surface-deep)] text-[color:var(--color-nebula-fg)] rounded-none p-4 border border-[var(--color-nebula-hairline-strong)] focus:border-[var(--color-nebula-fg)] outline-none text-mono text-sm resize-y"
                                         value={formData?.highLevel || ""}
                                         onChange={(e) => onFormChange?.("highLevel", e.target.value)}
                                         placeholder="Enter high-level architecture details..."
@@ -727,7 +729,10 @@ export function ArchitectureTabs({
                                                     <p className="type-small text-[color:var(--color-charcoal)] mb-3">{endpoint.description}</p>
 
                                                     {endpoint.authentication && (
-                                                        <p className="text-xs text-[color:var(--color-ash)] mb-2">🔒 {endpoint.authentication}</p>
+                                                        <p className="flex items-center gap-1 text-xs text-[color:var(--color-ash)] mb-2">
+                                                            <Lock className="h-3 w-3" />
+                                                            {endpoint.authentication}
+                                                        </p>
                                                     )}
 
                                                     <details className="mt-3">
@@ -737,13 +742,13 @@ export function ArchitectureTabs({
                                                         <div className="mt-3 space-y-2 pl-4 border-l-2 border-[var(--color-nebula-hairline-strong)]">
                                                             <div>
                                                                 <p className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Request Body:</p>
-                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-[var(--r-lg)] overflow-x-auto max-w-full">
+                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-none overflow-x-auto max-w-full">
                                                                     {JSON.stringify(endpoint.requestBody, null, 2)}
                                                                 </pre>
                                                             </div>
                                                             <div>
                                                                 <p className="text-xs font-semibold text-[color:var(--color-ash)] mb-1">Success Response ({endpoint.responseSuccess.code}):</p>
-                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-[var(--r-lg)] overflow-x-auto max-w-full">
+                                                                <pre className="text-mono text-xs text-[color:var(--color-nebula-fg-soft)] bg-[var(--color-surface-deep)] p-2 rounded-none overflow-x-auto max-w-full">
                                                                     {JSON.stringify(endpoint.responseSuccess.body, null, 2)}
                                                                 </pre>
                                                             </div>
@@ -930,7 +935,7 @@ export function ArchitectureTabs({
 
                                                     <div className="flex-1 space-y-3 overflow-y-auto">
                                                         {/* Class Diagram */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasClassDiagram 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
@@ -969,7 +974,7 @@ export function ArchitectureTabs({
                                                         </div>
 
                                                         {/* Sequence Diagrams */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasSequences 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
@@ -998,7 +1003,7 @@ export function ArchitectureTabs({
                                                         </div>
 
                                                         {/* Activity Diagrams */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasActivities 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
@@ -1027,7 +1032,7 @@ export function ArchitectureTabs({
                                                         </div>
 
                                                         {/* State Machines */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasStates 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
@@ -1056,7 +1061,7 @@ export function ArchitectureTabs({
                                                         </div>
 
                                                         {/* Timing Diagrams */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasTiming 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"
@@ -1085,7 +1090,7 @@ export function ArchitectureTabs({
                                                         </div>
 
                                                         {/* API Contract */}
-                                                        <div className={`p-3 rounded-lg border transition-all ${
+                                                        <div className={`p-3 rounded-none border transition-all ${
                                                             hasApiContract 
                                                                 ? "border-[var(--color-accent-green)]/30 bg-[var(--color-accent-green)]/5" 
                                                                 : "border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)]"

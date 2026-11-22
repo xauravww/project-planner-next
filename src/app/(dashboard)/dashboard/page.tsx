@@ -4,7 +4,6 @@ import { getProjects } from "@/actions/project";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { ProjectsView } from "@/components/dashboard/ProjectsView";
-import { SearchInput } from "@/components/dashboard/SearchInput";
 
 type ProjectRow = {
     id: string;
@@ -30,7 +29,7 @@ export default async function DashboardPage() {
                 {/* Header */}
                 <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
                     <div>
-                        <h1 className="type-display text-[length:clamp(2rem,4.5vw,3.5rem)]">
+                        <h1 className="type-h2">
                             Your projects
                         </h1>
                         <p className="mt-2 text-base text-black/80">
@@ -64,12 +63,7 @@ export default async function DashboardPage() {
                     </div>
                 ) : (
                     <>
-                        {/* Projects toolbar — search only; page title already says "Your projects" */}
-                        <div className="mt-6 flex items-center justify-end border-b-2 border-black pb-4">
-                            <SearchInput />
-                        </div>
-
-                        {/* Projects list with Table/Grid toggle + infinite scroll */}
+                        {/* Projects list with search + Table/Grid toggle + infinite scroll */}
                         <div className="mt-6">
                             <ProjectsView projects={projects} total={total} />
                         </div>

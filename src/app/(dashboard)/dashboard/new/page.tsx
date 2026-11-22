@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { GraphNode, NodeType } from "@/components/brainstorm/GraphBrainstorm";
 import { AestheticLoader } from "@/components/ui/AestheticLoader";
 import { RefineChat } from "@/components/dashboard/RefineChat";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 import { toast } from "sonner";
 
 // Initial seed with spatial positioning
@@ -396,19 +397,19 @@ export default function NewProjectPage() {
           <div className="w-full max-w-2xl">
             
             {/* Headline - Resend style with italic accent */}
-            <h1 className="type-display text-[color:var(--color-nebula-fg)] mb-6">
+            <h1 className="type-h2 text-[color:var(--color-nebula-fg)] mb-6">
               What are you{" "}
               <em className="type-italic-accent">building?</em>
             </h1>
 
             <p className="type-subtitle max-w-lg mb-12">
-              A name and a sentence is all we need. The rest, we'll figure out together.
+              A name and a sentence is all we need, the rest we'll figure out together
             </p>
 
             {/* Form - minimal, elegant */}
             <div className="space-y-8">
               <div className="space-y-2">
-                <label className="block font-mono text-xs uppercase tracking-tight text-black/70">
+                <label className="block font-mono text-xs uppercase tracking-tight text-black/60">
                   Name your project
                 </label>
                 <input
@@ -416,13 +417,13 @@ export default function NewProjectPage() {
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                   placeholder="My project"
-                  className="w-full border-b-2 border-black bg-transparent py-3 text-2xl font-medium text-black outline-none transition-colors placeholder:text-black/30 focus:border-[#FF4D00] md:text-3xl"
+                  className="w-full border-b-2 border-black bg-transparent py-3 text-2xl font-medium text-black outline-none transition-colors placeholder:text-black/25 focus:border-[#FF4D00]"
                   autoFocus
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="block font-mono text-xs uppercase tracking-tight text-black/70">
+                <label className="block font-mono text-xs uppercase tracking-tight text-black/60">
                   One-line pitch
                 </label>
                 <input
@@ -430,19 +431,19 @@ export default function NewProjectPage() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Marketplace for cameras"
-                  className="w-full border-b-2 border-black bg-transparent py-3 text-lg font-light text-black outline-none transition-colors placeholder:text-black/35 focus:border-[#FF4D00] md:text-xl"
+                  className="w-full border-b-2 border-black bg-transparent py-3 text-lg font-normal text-black outline-none transition-colors placeholder:text-black/30 focus:border-[#FF4D00]"
                   onKeyDown={(e) => e.key === "Enter" && projectName.trim() && startBrainstorming()}
                 />
               </div>
 
               <div className="pt-4">
-                <button
+                <NebulaButton
                   onClick={startBrainstorming}
                   disabled={!projectName.trim()}
-                  className="nebula-btn nebula-btn--primary disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   Create project
-                </button>
+                </NebulaButton>
                 
                 {projectName.trim() && (
                   <span className="ml-4 type-caption text-[color:var(--color-ash)]">
@@ -457,15 +458,15 @@ export default function NewProjectPage() {
 
         {/* Footer hint */}
         <div className="px-6 py-6 text-center">
-          <p className="font-mono text-xs uppercase tracking-tight text-black/50">
-            Not sure yet? Just type anything, we&apos;ll help you refine it.
+          <p className="font-mono text-xs uppercase tracking-tight text-black/40">
+            Not sure yet? Just type anything, we&apos;ll help you refine it
           </p>
         </div>
       </div>
     );
   }
 
-  // Step 2: Refine — chat assistant (replaces the old graph canvas)
+  // Step 2: Refine (chat assistant, replaces the old graph canvas)
   if (step === "brainstorm") {
     return <RefineChat projectName={projectName} description={description} />;
   }
@@ -482,17 +483,14 @@ export default function NewProjectPage() {
 
       {/* Minimal nav */}
       <div className="px-6 py-6">
-        <button
-          onClick={() => setStep("brainstorm")}
-          className="type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
-        >
+        <NebulaButton variant="ghost" size="sm" onClick={() => setStep("brainstorm")}>
           ← Back
-        </button>
+        </NebulaButton>
       </div>
 
       <div className="flex-1 px-6 py-12">
         <div className="max-w-2xl mx-auto">
-          <h1 className="type-display text-[color:var(--color-nebula-fg)] mb-2">
+          <h1 className="type-h2 text-[color:var(--color-nebula-fg)] mb-2">
             Review your <em className="type-italic-accent">plan</em>
           </h1>
           <p className="type-subtitle text-[color:var(--color-ash)] mb-12">
@@ -528,7 +526,7 @@ export default function NewProjectPage() {
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
               className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
                        focus:border-[color:var(--color-nebula-fg)] outline-none
-                       py-3 text-2xl text-[color:var(--color-nebula-fg)] font-serif
+                       py-3 text-2xl text-[color:var(--color-nebula-fg)]
                        transition-colors"
             />
           </div>
@@ -576,10 +574,10 @@ export default function NewProjectPage() {
           </div>
 
           {/* CTA */}
-          <button
+          <NebulaButton
             onClick={handleCreateProject}
             disabled={isCreating}
-            className="nebula-btn nebula-btn--primary disabled:opacity-50"
+            className="disabled:opacity-50"
           >
             {isCreating ? (
               <>
@@ -589,7 +587,7 @@ export default function NewProjectPage() {
             ) : (
               <>Create project →</>
             )}
-          </button>
+          </NebulaButton>
         </div>
       </div>
     </div>

@@ -16,8 +16,8 @@ export function GlassCard({ children, className, hoverEffect = false, ...props }
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className={cn(
-                "glass rounded-xl p-6",
-                hoverEffect && "glass-hover cursor-pointer",
+                "border-2 border-black bg-white p-6",
+                hoverEffect && "transition-colors hover:border-[color:var(--color-accent-orange)] cursor-pointer",
                 className
             )}
             {...props}

@@ -13,6 +13,7 @@ import { CategoryFilterSelect } from "@/components/ui/CategoryFilterSelect";
 import { queryKeys, invalidateModule } from "@/lib/query-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { NebulaButton } from "@/components/ui/NebulaButton";
 
 export default function RequirementsPageClient({
     project,
@@ -185,14 +186,14 @@ export default function RequirementsPageClient({
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder="Search requirements"
-                                className="h-11 w-full border-2 border-black bg-white pl-10 pr-10 text-sm text-black placeholder:text-black/40 outline-none transition-colors focus:border-[#FF4D00]"
+                                className="h-11 w-full border-2 border-black bg-white pl-10 pr-10 text-sm text-black placeholder:text-black/40 outline-none transition-colors focus:border-[color:var(--color-accent-orange)]"
                             />
                             {search && (
                                 <button
                                     type="button"
                                     onClick={() => setSearch("")}
                                     aria-label="Clear search"
-                                    className="absolute right-1 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center text-black transition-colors hover:text-[#FF4D00]"
+                                    className="absolute right-1 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center text-black transition-colors hover:text-[color:var(--color-accent-orange)]"
                                 >
                                     <X className="h-4 w-4" />
                                 </button>
@@ -208,41 +209,33 @@ export default function RequirementsPageClient({
                                     className={`inline-flex items-center gap-2 border-2 px-4 py-2 font-mono text-xs uppercase tracking-tight transition-colors ${
                                         showFilter
                                             ? "border-black bg-black text-white"
-                                            : "border-black bg-white text-black hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                            : "border-black bg-white text-black hover:border-[color:var(--color-accent-orange)] hover:text-[color:var(--color-accent-orange)]"
                                     }`}
                                 >
                                     <Filter className="h-4 w-4" />
                                     Filter
                                 </button>
-                                <Link href={`/projects/${project.id}/requirements/board`} className="nebula-btn nebula-btn--ghost justify-center">
+                                <NebulaButton href={`/projects/${project.id}/requirements/board`} variant="ghost">
                                     Overview
-                                </Link>
-                                <Link href={`/projects/${project.id}/requirements/connections`} className="nebula-btn nebula-btn--ghost justify-center">
+                                </NebulaButton>
+                                <NebulaButton href={`/projects/${project.id}/requirements/connections`} variant="ghost">
                                     Connections
-                                </Link>
-                                <Link href={`/projects/${project.id}/requirements/new`} className="nebula-btn nebula-btn--primary justify-center">
+                                </NebulaButton>
+                                <NebulaButton href={`/projects/${project.id}/requirements/new`}>
                                     <Plus className="h-4 w-4" />
                                     <span className="hidden sm:inline">Add requirement</span>
                                     <span className="sm:hidden">Add</span>
-                                </Link>
-                                <Button
-                                    variant="nebula-ghost"
-                                    onClick={() => router.push(`/projects/${project.id}/refine`)}
-                                    className="transition-colors"
-                                >
+                                </NebulaButton>
+                                <NebulaButton variant="ghost" onClick={() => router.push(`/projects/${project.id}/refine`)}>
                                     <Wand2 className="h-4 w-4" />
                                     Plan more
-                                </Button>
+                                </NebulaButton>
                                 {requirements.length > 0 && (
-                                    <button
-                                        type="button"
-                                        onClick={handleDeleteAll}
-                                        className="inline-flex items-center gap-2 border-2 border-black bg-white px-4 py-2 font-mono text-xs uppercase tracking-tight text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
-                                    >
+                                    <NebulaButton variant="outline" onClick={handleDeleteAll}>
                                         <Trash2 className="h-4 w-4" />
                                         <span className="hidden sm:inline">Delete all</span>
                                         <span className="sm:hidden">Clear</span>
-                                    </button>
+                                    </NebulaButton>
                                 )}
                             </div>
                     </div>
@@ -270,7 +263,7 @@ export default function RequirementsPageClient({
                     <div className="flex items-center justify-center px-4 py-16">
                         <div className="max-w-md text-center">
                             <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-black">
-                                <FileText className="h-10 w-10 text-[#FF4D00]" />
+                                <FileText className="h-10 w-10 text-[color:var(--color-accent-orange)]" />
                             </div>
                             <h3 className="type-h3 mt-6">No requirements yet</h3>
                             <p className="mt-3 text-black/60">
@@ -292,22 +285,22 @@ export default function RequirementsPageClient({
                                         <div className="mb-2">
                                             <h3 className="text-base font-semibold text-[color:var(--color-nebula-fg)] mb-2">{req.title}</h3>
                                             <div className="flex items-center gap-2">
-                                                <span
-                                                    className={`border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight ${
-                                                        req.type === "functional" ? "text-[#FF4D00]" : "text-black/70"
-                                                    }`}
-                                                >
+                                                <span className="inline-flex items-center gap-1.5 border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight text-black/70">
+                                                    {req.type === "functional" && (
+                                                        <span className="h-2 w-2 bg-[color:var(--color-accent-orange)]" />
+                                                    )}
                                                     {req.type === "functional" ? "Functional" : "Non-functional"}
                                                 </span>
                                                 <span
-                                                    className={`border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight ${
+                                                    className={`inline-flex items-center gap-1.5 border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight ${
                                                         req.priority === "must-have"
                                                             ? "bg-black text-white"
-                                                            : req.priority === "should-have"
-                                                                ? "text-[#FF4D00]"
-                                                                : "text-black/70"
+                                                            : "text-black/70"
                                                     }`}
                                                 >
+                                                    {req.priority === "should-have" && (
+                                                        <span className="h-2 w-2 bg-[color:var(--color-accent-orange)]" />
+                                                    )}
                                                     {req.priority === "must-have" ? "Must have" : req.priority === "should-have" ? "Should have" : "Nice to have"}
                                                 </span>
                                             </div>
@@ -348,14 +341,14 @@ export default function RequirementsPageClient({
                                         <button
                                             onClick={() => handleEdit(req)}
                                             aria-label="Edit requirement"
-                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[color:var(--color-accent-orange)] hover:text-[color:var(--color-accent-orange)]"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(req.id)}
                                             aria-label="Delete requirement"
-                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[color:var(--color-accent-orange)] hover:text-[color:var(--color-accent-orange)]"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </button>

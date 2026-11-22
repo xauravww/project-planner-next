@@ -93,15 +93,24 @@ export default function ProjectSidebar({ projectId, projectName, onClose }: Proj
                         type="button"
                         onClick={onClose}
                         aria-label="Close menu"
-                        className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:text-[#FF4D00]"
+                        className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:text-[color:var(--color-accent-orange)]"
                     >
                         <X className="h-4 w-4" />
                     </button>
                 </div>
             )}
 
+            {!onClose && (
+                <div className="border-b-2 border-black p-4">
+                    <Link href={`/projects/${projectId}`} className="block">
+                        <h2 className="truncate text-base font-semibold text-black hover:text-[color:var(--color-accent-orange)] transition-colors">
+                            {projectName}
+                        </h2>
+                    </Link>
+                </div>
+            )}
+
             <div className="flex-1 overflow-y-auto p-3">
-                <p className="px-1 pb-2 font-mono text-xs uppercase tracking-tight text-black/50">Menu</p>
                 <nav className="space-y-1">
                     {globalItems.map((item) => (
                         <Link key={item.href} href={item.href}>
@@ -120,12 +129,7 @@ export default function ProjectSidebar({ projectId, projectName, onClose }: Proj
                 </nav>
 
                 <div className="mt-4 border-t-2 border-black pt-4">
-                    <p className="truncate px-1 pb-2 font-mono text-xs uppercase tracking-tight text-black/50">
-                        Project · {projectName}
-                    </p>
-                </div>
-
-                <nav className="space-y-1">
+                    <nav className="space-y-1">
                     {categories.map((category) => (
                         <div key={category.id}>
                             <button
@@ -151,7 +155,7 @@ export default function ProjectSidebar({ projectId, projectName, onClose }: Proj
                                             <span
                                                 className={`flex items-center gap-2 px-2 py-1.5 text-sm transition-colors ${
                                                     isActive(item.href)
-                                                        ? "font-semibold text-[#FF4D00]"
+                                                        ? "font-semibold text-[color:var(--color-accent-orange)]"
                                                         : "text-black/70 hover:text-black"
                                                 }`}
                                             >
@@ -165,6 +169,7 @@ export default function ProjectSidebar({ projectId, projectName, onClose }: Proj
                         </div>
                     ))}
                 </nav>
+            </div>
             </div>
 
             <div className="space-y-1 border-t-2 border-black p-3">
@@ -183,7 +188,7 @@ export default function ProjectSidebar({ projectId, projectName, onClose }: Proj
                 <button
                     type="button"
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="flex w-full items-center gap-2 border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+                    className="flex w-full items-center gap-2 border-2 border-transparent px-3 py-2 text-sm text-black transition-colors hover:border-[color:var(--color-accent-orange)] hover:text-[color:var(--color-accent-orange)]"
                 >
                     <LogOut className="h-4 w-4" />
                     Sign out
