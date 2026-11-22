@@ -12,17 +12,27 @@ import ProjectLayout from "@/components/projects/ProjectLayout";
 import { queryKeys } from "@/lib/query-client";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 
+const cleanStep = (s: string): string =>
+    String(s)
+        .replace(/^\d+[.)]\s*/, "")
+        .replace(/[*_`]/g, "")
+        .replace(/\s+/g, " ")
+        .trim();
+
 const stepsOf = (j: any): string[] => {
+    let arr: string[] = [];
     if (typeof j.steps === "string") {
         try {
             const parsed = JSON.parse(j.steps);
-            if (Array.isArray(parsed)) return parsed.map(String);
+            if (Array.isArray(parsed)) arr = parsed.map(String);
         } catch {
             // ignore
         }
-        return j.steps.split("\n").map((s: string) => s.trim()).filter(Boolean);
+        if (arr.length === 0) arr = j.steps.split("\n").map((s: string) => s.trim()).filter(Boolean);
+    } else if (Array.isArray(j.steps)) {
+        arr = j.steps.map(String);
     }
-    return Array.isArray(j.steps) ? j.steps.map(String) : [];
+    return arr.map(cleanStep).filter(Boolean);
 };
 
 export default function UserJourneysPage({ params, initialJourneys, projectName }: { params: { id: string }; initialJourneys: any[]; projectName: string }) {
@@ -139,11 +149,11 @@ export default function UserJourneysPage({ params, initialJourneys, projectName 
                                             <div className="min-w-0 flex-1">
                                                 <h3 className="font-semibold text-black">{journey.title}</h3>
                                                 {steps.length > 0 && (
-                                                    <ol className="mt-3 space-y-1.5">
+                                                    <ol className="mt-3 space-y-2">
                                                         {steps.map((s, i) => (
-                                                            <li key={i} className="flex gap-2 text-sm text-black/70">
-                                                                <span className="font-mono text-[#FF4D00]">{i + 1}.</span>
-                                                                <span>{s}</span>
+                                                            <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-black/75">
+                                                                <span className="mt-0.5 shrink-0 font-mono text-[11px] font-semibold text-[#FF4D00]">{i + 1}.</span>
+                                                                <span className="min-w-0 break-words">{s}</span>
                                                             </li>
                                                         ))}
                                                     </ol>
