@@ -1166,7 +1166,7 @@ export async function generateTasks(
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
-    try {
+    const aiResult = await withRetry(async () => {
         const { serverOpenai } = await import("@/lib/ai-client");
 
         const project = await prisma.project.findFirst({
@@ -1176,7 +1176,7 @@ export async function generateTasks(
             },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
@@ -1193,12 +1193,20 @@ export async function generateTasks(
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const tasks = parseAIResponse(aiResponse, [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }]);
+        return parseAIResponse(aiResponse, [{ title: "Setup Project", description: "Initialize project structure", status: "TODO", priority: "HIGH", assignee: "" }]);
+    }, 3);
 
-        if (opts?.dryRun) {
-            return { success: true, count: tasks.length, tasks };
-        }
+    if (!aiResult.success) {
+        return { error: aiResult.error || "Failed to generate tasks" };
+    }
 
+    const tasks = aiResult.data;
+
+    if (opts?.dryRun) {
+        return { success: true, count: tasks.length, tasks };
+    }
+
+    try {
         for (const task of tasks) {
             await prisma.task.create({
                 data: {
@@ -1292,7 +1300,7 @@ export async function generateUserJourneys(
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
-    try {
+    const aiResult = await withRetry(async () => {
         const { serverOpenai } = await import("@/lib/ai-client");
 
         const project = await prisma.project.findFirst({
@@ -1302,7 +1310,7 @@ export async function generateUserJourneys(
             },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
@@ -1319,12 +1327,20 @@ export async function generateUserJourneys(
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const journeys = parseAIResponse(aiResponse, [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }]);
+        return parseAIResponse(aiResponse, [{ title: "User Onboarding", steps: "1. User signs up\n2. User verifies email\n3. User completes profile" }]);
+    }, 3);
 
-        if (opts?.dryRun) {
-            return { success: true, count: journeys.length, journeys };
-        }
+    if (!aiResult.success) {
+        return { error: aiResult.error || "Failed to generate user journeys" };
+    }
 
+    const journeys = aiResult.data;
+
+    if (opts?.dryRun) {
+        return { success: true, count: journeys.length, journeys };
+    }
+
+    try {
         for (const journey of journeys) {
             await prisma.userJourney.create({
                 data: {
@@ -1337,8 +1353,8 @@ export async function generateUserJourneys(
 
         revalidatePath(`/projects/${projectId}/journeys`);
         return { success: true };
-    } catch (_error) {
-        console.error("Generate user journeys error:", _error);
+    } catch (error) {
+        console.error("Generate user journeys error:", error);
         return { error: "Failed to generate user journeys" };
     }
 }
@@ -1537,7 +1553,7 @@ export async function generateBusinessRules(
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
-    try {
+    const aiResult = await withRetry(async () => {
         const { serverOpenai } = await import("@/lib/ai-client");
 
         const project = await prisma.project.findFirst({
@@ -1547,7 +1563,7 @@ export async function generateBusinessRules(
             },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
@@ -1564,12 +1580,20 @@ export async function generateBusinessRules(
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const rules = parseAIResponse(aiResponse, [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }]);
+        return parseAIResponse(aiResponse, [{ title: "User Validation", description: "Validate user input", condition: "When user submits form", action: "Verify all required fields" }]);
+    }, 3);
 
-        if (opts?.dryRun) {
-            return { success: true, count: rules.length, rules };
-        }
+    if (!aiResult.success) {
+        return { error: aiResult.error || "Failed to generate business rules" };
+    }
 
+    const rules = aiResult.data;
+
+    if (opts?.dryRun) {
+        return { success: true, count: rules.length, rules };
+    }
+
+    try {
         for (const rule of rules) {
             await prisma.businessRule.create({
                 data: {
@@ -1599,7 +1623,7 @@ export async function generateTeamMembers(
     const session = await auth();
     if (!session?.user) return { error: "Unauthorized" };
 
-    try {
+    const aiResult = await withRetry(async () => {
         const { serverOpenai } = await import("@/lib/ai-client");
 
         const project = await prisma.project.findFirst({
@@ -1609,7 +1633,7 @@ export async function generateTeamMembers(
             },
         });
 
-        if (!project) return { error: "Project not found" };
+        if (!project) throw new Error("Project not found");
 
         const response = await serverOpenai.chat.completions.create({
             messages: [
@@ -1626,12 +1650,20 @@ export async function generateTeamMembers(
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
-        const members = parseAIResponse(aiResponse, [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }]);
+        return parseAIResponse(aiResponse, [{ name: "Lead Developer", email: "dev@project.com", role: "Full Stack Developer" }]);
+    }, 3);
 
-        if (opts?.dryRun) {
-            return { success: true, count: members.length, members };
-        }
+    if (!aiResult.success) {
+        return { error: aiResult.error || "Failed to generate team members" };
+    }
 
+    const members = aiResult.data;
+
+    if (opts?.dryRun) {
+        return { success: true, count: members.length, members };
+    }
+
+    try {
         for (const member of members) {
             await prisma.member.create({
                 data: {
