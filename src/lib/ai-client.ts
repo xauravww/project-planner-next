@@ -7,7 +7,7 @@ const token = process.env.NEXT_PUBLIC_AI_TOKEN || process.env.NEXT_PUBLIC_AI_API
 export const serverOpenai = {
     chat: {
         completions: {
-            create: async ({ messages, stream, model }: { messages: any[], stream?: boolean, model?: string, max_tokens?: number }) => {
+            create: async ({ messages, stream, model, max_tokens, response_format }: { messages: any[], stream?: boolean, model?: string, max_tokens?: number, response_format?: any }) => {
                 const url = `${baseURL}/chat/completions`;
                 const headers: Record<string, string> = {
                     "Content-Type": "application/json",
@@ -19,7 +19,9 @@ export const serverOpenai = {
                 const body = JSON.stringify({
                     model: model || process.env.AI_MODEL || "auto/best-chat",
                     messages,
-                    stream: !!stream
+                    stream: !!stream,
+                    ...(max_tokens !== undefined ? { max_tokens } : {}),
+                    ...(response_format ? { response_format } : {}),
                 });
 
                 if (stream) {

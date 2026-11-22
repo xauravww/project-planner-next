@@ -219,7 +219,15 @@ function parseAIResponse(content: string, fallback: any = []) {
         }
 
         const jsonStr = cleaned.substring(startIndex, lastIndex + 1);
-        return JSON.parse(jsonStr);
+        const parsed = JSON.parse(jsonStr);
+        // Some providers wrap the array in an object (JSON mode returns a single JSON value).
+        // Unwrap the first array value if the top-level value is an object.
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            const values = Object.values(parsed);
+            const arrayValue = values.find((v) => Array.isArray(v));
+            if (arrayValue !== undefined) return arrayValue;
+        }
+        return parsed;
     } catch (error) {
         console.error("Failed to parse AI response:", error);
         console.error("Raw content snippet:", content.substring(0, 200));
@@ -271,12 +279,18 @@ export async function generateRequirements(
                 },
             ],
             max_tokens: 8000,
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         
         // Validate AI output with Zod
         const parsed = parseAIResponse(aiResponse, []);
+
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+            throw new Error("AI returned no valid requirements");
+        }
+
         const validation = validateAIOutput(requirementsArraySchema, parsed);
         
         if (!validation.success) {
@@ -881,7 +895,7 @@ export async function generateUserStories(
             messages: [
                 {
                     role: "system",
-                    content: "Generate 4-6 user stories. Return ONLY a valid JSON array with objects containing: title, content, acceptanceCriteria, priority, storyPoints. STRICT RULE: Do not include any conversational text, explanations, or markdown code blocks around the JSON. Return pure JSON output.",
+                    content: "You are a product manager writing user stories. Generate 4-6 user stories. Return ONLY a valid JSON array with no surrounding text, no markdown code blocks, no headings, and no explanations. Each object must use exactly these fields: title (string), content (string), acceptanceCriteria (string or array of strings), priority (ONLY one of exactly \"must-have\", \"should-have\", or \"nice-to-have\"), storyPoints (integer between 1 and 13). Keep titles and content concise. STRICT RULE: The entire response must be a single JSON array and nothing else.",
                 },
                 {
                     role: "user",
@@ -889,10 +903,15 @@ export async function generateUserStories(
                 },
             ],
             max_tokens: 4000,
+            response_format: { type: "json_object" },
         });
 
         const aiResponse = response.choices[0]?.message?.content || "[]";
         const stories = parseAIResponse(aiResponse, []);
+
+        if (stories.length === 0) {
+            throw new Error("AI returned no valid user stories");
+        }
         
         // Validate stories with Zod schema
         const validation = validateAIOutput(userStoriesArraySchema, stories);

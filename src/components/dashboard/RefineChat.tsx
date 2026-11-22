@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createProjectWithAI, generateGenerationQuestions, generateRequirements, getProject } from "@/actions/project";
-import { deleteRequirement } from "@/actions/crud";
+import { createProjectWithAI, generateGenerationQuestions, generateRequirements, generateUserStories, getProject } from "@/actions/project";
+import { deleteRequirement, deleteUserStory } from "@/actions/crud";
 import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 import { ArrowLeft, Send, Box } from "lucide-react";
 
@@ -42,6 +42,7 @@ export function RefineChat({
     projectId,
     artifactCount = 0,
     artifactBreakdown,
+    artifact = "requirements",
 }: {
     projectName: string;
     description: string;
@@ -49,7 +50,10 @@ export function RefineChat({
     projectId?: string;
     artifactCount?: number;
     artifactBreakdown?: Record<string, number>;
+    artifact?: "requirements" | "stories";
 }) {
+    const isStories = artifact === "stories";
+    const artifactLabel = isStories ? "user stories" : "requirements";
     const router = useRouter();
     const [started, setStarted] = useState(false);
     const [loadingQuestions, setLoadingQuestions] = useState(false);
@@ -179,46 +183,54 @@ export function RefineChat({
         setGenerating(true);
         try {
             const before = await getProject(projectId);
-            const beforeReqs = before.project?.requirements ?? [];
-            const beforeTitles = beforeReqs.map((r: any) => r.title);
-            const beforeIds = new Set(beforeReqs.map((r: any) => r.id));
+            const beforeItems = isStories ? before.project?.userStories ?? [] : before.project?.requirements ?? [];
+            const beforeTitles = beforeItems.map((r: any) => r.title);
+            const beforeIds = new Set(beforeItems.map((r: any) => r.id));
 
-            const result = await generateRequirements(
-                projectId,
-                pairs.map((p) => ({ question: p.question, selected: p.selected })),
-                beforeTitles,
-            );
+            const result = isStories
+                ? await generateUserStories(projectId, pairs)
+                : await generateRequirements(
+                      projectId,
+                      pairs.map((p) => ({ question: p.question, selected: p.selected })),
+                      beforeTitles,
+                  );
             if (result?.error) throw new Error(result.error);
 
             const after = await getProject(projectId);
-            const newReqs = (after.project?.requirements ?? []).filter((r: any) => !beforeIds.has(r.id));
+            const newItems = (isStories ? after.project?.userStories ?? [] : after.project?.requirements ?? []).filter(
+                (r: any) => !beforeIds.has(r.id),
+            );
 
-            if (newReqs.length === 0) {
-                throw new Error("No requirements were generated");
+            if (newItems.length === 0) {
+                throw new Error(`No ${artifactLabel} were generated`);
             }
 
-            const reviewed = newReqs.map((r: any) => {
-                const ex = beforeReqs.find((e: any) => similarity(r.title, e.title) > 0.45) || null;
+            const reviewed = newItems.map((r: any) => {
+                const ex = beforeItems.find((e: any) => similarity(r.title, e.title) > 0.45) || null;
                 return { ...r, conflict: ex ? { title: ex.title, content: ex.content } : null };
             });
 
             setReviewItems(reviewed);
             setShowReview(true);
         } catch {
-            toast.error("Failed to generate the plan");
+            toast.error(`Failed to generate ${artifactLabel}`);
             setGenerating(false);
         }
     };
 
     const removeReviewItem = async (id: string) => {
         setRemovingId(id);
-        await deleteRequirement(id);
+        if (isStories) {
+            await deleteUserStory(id);
+        } else {
+            await deleteRequirement(id);
+        }
         setReviewItems((prev) => prev.filter((r) => r.id !== id));
         setRemovingId(null);
         if (reviewItems.length - 1 === 0) {
             setShowReview(false);
             toast.success("Plan generated");
-            router.push(`/projects/${projectId}/requirements`);
+            router.push(`/projects/${projectId}/${isStories ? "stories" : "requirements"}`);
         }
     };
 
@@ -226,16 +238,17 @@ export function RefineChat({
         if (!projectId) return;
         setPlanningMore(true);
         try {
-            const result = await generateRequirements(projectId);
+            const result = isStories ? await generateUserStories(projectId) : await generateRequirements(projectId);
             if (result?.error) throw new Error(result.error);
             const refreshed = await getProject(projectId);
             if (refreshed.project) {
                 const p: any = refreshed.project;
-                setArtifactMap((prev) => ({ ...prev, Requirements: p.requirements.length }));
+                const key = isStories ? "User Stories" : "Requirements";
+                setArtifactMap((prev) => ({ ...prev, [key]: isStories ? p.userStories.length : p.requirements.length }));
             }
-            toast.success("Added more requirements");
+            toast.success(isStories ? "Added more user stories" : "Added more requirements");
         } catch {
-            toast.error("Failed to add more requirements");
+            toast.error(isStories ? "Failed to add more user stories" : "Failed to add more requirements");
         } finally {
             setPlanningMore(false);
         }
@@ -258,7 +271,7 @@ export function RefineChat({
                 pairs.length ? (
                     <>
                         {generating && <KineticSpinner className="h-4 w-4" />}
-                        {generating ? "Generating plan" : "Generate plan"}
+                        {generating ? "Generating" : isStories ? "Generate stories" : "Generate plan"}
                     </>
                 ) : (
                     "Done"
@@ -543,9 +556,9 @@ export function RefineChat({
                             ))}
                         </ul>
                         <p className="mt-5 border-t-2 border-black pt-4 text-xs leading-relaxed text-black/60">
-                            Plan more adds requirements here. The other artifacts (User Stories, Architecture,
-                            Workflows, Tasks, and so on) are generated when you open their respective pages,
-                            one type at a time, shaped to your taste.
+                            Plan more adds {artifactLabel} here. The other artifacts (Architecture, Workflows,
+                            Tasks, and so on) are generated when you open their respective pages, one type at a
+                            time, shaped to your taste.
                         </p>
                         <button
                             type="button"
@@ -578,12 +591,12 @@ export function RefineChat({
                             <ArrowLeft className="h-4 w-4" />
                             Back
                         </button>
-                        <h1 className="type-h3">Review new requirements</h1>
+                        <h1 className="mx-2 truncate text-sm font-semibold text-black sm:text-base">Review new {artifactLabel}</h1>
                         <button
                             type="button"
                             onClick={() => {
                                 setShowReview(false);
-                                router.push(`/projects/${projectId}/requirements`);
+                                router.push(`/projects/${projectId}/${isStories ? "stories" : "requirements"}`);
                             }}
                             className="nebula-btn nebula-btn--primary px-4 py-2 text-xs"
                         >
@@ -594,7 +607,7 @@ export function RefineChat({
                     <div className="flex-1 overflow-y-auto px-4 py-6 md:px-6">
                         <div className="mx-auto max-w-3xl space-y-4">
                             {reviewItems.length === 0 ? (
-                                <p className="text-sm text-black/60">No new requirements were generated.</p>
+                                <p className="text-sm text-black/60">No new {artifactLabel} were generated.</p>
                             ) : (
                                 reviewItems.map((r) => (
                                     <div key={r.id} className="border-2 border-black bg-white p-5">

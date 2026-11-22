@@ -23,7 +23,22 @@ const similarity = (a: string, b: string) => {
 };
 const textOf = (r: any) => `${r.title} ${typeof r.content === "string" ? r.content : ""}`;
 
-export default function RequirementsConnections({ projectId, requirements }: { projectId: string; requirements: any[] }) {
+export default function RequirementsConnections({
+    projectId,
+    requirements,
+    backHref,
+    itemLabel = "requirements",
+    editPrefix,
+}: {
+    projectId: string;
+    requirements: any[];
+    backHref?: string;
+    itemLabel?: string;
+    editPrefix?: string;
+}) {
+    const homeHref = backHref || `/projects/${projectId}/requirements`;
+    const editBase = editPrefix || `/projects/${projectId}/requirements/new`;
+
     const withRelated = useMemo(() => {
         return requirements.map((r, i) => {
             const rel = requirements
@@ -40,18 +55,18 @@ export default function RequirementsConnections({ projectId, requirements }: { p
         <div className="flex min-h-full flex-col bg-white">
             <div className="border-b-2 border-black px-3 py-2 md:px-4">
                 <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-                    <Link href={`/projects/${projectId}/requirements`} className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-tight text-black/60 transition-colors hover:text-[#FF4D00]">
+                    <Link href={homeHref} className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-tight text-black/60 transition-colors hover:text-[#FF4D00]">
                         <ArrowLeft className="h-4 w-4" />
                         Back
                     </Link>
-                    <span className="order-2 font-mono text-xs uppercase tracking-tight text-black/50">{requirements.length} requirements</span>
+                    <span className="order-2 font-mono text-xs uppercase tracking-tight text-black/50">{requirements.length} {itemLabel}</span>
                 </div>
             </div>
 
             <div className="flex-1 px-3 py-5 md:px-5">
                 <div className="mx-auto max-w-4xl">
                     <h2 className="type-h3">Connections</h2>
-                    <p className="mt-1 text-sm text-black/60">Related requirements (where scope overlaps).</p>
+                    <p className="mt-1 text-sm text-black/60">Related {itemLabel} (where scope overlaps).</p>
 
                     <div className="mt-5 space-y-3">
                         {withRelated.map(({ r, rel }) => (
@@ -67,7 +82,7 @@ export default function RequirementsConnections({ projectId, requirements }: { p
                                         {rel.map((x) => (
                                             <Link
                                                 key={x.id}
-                                                href={`/projects/${projectId}/requirements/new?edit=${x.id}&from=connections`}
+                                                href={`${editBase}?edit=${x.id}&from=connections`}
                                                 className="border-2 border-black bg-black/5 px-2.5 py-1 text-sm text-black transition-colors hover:bg-black hover:text-white"
                                             >
                                                 {x.title}
