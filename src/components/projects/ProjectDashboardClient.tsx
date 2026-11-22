@@ -1,9 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Calendar, Users, FileText, Network, Database, Code, Workflow, Target, Download } from "lucide-react";
+import { Calendar, FileText, Network, Database, Code, Workflow, Target, Download } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
 import { toast } from "sonner";
 import { useState } from "react";
 import { PDFExportProgress } from "./PDFExportProgress";
@@ -39,13 +37,10 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
 
             const data = await response.json();
             setExportId(data.exportId);
-
-            // Start polling for progress
             pollProgress(data.exportId);
-
         } catch (error) {
             console.error("Export error:", error);
-            toast.error("❌ Failed to start export. Please try again.");
+            toast.error("Failed to start export. Please try again.");
             setIsExporting(false);
             setShowProgress(false);
         }
@@ -57,16 +52,10 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                 const response = await fetch(`/api/export-pdf/progress?exportId=${id}`);
                 const data = await response.json();
 
-                setProgressData({
-                    progress: data.progress,
-                    status: data.status,
-                    message: data.message
-                });
+                setProgressData({ progress: data.progress, status: data.status, message: data.message });
 
                 if (data.downloadReady) {
                     clearInterval(pollInterval);
-
-                    // Download the PDF
                     const downloadResponse = await fetch('/api/export-pdf/progress', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -83,8 +72,7 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                         a.click();
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(a);
-
-                        toast.success("🎉 Project exported successfully!");
+                        toast.success("Project exported successfully!");
                     } else {
                         throw new Error('Download failed');
                     }
@@ -92,10 +80,9 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
                     setIsExporting(false);
                     setShowProgress(false);
                     setExportId(null);
-
                 } else if (data.status === 'error') {
                     clearInterval(pollInterval);
-                    toast.error("❌ Export failed. Please try again.");
+                    toast.error("Export failed. Please try again.");
                     setIsExporting(false);
                     setShowProgress(false);
                     setExportId(null);
@@ -103,12 +90,12 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
             } catch (error) {
                 console.error("Progress check error:", error);
                 clearInterval(pollInterval);
-                toast.error("❌ Export failed. Please try again.");
+                toast.error("Export failed. Please try again.");
                 setIsExporting(false);
                 setShowProgress(false);
                 setExportId(null);
             }
-        }, 1000); // Poll every second
+        }, 1000);
     };
 
     const handleCancelExport = () => {
@@ -119,203 +106,98 @@ export default function ProjectDashboardClient({ project, stats }: ProjectDashbo
     };
 
     const modules = [
-        {
-            name: "Requirements",
-            icon: FileText,
-            href: `/projects/${project.id}/requirements`,
-            count: stats.requirements,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
-        {
-            name: "Architecture",
-            icon: Network,
-            href: `/projects/${project.id}/architecture`,
-            count: project.architecture ? 1 : 0,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
-        {
-            name: "Workflows",
-            icon: Workflow,
-            href: `/projects/${project.id}/workflows`,
-            count: stats.workflows,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
-        {
-            name: "User Stories",
-            icon: Target,
-            href: `/projects/${project.id}/stories`,
-            count: stats.userStories,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
-        {
-            name: "Tech Stack",
-            icon: Code,
-            href: `/projects/${project.id}/tech-stack`,
-            count: project.techStack ? 1 : 0,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
-        {
-            name: "Mockups",
-            icon: Database,
-            href: `/projects/${project.id}/mockups`,
-            count: stats.mockups,
-            color: "bg-[var(--color-nebula-surface)]",
-            iconColor: "text-[color:var(--color-nebula-fg)]",
-        },
+        { name: "Requirements", icon: FileText, href: `/projects/${project.id}/requirements`, count: stats.requirements },
+        { name: "Architecture", icon: Network, href: `/projects/${project.id}/architecture`, count: project.architecture ? 1 : 0 },
+        { name: "Workflows", icon: Workflow, href: `/projects/${project.id}/workflows`, count: stats.workflows },
+        { name: "User Stories", icon: Target, href: `/projects/${project.id}/stories`, count: stats.userStories },
+        { name: "Tech Stack", icon: Code, href: `/projects/${project.id}/tech-stack`, count: project.techStack ? 1 : 0 },
+        { name: "Mockups", icon: Database, href: `/projects/${project.id}/mockups`, count: stats.mockups },
     ];
 
+    const facts = [
+        { label: "Requirements", count: stats.requirements },
+        { label: "Stories", count: stats.userStories },
+        { label: "Workflows", count: stats.workflows },
+        { label: "Mockups", count: stats.mockups },
+    ].filter((f) => f.count > 0);
+
     return (
-        <>
-            <div className="relative min-h-screen font-[var(--font-sans)]">
-                {/* Background */}
-                <div className="fixed inset-0 z-0 bg-[var(--color-nebula-bg)]" />
+        <div className="min-h-screen bg-white">
+            <div className="mx-auto max-w-[1200px] px-4 py-6 md:py-8">
+                <PDFExportProgress
+                    isOpen={showProgress}
+                    onCancel={handleCancelExport}
+                    projectStats={stats}
+                    progressData={progressData}
+                />
 
-                {/* Content with proper padding */}
-                <div className="relative z-10 px-3 py-4 sm:px-4 sm:py-6 lg:px-8 lg:py-8 space-y-6 sm:space-y-8 max-w-[1600px] mx-auto">
-                    {/* PDF Export Progress Modal */}
-                    <PDFExportProgress
-                        isOpen={showProgress}
-                        onCancel={handleCancelExport}
-                        projectStats={stats}
-                        progressData={progressData}
-                    />
-
-                    {/* Project Header with Export Button */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 sm:gap-6"
-                    >
-                        <div className="space-y-3 sm:space-y-4 flex-1 text-center lg:text-left">
-                            <h1 className="type-display-lg text-3xl sm:text-4xl lg:text-5xl xl:text-6xl tracking-tight leading-tight" style={{ letterSpacing: '-0.02em' }}>
-                                {project.name}
-                            </h1>
-                            {project.description && (
-                                <p className="type-body-lg text-[color:var(--color-charcoal)] max-w-3xl mx-auto lg:mx-0">
-                                    {project.description}
-                                </p>
-                            )}
-                            <div className="flex flex-wrap justify-center lg:justify-start items-center gap-3 type-small text-[color:var(--color-charcoal)]">
-                                <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] px-3 py-2 rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)]">
-                                    <Calendar className="w-4 h-4" />
-                                    <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
-                                </div>
-                                {project.projectType && (
-                                    <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] px-3 py-2 rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)]">
-                                        <Users className="w-4 h-4" />
-                                        <span>{project.projectType}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        <Button
-                            variant="nebula-ghost"
+                {/* Header */}
+                <div className="flex flex-col gap-4 border-b-2 border-black pb-5 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="min-w-0">
+                        <h1 className="truncate text-2xl font-semibold tracking-tight text-black">{project.name}</h1>
+                        {project.description && (
+                            <p className="mt-1 truncate text-sm text-black/60">{project.description}</p>
+                        )}
+                        <p className="mt-1.5 font-mono text-[11px] uppercase tracking-tight text-black/50">
+                            <Calendar className="mr-1 inline h-3.5 w-3.5" />
+                            Created {new Date(project.createdAt).toLocaleDateString()}
+                        </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                        <button
+                            type="button"
                             onClick={handleExport}
                             disabled={isExporting}
-                            className="w-full sm:w-auto"
+                            className="nebula-btn nebula-btn--ghost disabled:opacity-50"
                         >
-                            <Download className="w-4 h-4 mr-2" />
-                            {isExporting ? 'Exporting...' : 'Export Project'}
-                        </Button>
-                    </motion.div>
+                            <Download className="h-4 w-4" />
+                            {isExporting ? 'Exporting...' : 'Export'}
+                        </button>
+                        <Link href={`/projects/${project.id}/refine`} className="nebula-btn nebula-btn--primary">
+                            Continue planning
+                        </Link>
+                    </div>
+                </div>
 
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-                        {modules.map((module, index) => (
-                            <motion.div
-                                key={module.name}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 + index * 0.05, duration: 0.5 }}
-                                className="group relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-4 sm:p-5 hover:bg-[var(--color-surface-elevated)] transition-all duration-300"
+                {/* Facts strip */}
+                {facts.length > 0 && (
+                    <div className="mt-5 flex flex-wrap gap-3">
+                        {facts.map((f) => (
+                            <span
+                                key={f.label}
+                                className="inline-flex items-center gap-2 border-2 border-black px-3 py-1.5 font-mono text-xs uppercase tracking-tight text-black/70"
                             >
-                                <div className="flex flex-col items-center text-center gap-2 sm:gap-3">
-                                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-[var(--r-md)] ${module.color} flex items-center justify-center border border-[var(--color-nebula-hairline-strong)]`}>
-                                        <module.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${module.iconColor}`} />
-                                    </div>
-                                    <div>
-                                        <div className="type-h3 text-[color:var(--color-nebula-fg)]">{module.count}</div>
-                                        <div className="type-caption uppercase tracking-wider">{module.name}</div>
-                                    </div>
-                                </div>
-                                {/* Decorative bottom bar */}
-                                <div className="absolute bottom-0 left-0 w-full h-1 bg-[var(--color-nebula-hairline-strong)] overflow-hidden">
-                                    <div className="h-full bg-[var(--color-nebula-fg)] w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
-                                </div>
-                            </motion.div>
+                                <span className="font-display text-base text-black">{f.count}</span>
+                                {f.label}
+                            </span>
                         ))}
                     </div>
+                )}
 
-                    {/* Module Navigation Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
-                        {modules.map((module, index) => (
-                            <motion.div
-                                key={module.name}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.1, duration: 0.5 }}
+                {/* Modules — compact grid */}
+                <div className="mt-6">
+                    <p className="mb-3 font-mono text-xs uppercase tracking-tight text-black/60">Modules</p>
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        {modules.map((m) => (
+                            <Link
+                                key={m.name}
+                                href={m.href}
+                                className="group flex flex-col gap-2.5 border-2 border-black p-3.5 transition-colors hover:bg-black/5"
                             >
-                                <Link href={module.href}>
-                                    <div className="group relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-6 sm:p-7 lg:p-8 hover:bg-[var(--color-surface-elevated)] transition-all duration-500 cursor-pointer h-full">
-                                        <div className="flex items-start gap-4 sm:gap-5">
-                                            <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-[var(--r-lg)] ${module.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-[var(--color-nebula-hairline-strong)]`}>
-                                                <module.icon className={`w-7 h-7 sm:w-8 sm:h-8 ${module.iconColor}`} />
-                                            </div>
-                                            <div className="flex-1">
-                                                <h3 className="type-h3 mb-1 sm:mb-2">{module.name}</h3>
-                                                <p className="type-body text-[color:var(--color-charcoal)] transition-colors">
-                                                    {module.count} {module.count === 1 ? "item" : "items"}
-                                                </p>
-                                            </div>
-                                        </div>
-                                        {/* Decorative bottom bar */}
-                                        <div className="w-full h-1 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden mt-5 sm:mt-6">
-                                            <div className="h-full bg-[var(--color-nebula-fg)] w-1/3 group-hover:w-full transition-all duration-700 ease-out" />
-                                        </div>
-                                    </div>
-                                </Link>
-                            </motion.div>
+                                <span className="flex items-center justify-between">
+                                    <m.icon className="h-5 w-5 text-[#FF4D00]" />
+                                    <span className="font-mono text-[11px] uppercase tracking-tight text-black/50">
+                                        {m.count}
+                                    </span>
+                                </span>
+                                <span className="text-sm font-semibold text-black transition-colors group-hover:text-[#FF4D00]">
+                                    {m.name}
+                                </span>
+                            </Link>
                         ))}
                     </div>
-
-                    {/* Project Overview */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.5 }}
-                        className="relative overflow-hidden rounded-[var(--r-lg)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] p-6 sm:p-7 lg:p-8"
-                    >
-                        <h2 className="type-h2 mb-4 sm:mb-6">Project Overview</h2>
-                        <div className="space-y-3 sm:space-y-4 type-body-lg text-[color:var(--color-charcoal)]">
-                            <p>
-                                This project has <strong className="text-[color:var(--color-nebula-fg)]">{stats.requirements}</strong> requirements,{" "}
-                                <strong className="text-[color:var(--color-nebula-fg)]">{stats.workflows}</strong> workflows, and{" "}
-                                <strong className="text-[color:var(--color-nebula-fg)]">{stats.userStories}</strong> user stories defined.
-                            </p>
-                            {project.architecture && (
-                                <p>Architecture documentation is available with system design and diagrams.</p>
-                            )}
-                            {project.techStack && (
-                                <p>Technology stack has been defined for this project.</p>
-                            )}
-                            {stats.mockups > 0 && (
-                                <p>
-                                    <strong className="text-[color:var(--color-nebula-fg)]">{stats.mockups}</strong> UI mockup{stats.mockups > 1 ? "s are" : " is"}{" "}
-                                    ready for review.
-                                </p>
-                            )}
-                        </div>
-                    </motion.div>
                 </div>
             </div>
-        </>
+        </div>
     );
 }

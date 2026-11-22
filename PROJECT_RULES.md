@@ -56,6 +56,8 @@ When writing copy (UI, headings, marketing, docs, code comments that a user read
 - Display type in **Archivo Black**, uppercase, tight tracking (`-0.04em`), tight line-height (`0.85–0.9`). Metadata/labels in **Space Mono**. Body in **Inter**.
 - Sharp 2px borders; no rounded corners except pill-shaped buttons and the floating nav.
 - **No trailing punctuation on display headings** — display words/headlines never end in a period, dot, or decorative mark (e.g. `PLAN.` → `PLAN`; the orange dot after each hero word is removed). Keep the type clean.
+- **No trailing punctuation on UI copy lines** — subheadings, labels, subtitles, button text, and short UI lines never end with a period (e.g. `Welcome back, Test.` → `Welcome back, Test`; `One place for every plan.` → `One place for every plan`). Save periods for full paragraph/body sentences that contain multiple clauses; a single sentence presented as a UI line still omits the trailing period.
+- **No eyebrows** — do not add a small standalone uppercase label *above* a heading (e.g. a tiny `DASHBOARD` / `PROJECT` / `REFINE` mono line). Headings already carry the meaning; if context is needed, fold it into the heading or subtitle text instead. Exception: real status labels on error/404 pages and inline form errors are fine.
 - On black surfaces, display/heading type flips to white via `.bg-black .type-display/…` overrides in `globals.css` (unlayered `type-*` color rules otherwise beat the `text-white` utility).
 - Marquee + rotating circular indicator use the linear/slide keyframes in `animations.css` (`animate-marquee`, `animate-marquee-reverse`, `animate-spin-12`).
 

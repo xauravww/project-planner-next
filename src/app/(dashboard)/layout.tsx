@@ -1,3 +1,4 @@
+import { DashboardMenu } from "@/components/layout/DashboardMenu";
 
 export default function DashboardLayout({
     children,
@@ -5,11 +6,9 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="h-screen bg-black relative overflow-hidden">
-
-            <main className="relative z-10 h-full w-full overflow-x-hidden">
-                {children}
-            </main>
+        <div className="min-h-screen bg-white text-black">
+            <DashboardMenu />
+            <main className="relative">{children}</main>
         </div>
     );
 }

@@ -5,8 +5,9 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { createProjectWithAI } from "@/actions/project";
 import { useRouter } from "next/navigation";
-import { GraphBrainstorm, GraphNode, NodeType } from "@/components/brainstorm/GraphBrainstorm";
+import { GraphNode, NodeType } from "@/components/brainstorm/GraphBrainstorm";
 import { AestheticLoader } from "@/components/ui/AestheticLoader";
+import { RefineChat } from "@/components/dashboard/RefineChat";
 import { toast } from "sonner";
 
 // Initial seed with spatial positioning
@@ -48,7 +49,9 @@ export default function NewProjectPage() {
         const parsed = JSON.parse(saved);
         if (parsed.projectName) setProjectName(parsed.projectName);
         if (parsed.description) setDescription(parsed.description);
-        if (parsed.step) setStep(parsed.step);
+        // Old drafts may have stored a later step (brainstorm/review). We always
+        // start the flow at the seed form so /dashboard/new only ever shows the
+        // project form, regardless of what was in progress before.
         if (parsed.nodes) setNodes(parsed.nodes);
       } catch (e) {
         console.error("Failed to parse saved brainstorm draft", e);
@@ -71,18 +74,27 @@ export default function NewProjectPage() {
     return () => clearTimeout(timeoutId);
   }, [projectName, description, step, nodes]);
 
-  // Initialize graph when moving to brainstorm step
-  const startBrainstorming = useCallback(() => {
+  // Create the project immediately from the seed form (title + pitch).
+  const startBrainstorming = useCallback(async () => {
     if (!projectName.trim()) {
       toast.error("Please enter a project name");
       return;
     }
-    const initialNodes = createInitialGraph(projectName, description || projectName);
-    setNodes(initialNodes);
-    setStep("brainstorm");
-    // Auto-generate initial suggestions for root
-    generateSuggestions("root", initialNodes);
-  }, [projectName, description]);
+    setIsCreating(true);
+    try {
+      const result = await createProjectWithAI(projectName, description || projectName);
+      if (result.success) {
+        toast.success("Project created");
+        router.push(`/projects/${result.projectId}`);
+      } else {
+        toast.error(result.error || "Failed to create project");
+        setIsCreating(false);
+      }
+    } catch {
+      toast.error("Something went wrong");
+      setIsCreating(false);
+    }
+  }, [projectName, description, router]);
 
   // Generate AI suggestions - placed in circle around parent
   const generateSuggestions = useCallback(async (parentId: string, currentNodes?: Record<string, GraphNode>, retryCount = 0) => {
@@ -396,35 +408,29 @@ export default function NewProjectPage() {
             {/* Form - minimal, elegant */}
             <div className="space-y-8">
               <div className="space-y-2">
-                <label className="type-caption text-[color:var(--color-ash)]">
+                <label className="block font-mono text-xs uppercase tracking-tight text-black/70">
                   Name your project
                 </label>
                 <input
                   type="text"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
-                  placeholder="Vintage Camera Marketplace"
-                  className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
-                           focus:border-[color:var(--color-nebula-fg)] outline-none
-                           py-3 text-2xl text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)]/50
-                           transition-colors font-serif"
+                  placeholder="My project"
+                  className="w-full border-b-2 border-black bg-transparent py-3 text-2xl font-medium text-black outline-none transition-colors placeholder:text-black/30 focus:border-[#FF4D00] md:text-3xl"
                   autoFocus
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="type-caption text-[color:var(--color-ash)]">
+                <label className="block font-mono text-xs uppercase tracking-tight text-black/70">
                   One-line pitch
                 </label>
                 <input
                   type="text"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="A curated marketplace for film photography enthusiasts"
-                  className="w-full bg-transparent border-b-2 border-[var(--color-nebula-hairline-strong)] 
-                           focus:border-[color:var(--color-nebula-fg)] outline-none
-                           py-3 text-lg text-[color:var(--color-charcoal)] placeholder:text-[color:var(--color-ash)]/50
-                           transition-colors"
+                  placeholder="Marketplace for cameras"
+                  className="w-full border-b-2 border-black bg-transparent py-3 text-lg font-light text-black outline-none transition-colors placeholder:text-black/35 focus:border-[#FF4D00] md:text-xl"
                   onKeyDown={(e) => e.key === "Enter" && projectName.trim() && startBrainstorming()}
                 />
               </div>
@@ -435,7 +441,7 @@ export default function NewProjectPage() {
                   disabled={!projectName.trim()}
                   className="nebula-btn nebula-btn--primary disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  Start brainstorming
+                  Create project
                 </button>
                 
                 {projectName.trim() && (
@@ -451,66 +457,17 @@ export default function NewProjectPage() {
 
         {/* Footer hint */}
         <div className="px-6 py-6 text-center">
-          <p className="type-caption text-[color:var(--color-ash)]/60">
-            Not sure yet? Just type anything — we'll help you refine it.
+          <p className="font-mono text-xs uppercase tracking-tight text-black/50">
+            Not sure yet? Just type anything, we&apos;ll help you refine it.
           </p>
         </div>
       </div>
     );
   }
 
-  // Step 2: Brainstorm
+  // Step 2: Refine — chat assistant (replaces the old graph canvas)
   if (step === "brainstorm") {
-    return (
-      <div className="h-screen flex flex-col bg-[var(--color-nebula-bg)]">
-        {/* Minimal header */}
-        <div className="px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => setStep("seed")}
-              className="type-small text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)] transition-colors"
-            >
-              ← Back
-            </button>
-            <span className="type-body text-[color:var(--color-nebula-fg)]">{projectName}</span>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="type-caption text-[color:var(--color-ash)]">{progress}%</span>
-              <div className="h-1.5 w-20 bg-[var(--color-nebula-hairline-strong)] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--color-nebula-fg)] transition-all"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-            <button
-              onClick={() => setStep("review")}
-              disabled={progress < 50}
-              className={progress >= 50 ? "nebula-btn nebula-btn--primary" : "nebula-btn nebula-btn--ghost opacity-40 cursor-not-allowed"}
-            >
-              Continue →
-            </button>
-          </div>
-        </div>
-
-        {/* Content - Full width graph canvas */}
-        <div className="flex-1 overflow-hidden relative">
-          <GraphBrainstorm
-            nodes={nodes}
-            rootId={rootId}
-            onUpdateNode={handleUpdateNode}
-            onAddNode={handleAddNode}
-            onDeleteNode={handleDeleteNode}
-            onConnectNodes={handleConnectNodes}
-            onGenerateSuggestions={generateSuggestions}
-            generatingFor={generatingFor}
-            className="w-full h-full"
-          />
-        </div>
-      </div>
-    );
+    return <RefineChat projectName={projectName} description={description} />;
   }
 
   // Step 3: Review - Editorial style

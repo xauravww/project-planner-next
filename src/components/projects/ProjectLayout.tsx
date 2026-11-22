@@ -66,7 +66,7 @@ export default function ProjectLayout({ projectId, projectName, projectType, chi
             </div>
 
             {/* Main content */}
-            <main className="flex-1 overflow-y-auto overflow-x-hidden max-w-full">
+            <main key={`${projectId}-${pathname}`} className="flex-1 overflow-y-auto overflow-x-hidden max-w-full">
                 {/* Mobile header with menu button */}
                 <div className="lg:hidden flex items-center justify-between p-4 nebula-hairline-b bg-[var(--color-nebula-bg)]">
                     <div className="flex items-center gap-2">

@@ -24,7 +24,7 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NebulaPlan — AI Project Planning",
+  title: "NebulaPlan | AI Project Planning",
   description: "Turn an idea into a working plan. AI project planning.",
 };
 

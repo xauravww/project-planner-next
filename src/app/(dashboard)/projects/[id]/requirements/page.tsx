@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getProject } from "@/actions/project";
 import RequirementsPageClient from "@/components/projects/RequirementsPage";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
 
 export default async function RequirementsPage({ params }: { params: Promise<{ id: string }> }) {
     const session = await auth();
@@ -21,13 +20,7 @@ export default async function RequirementsPage({ params }: { params: Promise<{ i
             projectName={result.project.name}
             projectType={result.project.description || undefined}
         >
-            <div className="h-full flex flex-col">
-                <div className="border-b border-white/10 px-6 py-4 bg-black/20">
-                    <Breadcrumb items={[
-                        { label: result.project.name, href: `/projects/${id}` },
-                        { label: "Requirements" }
-                    ]} />
-                </div>
+            <div className="h-full flex flex-col bg-white">
                 <div className="flex-1 overflow-auto">
                     <RequirementsPageClient
                         project={result.project}

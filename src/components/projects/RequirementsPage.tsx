@@ -3,11 +3,10 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Input } from "@/components/ui/Input";
-import { Plus, Pencil, Trash2, Wand2, Sparkles, FileText, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Wand2, FileText, Loader2 } from "lucide-react";
 import { DeleteModal } from "@/components/ui/DeleteModal";
 import { generateRequirements } from "@/actions/project";
 import { createRequirement, updateRequirement, deleteRequirement, deleteAllRequirements } from "@/actions/crud";
@@ -271,21 +270,11 @@ export default function RequirementsPageClient({
                                 </Button>
                                 <Button
                                     variant="nebula-ghost"
-                                    onClick={handleGenerateClick}
-                                    disabled={aiGenerateMutation.isPending}
-                                    className="transition-all duration-300 text-sm px-4 py-2"
+                                    onClick={() => router.push(`/projects/${project.id}/refine`)}
+                                    className="transition-colors"
                                 >
-                                    {aiGenerateMutation.isPending ? (
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    ) : (
-                                        <Wand2 className="w-4 h-4 mr-2 text-[color:var(--color-nebula-fg)] group-hover:rotate-12 transition-transform" />
-                                    )}
-                                    <span className="hidden sm:inline">
-                                        {aiGenerateMutation.isPending ? "Generating..." : "Generate with AI"}
-                                    </span>
-                                    <span className="sm:hidden">
-                                        {aiGenerateMutation.isPending ? "Generating..." : "AI Generate"}
-                                    </span>
+                                    <Wand2 className="h-4 w-4" />
+                                    Plan more
                                 </Button>
                                 {requirements.length > 0 && (
                                     <Button
@@ -317,7 +306,7 @@ export default function RequirementsPageClient({
                         }
                     }}
                 >
-                    <DialogContent className="sm:max-w-[700px] bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-2xl text-[color:var(--color-nebula-fg)] max-h-[90vh] overflow-hidden flex flex-col p-0">
+                    <DialogContent className="sm:max-w-[700px] border-2 border-black bg-white text-black rounded-none max-h-[90vh] overflow-hidden flex flex-col p-0">
                         <DialogHeader className="px-6 py-5 relative z-10 border-b border-[var(--color-nebula-hairline-strong)]">
                             <DialogTitle className="flex items-center gap-3 text-[color:var(--color-nebula-fg)] type-h3">
                                 <div className="p-2 rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-nebula-hairline-strong)]">
@@ -357,8 +346,8 @@ export default function RequirementsPageClient({
                                     <textarea
                                         value={formData.content}
                                         onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                                        className="flex w-full rounded-[var(--r-md)] border border-[var(--color-nebula-hairline-strong)] bg-[var(--color-nebula-surface)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] placeholder:text-[color:var(--color-ash)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)] resize-y min-h-[120px]"
-                                        placeholder="Describe the requirement in detail..."
+                                        className="flex min-h-[120px] w-full resize-y border-2 border-black bg-white px-4 py-3 text-sm text-black placeholder:text-black/40 outline-none transition-colors focus:border-[#FF4D00]"
+                                        placeholder="Describe the requirement in detail…"
                                         required
                                     />
                                 </div>
@@ -368,7 +357,7 @@ export default function RequirementsPageClient({
                                         <select
                                             value={formData.type}
                                             onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
+                                            className="w-full border-2 border-black bg-white px-4 py-3 text-sm text-black outline-none transition-colors focus:border-[#FF4D00]"
                                         >
                                             <option value="functional">Functional</option>
                                             <option value="non-functional">Non-Functional</option>
@@ -379,7 +368,7 @@ export default function RequirementsPageClient({
                                         <select
                                             value={formData.priority}
                                             onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                                            className="w-full bg-[var(--color-nebula-surface)] border border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-md)] px-4 py-3 text-sm text-[color:var(--color-nebula-fg)] focus:outline-none focus:ring-1 focus:ring-[var(--color-nebula-fg)]"
+                                            className="w-full border-2 border-black bg-white px-4 py-3 text-sm text-black outline-none transition-colors focus:border-[#FF4D00]"
                                         >
                                             <option value="must-have">Must Have</option>
                                             <option value="should-have">Should Have</option>
@@ -417,66 +406,65 @@ export default function RequirementsPageClient({
 
                 {/* Content List */}
                 {requirements.length === 0 ? (
-                    <div className="flex items-center justify-center h-96">
-                        <div className="text-center max-w-md mx-auto px-4">
-                            <div className="w-20 h-20 bg-[var(--color-nebula-surface)] rounded-[var(--r-lg)] flex items-center justify-center mx-auto mb-6 border border-[var(--color-nebula-hairline-strong)]">
-                                <FileText className="w-10 h-10 text-[color:var(--color-nebula-fg)]" />
+                    <div className="flex items-center justify-center px-4 py-16">
+                        <div className="max-w-md text-center">
+                            <div className="mx-auto grid h-20 w-20 place-items-center border-2 border-black">
+                                <FileText className="h-10 w-10 text-[#FF4D00]" />
                             </div>
-                            <h3 className="type-h3 mb-3">No Requirements Yet</h3>
-                            <p className="text-[color:var(--color-charcoal)] mb-6">Start by generating requirements with AI or add them manually</p>
-                            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                <Button
-                                    variant="nebula"
-                                    onClick={handleGenerateClick}
-                                    disabled={aiGenerateMutation.isPending}
+                            <h3 className="type-h3 mt-6">No requirements yet</h3>
+                            <p className="mt-3 text-black/60">
+                                Start by generating requirements with AI, or add them manually.
+                            </p>
+                            <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+                                <button
+                                    type="button"
+                                    onClick={() => router.push(`/projects/${project.id}/refine`)}
+                                    className="nebula-btn nebula-btn--primary justify-center"
                                 >
-                                    {aiGenerateMutation.isPending ? (
-                                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                    ) : (
-                                        <Sparkles className="w-4 h-4 mr-2" />
-                                    )}
-                                    Generate with AI
-                                </Button>
-                                <Button
+                                    <Wand2 className="h-4 w-4" />
+                                    Plan more
+                                </button>
+                                <button
+                                    type="button"
                                     onClick={() => {
                                         setIsAdding(true);
                                         setEditingId(null);
                                         setFormData({ title: "", content: "", type: "functional", priority: "must-have" });
                                     }}
-                                    variant="nebula-ghost"
+                                    className="nebula-btn nebula-btn--ghost justify-center"
                                 >
-                                    <Plus className="w-4 h-4 mr-2" />
-                                    Add Manually
-                                </Button>
+                                    <Plus className="h-4 w-4" />
+                                    Add manually
+                                </button>
                             </div>
                         </div>
                     </div>
                 ) : (
                     <div className="p-4 lg:p-6 max-w-4xl mx-auto space-y-3">
                         {requirements.map((req: any) => (
-                            <GlassCard key={req.id} className="p-5">
+                            <div key={req.id} className="border-2 border-black bg-white p-5">
                                 <div className="flex items-start justify-between">
                                     <div className="flex-1">
                                         <div className="mb-2">
                                             <h3 className="text-base font-semibold text-[color:var(--color-nebula-fg)] mb-2">{req.title}</h3>
                                             <div className="flex items-center gap-2">
                                                 <span
-                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${req.type === "functional"
-                                                        ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-accent-blue)]"
-                                                        : "bg-[var(--color-surface-elevated)] text-[color:var(--color-nebula-fg-soft)]"
-                                                        }`}
+                                                    className={`border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight ${
+                                                        req.type === "functional" ? "text-[#FF4D00]" : "text-black/70"
+                                                    }`}
                                                 >
-                                                    {req.type === "functional" ? "Functional" : "Non-Functional"}
+                                                    {req.type === "functional" ? "Functional" : "Non-functional"}
                                                 </span>
                                                 <span
-                                                    className={`text-xs px-2 py-1 rounded-full font-medium ${req.priority === "must-have"
-                                                        ? "bg-[var(--color-accent-red-glow)] text-[color:var(--color-accent-red)]"
-                                                        : req.priority === "should-have"
-                                                            ? "bg-[var(--color-surface-elevated)] text-[color:var(--color-accent-yellow)]"
-                                                            : "bg-[var(--color-accent-green-glow)] text-[color:var(--color-accent-green)]"
-                                                        }`}
+                                                    className={`border-2 border-black px-2 py-0.5 font-mono text-[11px] uppercase tracking-tight ${
+                                                        req.priority === "must-have"
+                                                            ? "bg-black text-white"
+                                                            : req.priority === "should-have"
+                                                                ? "text-[#FF4D00]"
+                                                                : "text-black/70"
+                                                    }`}
                                                 >
-                                                    {req.priority === "must-have" ? "Must Have" : req.priority === "should-have" ? "Should Have" : "Nice to Have"}
+                                                    {req.priority === "must-have" ? "Must have" : req.priority === "should-have" ? "Should have" : "Nice to have"}
                                                 </span>
                                             </div>
                                         </div>
@@ -512,22 +500,24 @@ export default function RequirementsPageClient({
                                             })()}
                                         </div>
                                     </div>
-                                    <div className="flex gap-1 ml-4">
+                                    <div className="flex shrink-0 gap-2">
                                         <button
                                             onClick={() => handleEdit(req)}
-                                            className="p-2 hover:bg-[var(--color-surface-elevated)] rounded transition-colors"
+                                            aria-label="Edit requirement"
+                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
                                         >
-                                            <Pencil className="w-4 h-4 text-[color:var(--color-ash)] hover:text-[color:var(--color-nebula-fg)]" />
+                                            <Pencil className="h-4 w-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(req.id)}
-                                            className="p-2 hover:bg-[var(--color-surface-elevated)] rounded transition-colors"
+                                            aria-label="Delete requirement"
+                                            className="grid h-9 w-9 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
                                         >
-                                            <Trash2 className="w-4 h-4 text-[color:var(--color-ash)] hover:text-[color:var(--color-accent-red)]" />
+                                            <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
                                 </div>
-                            </GlassCard>
+                            </div>
                         ))}
                     </div>
                 )}

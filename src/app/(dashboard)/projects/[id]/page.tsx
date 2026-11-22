@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ProjectLayout from "@/components/projects/ProjectLayout";
-import Breadcrumb from "@/components/ui/Breadcrumb";
 import ProjectDashboardClient from "@/components/projects/ProjectDashboardClient";
 
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,12 +44,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
             projectName={project.name}
             projectType={project.description || undefined}
         >
-            <div className="bg-black">
-                {/* Breadcrumb */}
-                <Breadcrumb items={[
-                    { label: project.name }
-                ]} />
-
+            <div className="bg-white">
                 <ProjectDashboardClient project={project} stats={stats} />
             </div>
         </ProjectLayout>

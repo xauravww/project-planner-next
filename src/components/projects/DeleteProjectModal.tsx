@@ -2,61 +2,70 @@
 
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
 import { deleteProject } from "@/actions/project";
-import { useRouter } from "next/navigation";
+import { KineticSpinner } from "@/components/auth/KineticAuthShell";
 
 interface DeleteProjectModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  projectId: string;
-  projectName: string;
+    isOpen: boolean;
+    onClose: () => void;
+    projectId: string;
+    projectName: string;
+    /** Called after a successful deletion so the parent can update its UI. */
+    onDeleted?: () => void;
 }
 
-export function DeleteProjectModal({ isOpen, onClose, projectId, projectName }: DeleteProjectModalProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
+export function DeleteProjectModal({ isOpen, onClose, projectId, projectName, onDeleted }: DeleteProjectModalProps) {
+    const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      await deleteProject(projectId);
-      router.push("/dashboard");
-    } catch (error) {
-      console.error("Delete failed:", error);
-    } finally {
-      setIsDeleting(false);
-      onClose();
-    }
-  };
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        try {
+            await deleteProject(projectId);
+            onDeleted?.();
+        } catch (error) {
+            console.error("Delete failed:", error);
+        } finally {
+            setIsDeleting(false);
+            onClose();
+        }
+    };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[var(--color-nebula-surface)] border-[var(--color-nebula-hairline-strong)] rounded-[var(--r-lg)] relative overflow-hidden">
-        <DialogHeader>
-          <DialogTitle className="type-h3 text-center">
-            Enter the Black Hole
-          </DialogTitle>
-          <DialogDescription className="text-center text-[color:var(--color-charcoal)] mt-4">
-            &ldquo;{projectName}&rdquo; is about to be pulled into the cosmic void. This action cannot be undone &mdash;
-            all plans, stories, and dreams within will vanish forever. Are you certain this star must collapse?
-          </DialogDescription>
-        </DialogHeader>
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="border-2 border-black bg-white rounded-none">
+                <DialogHeader>
+                    <DialogTitle className="type-h3 text-center">Delete project?</DialogTitle>
+                    <DialogDescription className="mt-3 text-center text-black/70">
+                        &ldquo;{projectName}&rdquo; will be permanently deleted. This can&apos;t be undone.
+                    </DialogDescription>
+                </DialogHeader>
 
-        <DialogFooter className="flex gap-3 mt-6">
-          <Button variant="nebula-ghost" onClick={onClose} disabled={isDeleting}>
-            Spare It
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="bg-[var(--color-accent-red)] text-[color:var(--color-nebula-fg)] shadow-[0_0_20px_var(--color-accent-red-glow)]"
-          >
-            {isDeleting ? "Collapsing..." : "Confirm Deletion"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+                <DialogFooter className="mt-6 flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isDeleting}
+                        className="nebula-btn nebula-btn--ghost flex-1 justify-center disabled:opacity-50"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="nebula-btn nebula-btn--primary flex-1 justify-center disabled:opacity-50"
+                    >
+                        {isDeleting ? (
+                            <>
+                                <KineticSpinner className="h-4 w-4" />
+                                Deleting
+                            </>
+                        ) : (
+                            "Delete"
+                        )}
+                    </button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
 }

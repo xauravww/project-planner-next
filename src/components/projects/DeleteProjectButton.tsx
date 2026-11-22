@@ -2,38 +2,39 @@
 
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
 import { DeleteProjectModal } from "./DeleteProjectModal";
 
 interface DeleteProjectButtonProps {
-  projectId: string;
-  projectName: string;
+    projectId: string;
+    projectName: string;
+    /** Called after a successful deletion so the parent can update its UI. */
+    onDeleted?: () => void;
 }
 
-export function DeleteProjectButton({ projectId, projectName }: DeleteProjectButtonProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export function DeleteProjectButton({ projectId, projectName, onDeleted }: DeleteProjectButtonProps) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-  return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 hover:bg-[var(--color-accent-red-glow)] text-[color:var(--color-accent-red)] transition-all duration-300 animate-pulse"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsModalOpen(true);
-        }}
-        aria-label={`Delete project ${projectName}`}
-      >
-        <Trash2 className="w-4 h-4" />
-      </Button>
-      <DeleteProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        projectId={projectId}
-        projectName={projectName}
-      />
-    </>
-  );
+    return (
+        <>
+            <button
+                type="button"
+                aria-label={`Delete project ${projectName}`}
+                onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsModalOpen(true);
+                }}
+                className="inline-grid h-8 w-8 place-items-center border-2 border-black text-black transition-colors hover:border-[#FF4D00] hover:text-[#FF4D00]"
+            >
+                <Trash2 className="h-4 w-4" />
+            </button>
+            <DeleteProjectModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                projectId={projectId}
+                projectName={projectName}
+                onDeleted={onDeleted}
+            />
+        </>
+    );
 }

@@ -73,7 +73,7 @@ export default function SignupPage() {
 
     useEffect(() => {
         if (state.success) {
-            toast.success("Account created — please sign in");
+            toast.success("Account created, please sign in");
             router.push("/login");
         }
     }, [state.success, router]);

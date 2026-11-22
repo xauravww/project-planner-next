@@ -1046,19 +1046,27 @@ export async function deleteProject(projectId: string) {
     }
 }
 
-export async function getProjects() {
+export async function getProjects(opts?: { offset?: number; limit?: number }) {
     const session = await auth();
     if (!session?.user) {
         return { error: "Unauthorized" };
     }
 
-    try {
-        const projects = await prisma.project.findMany({
-            where: { userId: (session.user as any).id },
-            orderBy: { updatedAt: "desc" },
-        });
+    const offset = opts?.offset ?? 0;
+    const limit = opts?.limit ?? 12;
 
-        return { projects };
+    try {
+        const [projects, total] = await prisma.$transaction([
+            prisma.project.findMany({
+                where: { userId: (session.user as any).id },
+                orderBy: { updatedAt: "desc" },
+                skip: offset,
+                take: limit,
+            }),
+            prisma.project.count({ where: { userId: (session.user as any).id } }),
+        ]);
+
+        return { projects, total };
     } catch (_error) {
         return { error: "Failed to fetch projects" };
     }
