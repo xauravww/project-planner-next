@@ -346,7 +346,8 @@
     border: 2px solid #000000;
     cursor: pointer;
   }
-  .nebula-btn:hover { transform: scale(1.05); }
+  .nebula-btn:hover { transform: scale(1.02); }
+  .nebula-btn:active { transform: scale(0.985); }
   .nebula-btn--primary { background: #000000; color: #ffffff; }
   .nebula-btn--primary:hover { background: #000000; color: #ffffff; }
   .nebula-btn--ghost { background: #ffffff; color: #000000; }
@@ -399,6 +400,16 @@
    Buttons/links keep an outline. Form inputs intentionally use a focus border
    (e.g. KineticField `focus:border-[#FF4D00]`) instead of an outline, so they
    are excluded here. Sits late so it beats utility classes like focus:outline-none. */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 :where(a, button, [tabindex], summary):focus-visible {
   outline: 2px solid var(--color-accent-blue) !important;
   outline-offset: 2px !important;

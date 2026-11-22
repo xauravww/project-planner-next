@@ -142,7 +142,7 @@ export function KineticFeatures() {
                         >
                             <div className="flex items-center justify-between">
                                 <span className="font-mono text-xs text-[#FF4D00]">{f.n}</span>
-                                <ArrowUpRight className="h-4 w-4 text-black opacity-0 transition-opacity group-hover:opacity-100" />
+                                <ArrowUpRight className="h-4 w-4 text-black opacity-0 transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100" />
                             </div>
 
                             <div className="mt-3">{f.mock}</div>
@@ -150,7 +150,7 @@ export function KineticFeatures() {
                             <h3 className="type-h3 mt-4 text-[length:clamp(1rem,2.5vw,1.5rem)]">
                                 {f.title}
                             </h3>
-                            <p className="mt-1.5 flex-1 text-sm text-black/70">
+                            <p className="mt-1.5 flex-1 text-sm text-black/80">
                                 {f.body}
                             </p>
                             <div className="mt-3 flex flex-wrap gap-1.5">

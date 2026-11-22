@@ -3,10 +3,9 @@
 import Link from "next/link";
 
 const SOCIAL = [
-    { label: "GitHub", href: "https://github.com" },
+    { label: "GitHub", href: "https://github.com/xauravww/project-planner-next" },
     { label: "Twitter", href: "https://x.com" },
     { label: "LinkedIn", href: "https://www.linkedin.com" },
-    { label: "Email", href: "mailto:hello@nebulaplan.app" },
 ];
 
 export function KineticFooter() {

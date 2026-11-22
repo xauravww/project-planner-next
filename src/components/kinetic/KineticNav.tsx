@@ -2,18 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Github, Twitter, Linkedin, X } from "lucide-react";
+import { X } from "lucide-react";
+import { Logo } from "@/components/kinetic/Logo";
 
 const NAV = [
-    { name: "Work", href: "#work" },
-    { name: "About", href: "#about" },
-    { name: "Contact", href: "#contact" },
-];
-
-const SOCIALS = [
-    { label: "GitHub", href: "https://github.com", icon: Github },
-    { label: "Twitter", href: "https://x.com", icon: Twitter },
-    { label: "LinkedIn", href: "https://www.linkedin.com", icon: Linkedin },
+    { name: "How", href: "/#how" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
 ];
 
 export function KineticNav() {
@@ -23,12 +18,9 @@ export function KineticNav() {
         <header className="fixed top-0 inset-x-0 z-50">
             <div className="container mx-auto px-4 max-w-[1400px] py-4 grid grid-cols-3 items-center">
                 {/* logo */}
-                <Link
-                    href="/"
-                    className="justify-self-start font-mono text-sm font-bold uppercase tracking-tighter border-2 border-black px-3 py-1.5"
-                >
-                    N
-                </Link>
+                <div className="justify-self-start">
+                    <Logo />
+                </div>
 
                 {/* floating pill nav — horizontally centered */}
                 <nav className="hidden md:flex justify-self-center items-center gap-1 bg-black rounded-full px-2 py-1.5">
@@ -43,20 +35,8 @@ export function KineticNav() {
                     ))}
                 </nav>
 
-                {/* right cluster: socials (desktop) + menu button (mobile, flush right) */}
-                <div className="col-start-3 justify-self-end mr-3 flex items-center gap-3">
-                    <div className="hidden md:flex items-center gap-2">
-                        {SOCIALS.map((s) => (
-                            <a
-                                key={s.label}
-                                href={s.href}
-                                aria-label={s.label}
-                                className="h-9 w-9 grid place-items-center border-2 border-black transition-transform hover:scale-110"
-                            >
-                                <s.icon className="w-4 h-4" />
-                            </a>
-                        ))}
-                    </div>
+                {/* right cluster: mobile menu button (flush right) */}
+                <div className="col-start-3 justify-self-end mr-3 flex items-center justify-end">
                     <button
                         type="button"
                         aria-label={open ? "Close menu" : "Open menu"}
@@ -85,18 +65,6 @@ export function KineticNav() {
                             </Link>
                         ))}
                     </nav>
-                    <div className="flex items-center gap-6 px-6 py-5">
-                        {SOCIALS.map((s) => (
-                            <a
-                                key={s.label}
-                                href={s.href}
-                                aria-label={s.label}
-                                className="font-mono text-xs uppercase text-white transition-colors hover:text-[#FF4D00]"
-                            >
-                                {s.label}
-                            </a>
-                        ))}
-                    </div>
                 </div>
             )}
         </header>

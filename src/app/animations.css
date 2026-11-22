@@ -81,3 +81,19 @@
   animation: spin-circle 12s linear infinite;
   will-change: transform;
 }
+
+/* Subtle hero entrance — plays once on load; content is visible at rest */
+@keyframes hero-enter {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-hero-enter {
+  animation: hero-enter 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hero-enter {
+    animation: none;
+  }
+}
